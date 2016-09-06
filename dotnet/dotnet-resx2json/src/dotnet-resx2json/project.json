@@ -1,0 +1,27 @@
+{
+  "version": "1.0.0-*",
+  "buildOptions": {
+    "emitEntryPoint": true,
+    "outputName": "dotnet-resx2json",
+    "warningsAsErrors": true,
+    "keyFile": "../../../../tools/DevOpsFlex.snk",
+    "nowarn": [
+      //"" // Example (change if needed)
+    ]
+  },
+
+  "dependencies": {
+    "JetBrains.Annotations": "10.1.5",
+    "Microsoft.DotNet.Cli.Utils": "1.0.0-*",
+    "Microsoft.DotNet.ProjectModel": "1.0.0-*",
+    "Microsoft.Extensions.CommandLineUtils": "1.0.0-*",
+    "Microsoft.NETCore.App": {
+      "type": "platform",
+      "version": "1.0.0"
+    }
+  },
+
+  "frameworks": {
+    "netcoreapp1.0": { "imports": "dnxcore50" }
+  }
+}
