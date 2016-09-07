@@ -26,13 +26,11 @@
                     return 2;
                 }
 
-                var sourceFolder = Path.GetDirectoryName(options.ResxProject);
+                var projectFolder = Path.GetDirectoryName(options.ResxProject);
                 var outputFolder = Path.GetDirectoryName(options.JsonProject);
 
-                var resxProject = BuildWorkspace.Create().GetProject(sourceFolder);
-                var jsonProject = BuildWorkspace.Create().GetProject(outputFolder);
-
-                var resxFiles = resxProject.Files.ResourceFiles.Select(f => f.Key);
+                var project = BuildWorkspace.Create().GetProject(projectFolder);
+                var resxFiles = project.Files.ResourceFiles.Select(f => f.Key);
 
                 foreach (var resxFile in resxFiles)
                 {

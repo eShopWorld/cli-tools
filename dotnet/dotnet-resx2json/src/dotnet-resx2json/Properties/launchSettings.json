@@ -1,7 +1,8 @@
 {
   "profiles": {
     "dotnet-resx2json": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "commandLineArgs": "-s \"C:\\code\\CDN\\src\\Esw.Common.Translations\\Esw.Common.Translations.csproj\""
     }
   }
 }
