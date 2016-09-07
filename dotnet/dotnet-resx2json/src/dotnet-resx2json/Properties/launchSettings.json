@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "dotnet-resx2json": {
+      "commandName": "Project"
+    }
+  }
+}

@@ -6,12 +6,14 @@
     "warningsAsErrors": true,
     "keyFile": "../../../../tools/DevOpsFlex.snk",
     "nowarn": [
-      //"" // Example (change if needed)
-    ]
+      "CS1591" // missing XML docs
+    ],
+    "xmlDoc": true
   },
 
   "dependencies": {
-    "JetBrains.Annotations": "10.1.5",
+    "JetBrains.Annotations": "10.1.5-*",
+    "Microsoft.ApplicationInsights": "2.1.0-*",
     "Microsoft.DotNet.Cli.Utils": "1.0.0-*",
     "Microsoft.DotNet.ProjectModel": "1.0.0-*",
     "Microsoft.Extensions.CommandLineUtils": "1.0.0-*",
