@@ -11,6 +11,8 @@
 
     public class Program
     {
+        private const string TranslationsFolder = "translations";
+
         public static int Main([NotNull] string[] args)
         {
             DebugHelper.HandleDebugSwitch(ref args);
@@ -27,10 +29,9 @@
                 }
 
                 var sourceFolder = Path.GetDirectoryName(options.ResxProject);
-                var outputFolder = Path.GetDirectoryName(options.JsonProject);
+                var outputFolder = Path.Combine(Path.GetDirectoryName(options.JsonProject), TranslationsFolder);
 
                 var resxProject = BuildWorkspace.Create().GetProject(sourceFolder);
-                var jsonProject = BuildWorkspace.Create().GetProject(outputFolder);
 
                 var resxFiles = resxProject.Files.ResourceFiles.Select(f => f.Key);
 
@@ -43,6 +44,10 @@
                                                      x => x.Element("value").Value);
 
                     var json = JsonConvert.SerializeObject(resxDictionary);
+                    var finalFolder = sourceFolder.EnforceSameFolders(outputFolder, resxFile);
+                    var jsonFilePath = Path.Combine(finalFolder, Path.GetFileNameWithoutExtension(resxFile) + ".json");
+
+                    File.WriteAllText(jsonFilePath, json);
                 }
             }
             catch (Exception ex)

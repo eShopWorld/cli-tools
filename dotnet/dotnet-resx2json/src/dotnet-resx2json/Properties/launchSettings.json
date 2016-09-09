@@ -2,7 +2,7 @@
   "profiles": {
     "dotnet-resx2json": {
       "commandName": "Project",
-      "commandLineArgs": "-s \"C:\\code\\CDN\\src\\Esw.Common.Translations\\Esw.Common.Translations.csproj\""
+      "commandLineArgs": "-s \"C:\\code\\CDN\\src\\Esw.Common.Translations\\Esw.Common.Translations.csproj\" -o \"C:\\code\\CDN\\src\\CDNContent\\CDNContent.xproj\""
     }
   }
 }
