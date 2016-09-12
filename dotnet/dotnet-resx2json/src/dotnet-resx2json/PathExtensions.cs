@@ -1,4 +1,5 @@
 ﻿// ReSharper disable once CheckNamespace
+
 namespace System.IO
 {
     using Linq;
@@ -26,7 +27,10 @@ namespace System.IO
             var fromUri = new Uri(fromPath);
             var toUri = new Uri(toPath);
 
-            if (fromUri.Scheme != toUri.Scheme) { return toPath; } // path can't be made relative.
+            if (fromUri.Scheme != toUri.Scheme)
+            {
+                return toPath;
+            } // path can't be made relative.
 
             var relativeUri = fromUri.MakeRelativeUri(toUri);
             var relativePath = Uri.UnescapeDataString(relativeUri.ToString());
@@ -59,14 +63,36 @@ namespace System.IO
                 foreach (var folder in relativePath.Split('\\').Skip(1))
                 {
                     absoluteFolder = Path.Combine(absoluteFolder, folder);
-                    if (!Directory.Exists(absoluteFolder))
-                    {
-                        Directory.CreateDirectory(absoluteFolder);
-                    }
+                    absoluteFolder.CreateIfDoesntExist();
                 }
             }
 
             return absoluteFolder;
+        }
+
+        /// <summary>
+        /// Creates the specified folder if it doesn't exist, otherwise does nothing.
+        /// </summary>
+        /// <param name="folder">The path to the folder that we want to create.</param>
+        /// <exception cref="ArgumentException">If the specified path isn't a directory.</exception>
+        public static void CreateIfDoesntExist(this string folder)
+        {
+            try
+            {
+                if (!File.GetAttributes(folder).HasFlag(FileAttributes.Directory))
+                {
+                    throw new ArgumentException($"The provided path: {folder} isn't a directory.", nameof(folder));
+                }
+            }
+            catch (FileNotFoundException)
+            {
+                // Soak intentionally
+            }
+
+            if (!Directory.Exists(folder))
+            {
+                Directory.CreateDirectory(folder);
+            }
         }
     }
 }

@@ -1,8 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
-
-// ReSharper disable once CheckNamespace
+﻿// ReSharper disable once CheckNamespace
 namespace Microsoft.Extensions.CommandLineUtils
 {
     using System;
@@ -14,7 +10,6 @@ namespace Microsoft.Extensions.CommandLineUtils
                 () =>
                 {
                     invoke();
-
                     return 0;
                 });
 
@@ -26,12 +21,26 @@ namespace Microsoft.Extensions.CommandLineUtils
                     ? CommandOptionType.SingleValue
                     : CommandOptionType.NoValue);
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="command"></param>
+        /// <returns></returns>
         public static CommandOption HelpOption(this CommandLineApplication command) => command.HelpOption("-h|--help");
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="command"></param>
+        /// <returns></returns>
         public static CommandOption VerboseOption(this CommandLineApplication command) => command.Option("-v|--verbose", "Enable verbose output");
 
-        public static CommandOption JsonOption(this CommandLineApplication command) => command.Option("--json", "Use json output. JSON is wrapped by '//BEGIN' and '//END'");
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="command"></param>
+        /// <param name="shortFormVersionGetter"></param>
+        /// <returns></returns>
         public static CommandOption VersionOption(this CommandLineApplication command, Func<string> shortFormVersionGetter) => command.VersionOption("--version", shortFormVersionGetter);
     }
 }

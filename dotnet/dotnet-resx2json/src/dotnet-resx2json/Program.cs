@@ -1,6 +1,7 @@
 ﻿namespace Esw.DotNetCli.Resx2Json
 {
     using System;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using System.Xml.Linq;
@@ -29,7 +30,14 @@
                 }
 
                 var sourceFolder = Path.GetDirectoryName(options.ResxProject);
-                var outputFolder = Path.Combine(Path.GetDirectoryName(options.JsonProject), TranslationsFolder);
+                var outputFolder = Path.Combine(Path.GetDirectoryName(options.JsonProject), "wwwroot", TranslationsFolder);
+
+                outputFolder.CreateIfDoesntExist();
+
+                if (!Directory.Exists(outputFolder))
+                {
+                    Directory.CreateDirectory(outputFolder);
+                }
 
                 var resxProject = BuildWorkspace.Create().GetProject(sourceFolder);
 
@@ -52,6 +60,12 @@
             }
             catch (Exception ex)
             {
+#if DEBUG
+                if (Debugger.IsAttached)
+                {
+                    Debugger.Break();
+                }
+#endif
                 Reporter.Error.WriteLine(ex.Message.Bold().Red());
                 return 1;
             }
