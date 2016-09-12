@@ -34,5 +34,8 @@
       }
     },
     "net461": {}
+  },
+  "scripts": {
+    "postcompile": "dotnet pack --no-build -o %compile:OutputDir%\\.."
   }
 }
