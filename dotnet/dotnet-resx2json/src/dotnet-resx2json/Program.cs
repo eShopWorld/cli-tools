@@ -14,6 +14,8 @@
     {
         private const string TranslationsFolder = "translations";
 
+        public static PathHelper PathHelper = new PathHelper();
+
         public static int Main([NotNull] string[] args)
         {
             DebugHelper.HandleDebugSwitch(ref args);
@@ -32,7 +34,7 @@
                 var sourceFolder = Path.GetDirectoryName(options.ResxProject);
                 var outputFolder = Path.Combine(Path.GetDirectoryName(options.JsonProject), "wwwroot", TranslationsFolder);
 
-                outputFolder.CreateIfDoesntExist();
+                PathHelper.CreateIfDoesntExist(outputFolder);
 
                 if (!Directory.Exists(outputFolder))
                 {
@@ -52,7 +54,7 @@
                                                      x => x.Element("value").Value);
 
                     var json = JsonConvert.SerializeObject(resxDictionary);
-                    var finalFolder = sourceFolder.EnforceSameFolders(outputFolder, resxFile);
+                    var finalFolder = PathHelper.EnforceSameFolders(sourceFolder, outputFolder, resxFile);
                     var jsonFilePath = Path.Combine(finalFolder, Path.GetFileNameWithoutExtension(resxFile) + ".json");
 
                     File.WriteAllText(jsonFilePath, json);

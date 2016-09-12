@@ -3,8 +3,16 @@ namespace Microsoft.Extensions.CommandLineUtils
 {
     using System;
 
+    /// <summary>
+    /// 
+    /// </summary>
     public static class CommandLineApplicationExtensions
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="command"></param>
+        /// <param name="invoke"></param>
         public static void OnExecute(this CommandLineApplication command, Action invoke)
             => command.OnExecute(
                 () =>
@@ -13,6 +21,13 @@ namespace Microsoft.Extensions.CommandLineUtils
                     return 0;
                 });
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="command"></param>
+        /// <param name="template"></param>
+        /// <param name="description"></param>
+        /// <returns></returns>
         public static CommandOption Option(this CommandLineApplication command, string template, string description)
             => command.Option(
                 template,

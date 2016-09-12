@@ -4,7 +4,7 @@
     "emitEntryPoint": true,
     "outputName": "dotnet-resx2json",
     "warningsAsErrors": true,
-    "keyFile": "../../../../tools/DevOpsFlex.snk",
+    //"keyFile": "../../../../tools/DevOpsFlex.snk",
     "nowarn": [
       "CS1591" // missing XML docs
     ],
