@@ -13,7 +13,6 @@ public class PathHelperTest
         public void Test_WithValidPath()
         {
             var targetFolder = @"C:\" + Guid.NewGuid().ToString().Substring(0, 8);
-
             var pathMock = new Mock<PathHelper>();
             pathMock.Setup(x => x.CreateDirectory(It.IsAny<string>()))
                     .Verifiable();
@@ -26,7 +25,7 @@ public class PathHelperTest
         [Fact, Trait("Category", "Unit")]
         public void Test_WithExistingPath()
         {
-            var targetFolder = @"C:\Windows";
+            const string targetFolder = @"C:\Windows";
             var pathMock = new Mock<PathHelper>();
             pathMock.Setup(x => x.CreateDirectory(It.IsAny<string>()))
                     .Verifiable();
