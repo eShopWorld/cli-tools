@@ -1,20 +1,4 @@
 {
-  "version": "0.1.0-alpha",
-  "authors": [ "David Rodrigues" ],
-  "copyright": "Copyright 2016",
-  "title": "dotnet-resx2json",
-  "description": "dotnet CLI RESX to JSON transform tools",
-  "packOptions": {
-    "owners": [ "eShopWorld" ],
-    "requireLicenseAcceptance": false,
-    "licenseUrl": "https://github.com/eShopWorld/cli-tools/blob/master/LICENSE",
-    "releaseNotes": "Initial add to the package feed",
-    "repository": {
-      "type": "git",
-      "url": "https://github.com/eShopWorld/cli-tools"
-    }
-  },
-
   "buildOptions": {
     "emitEntryPoint": true,
     "outputName": "dotnet-resx2json",

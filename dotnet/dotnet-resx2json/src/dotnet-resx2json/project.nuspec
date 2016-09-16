@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>dotnet-resx2json</id>
+    <version>0.1.0-alpha</version>
+    <title>dotnet-resx2json</title>
+    <authors>David Rodrigues</authors>
+    <owners>eShopWorld</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <licenseUrl>https://github.com/eShopWorld/cli-tools/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/eShopWorld/cli-tools</projectUrl>
+    <description>dotnet CLI RESX to JSON transform tools</description>
+    <releaseNotes>Initial add to the package feed</releaseNotes>
+    <copyright>Copyright 2016</copyright>
+    <serviceable>true</serviceable>
+    <packageTypes>
+      <packageType name="DotnetCliTool" />
+    </packageTypes>
+    <dependencies>
+      <group targetFramework=".NETCoreApp1.0">
+        <dependency id="Newtonsoft.Json" version="[9.0.1,)" />
+        <dependency id="JetBrains.Annotations" version="[10.1.5,)" />
+        <dependency id="Microsoft.ApplicationInsights" version="[2.1.0,)" />
+        <dependency id="Microsoft.DotNet.Cli.Utils" version="1.0.0-preview2-003121" />
+        <dependency id="Microsoft.DotNet.ProjectModel.Workspaces" version="1.0.0-preview2-003121" />
+        <dependency id="Microsoft.Extensions.CommandLineUtils" version="[1.0.0,)" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="bin/debug/netcoreapp1.0/dotnet-resx2json.dll" target="lib/netcoreapp1.0/" />
+    <file src="bin/debug/netcoreapp1.0/dotnet-resx2json.runtimeconfig.json" target="lib/netcoreapp1.0/" />
+  </files>
+</package>
