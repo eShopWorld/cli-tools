@@ -31,8 +31,8 @@
                     return 2;
                 }
 
-                var sourceFolder = Path.GetDirectoryName(options.ResxProject);
-                var outputFolder = Path.Combine(Path.GetDirectoryName(options.JsonProject), "wwwroot", TranslationsFolder);
+                var sourceFolder = Path.GetDirectoryName(Path.GetFullPath(options.ResxProject));
+                var outputFolder = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(options.JsonProject)), "wwwroot", TranslationsFolder);
 
                 PathHelper.CreateIfDoesntExist(outputFolder);
 

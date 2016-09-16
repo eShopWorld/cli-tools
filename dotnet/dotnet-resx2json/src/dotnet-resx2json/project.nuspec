@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
     <id>dotnet-resx2json</id>
-    <version>0.1.0-alpha</version>
+    <version>0.2.0-alpha</version>
     <title>dotnet-resx2json</title>
     <authors>David Rodrigues</authors>
     <owners>eShopWorld</owners>
