@@ -41,9 +41,9 @@ public class PathHelperTest
             const string targetFolder = @"C:\?!";
             var pathMock = new Mock<PathHelper>();
 
-            var action = new Action(() => pathMock.Object.CreateIfDoesntExist(targetFolder));
+            var act = new Action(() => pathMock.Object.CreateIfDoesntExist(targetFolder));
 
-            action.ShouldThrow<ArgumentException>();
+            act.ShouldThrow<ArgumentException>();
         }
     }
 }
