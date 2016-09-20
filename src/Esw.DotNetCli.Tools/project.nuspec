@@ -1,15 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
-    <id>dotnet-resx2json</id>
-    <version>0.2.0-alpha</version>
-    <title>dotnet-resx2json</title>
+    <id>Esw.DotNetCli.Tools</id>
+    <version>1.0.0-rc</version>
+    <title>Esw.DotNetCli.Tools</title>
     <authors>David Rodrigues</authors>
     <owners>eShopWorld</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://github.com/eShopWorld/cli-tools/blob/master/LICENSE</licenseUrl>
     <projectUrl>https://github.com/eShopWorld/cli-tools</projectUrl>
-    <description>dotnet CLI RESX to JSON transform tools</description>
+    <description>dotnet CLI tools for eShopWorld</description>
     <releaseNotes>Initial add to the package feed</releaseNotes>
     <copyright>Copyright 2016</copyright>
     <serviceable>true</serviceable>
@@ -28,7 +28,7 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="bin/debug/netcoreapp1.0/dotnet-resx2json.dll" target="lib/netcoreapp1.0/" />
-    <file src="bin/debug/netcoreapp1.0/dotnet-resx2json.runtimeconfig.json" target="lib/netcoreapp1.0/" />
+    <file src="bin/debug/netcoreapp1.0/dotnet-esw.dll" target="lib/netcoreapp1.0/" />
+    <file src="bin/debug/netcoreapp1.0/dotnet-esw.runtimeconfig.json" target="lib/netcoreapp1.0/" />
   </files>
 </package>

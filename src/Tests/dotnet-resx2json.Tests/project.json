@@ -7,7 +7,7 @@
     "xunit": "2.2.0-beta2-build3300",
     "FluentAssertions": "4.*",
     "dotnet-test-xunit": "2.2.0-preview2-build1029",
-    "dotnet-resx2json": "*",
+    "Esw.DotNetCli.Tools": "*",
     "System.Linq": "4.1.0"
   },
 

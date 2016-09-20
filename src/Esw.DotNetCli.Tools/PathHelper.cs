@@ -1,8 +1,7 @@
-﻿namespace Esw.DotNetCli.Resx2Json
+﻿namespace Esw.DotNetCli.Tools
 {
     using System;
     using System.IO;
-    using System.Linq;
     using System.Text.RegularExpressions;
     using JetBrains.Annotations;
 

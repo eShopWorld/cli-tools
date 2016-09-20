@@ -1,7 +1,7 @@
 {
   "buildOptions": {
     "emitEntryPoint": true,
-    "outputName": "dotnet-resx2json",
+    "outputName": "dotnet-esw",
     "warningsAsErrors": true,
     "nowarn": [
       "CS1591" // missing XML docs

@@ -1,4 +1,4 @@
-﻿namespace Esw.DotNetCli.Resx2Json
+﻿namespace Esw.DotNetCli.Tools
 {
     using System.Collections.Generic;
     using System.Reflection;
