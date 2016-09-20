@@ -1,10 +1,11 @@
 {
+  "version": "1.0.0-rc",
   "buildOptions": {
     "emitEntryPoint": true,
     "outputName": "dotnet-esw",
     "warningsAsErrors": true,
     "nowarn": [
-      "CS1591" // missing XML docs
+      "CS1591"
     ],
     "xmlDoc": true
   },
