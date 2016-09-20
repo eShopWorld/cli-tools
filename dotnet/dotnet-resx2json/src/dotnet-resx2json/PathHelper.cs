@@ -56,36 +56,11 @@
 
             if (!string.IsNullOrWhiteSpace(relativePath))
             {
-                relativePath = Regex.Replace(relativePath, @"^[^\\]*", ".");
-
-                foreach (var folder in relativePath.Split('\\').Skip(1))
-                {
-                    absoluteFolder = Path.Combine(absoluteFolder, folder);
-                    CreateIfDoesntExist(absoluteFolder);
-                }
+                absoluteFolder = Path.Combine(absoluteFolder, Regex.Replace(relativePath, @"^[^\\]*", "."));
+                CreateDirectory(absoluteFolder);
             }
 
             return absoluteFolder;
-        }
-
-        /// <summary>
-        /// Creates the specified folder if it doesn't exist, otherwise does nothing.
-        /// </summary>
-        /// <param name="folder">The path to the folder that we want to create.</param>
-        /// <exception cref="ArgumentException">If the specified path isn't a directory.</exception>
-        public void CreateIfDoesntExist([NotNull]string folder)
-        {
-            try
-            {
-                if (!File.GetAttributes(folder).HasFlag(FileAttributes.Directory))
-                {
-                    throw new ArgumentException($"The provided path: {folder} isn't a directory.", nameof(folder));
-                }
-            }
-            catch (FileNotFoundException)
-            {
-                CreateDirectory(folder);
-            }
         }
 
         /// <summary>Creates all directories and subdirectories in the specified path unless they already exist.</summary>

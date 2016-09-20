@@ -34,7 +34,7 @@
                 var sourceFolder = Path.GetDirectoryName(Path.GetFullPath(options.ResxProject));
                 var outputFolder = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(options.JsonProject)), "wwwroot", TranslationsFolder);
 
-                PathHelper.CreateIfDoesntExist(outputFolder);
+                PathHelper.CreateDirectory(outputFolder);
 
                 if (!Directory.Exists(outputFolder))
                 {

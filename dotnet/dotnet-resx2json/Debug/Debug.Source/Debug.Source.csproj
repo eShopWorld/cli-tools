@@ -54,6 +54,54 @@
     <EmbeddedResource Include="Common.it.resx">
       <LastGenOutput>Common.it.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <EmbeddedResource Include="Level1_1\Level2_1\Common1_1.de.resx">
+      <LastGenOutput>Common1_1.de.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Level1_1\Level2_1\Common1_1.en.resx">
+      <LastGenOutput>Common1_1.en.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Level1_1\Level2_1\Common1_1.es.resx">
+      <LastGenOutput>Common1_1.es.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Level1_1\Level2_1\Common1_1.it.resx">
+      <LastGenOutput>Common1_1.it.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Level1_1\Level2_2\Common1_2.de.resx">
+      <LastGenOutput>Common1_2.de.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Level1_1\Level2_2\Common1_2.en.resx">
+      <LastGenOutput>Common1_2.en.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Level1_1\Level2_2\Common1_2.es.resx">
+      <LastGenOutput>Common1_2.es.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Level1_1\Level2_2\Common1_2.it.resx">
+      <LastGenOutput>Common1_2.it.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Level1_2\Level2_1\Common2_1.de.resx">
+      <LastGenOutput>Common2_1.de.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Level1_2\Level2_1\Common2_1.en.resx">
+      <LastGenOutput>Common2_1.en.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Level1_2\Level2_1\Common2_1.es.resx">
+      <LastGenOutput>Common2_1.es.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Level1_2\Level2_1\Common2_1.it.resx">
+      <LastGenOutput>Common2_1.it.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Level1_2\Level2_2\Common2_2.de.resx">
+      <LastGenOutput>Common2_2.de.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Level1_2\Level2_2\Common2_2.en.resx">
+      <LastGenOutput>Common2_2.en.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Level1_2\Level2_2\Common2_2.es.resx">
+      <LastGenOutput>Common2_2.es.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Level1_2\Level2_2\Common2_2.it.resx">
+      <LastGenOutput>Common2_2.it.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
