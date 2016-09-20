@@ -39,6 +39,7 @@ FakesAssemblies
 packages
 *.nupkg
 project.lock.json
+**/wwwroot/translations
 
 # Sensitive information files #
 ######################
