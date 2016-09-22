@@ -2,11 +2,12 @@
 {
     using System;
     using System.IO;
+    using System.Linq;
     using System.Text.RegularExpressions;
     using JetBrains.Annotations;
 
     /// <summary>
-    /// Constains extensions to the <see cref="Path"/> class in System.IO.
+    /// Constains extensions to the <see cref="Path"/> class in System.IO as a helper class to improve mocking.
     /// </summary>
     public class PathHelper
     {
@@ -16,9 +17,6 @@
         /// <param name="fromPath">Contains the directory that defines the start of the relative path.</param>
         /// <param name="toPath">Contains the path that defines the endpoint of the relative path.</param>
         /// <returns>The relative path from the start directory to the end path or <c>toPath</c> if the paths are not related.</returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="UriFormatException"></exception>
-        /// <exception cref="InvalidOperationException"></exception>
         public string CreateRelativePath([NotNull]string fromPath, [NotNull]string toPath)
         {
             var fromUri = new Uri(fromPath);
@@ -26,7 +24,7 @@
 
             if (fromUri.Scheme != toUri.Scheme)
             {
-                return toPath; // path can't be made relative.
+                return null; // path can't be made relative.
             }
 
             var relativeUri = fromUri.MakeRelativeUri(toUri);
@@ -37,7 +35,13 @@
                 relativePath = relativePath.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
             }
 
-            return relativePath;
+            var firstPart = relativePath.Split('\\').FirstOrDefault();
+
+            if (firstPart.Contains(":")) return null; // Different drive letters
+
+            return string.IsNullOrEmpty(relativePath) || firstPart.Equals(".") || firstPart.Equals("..")
+                ? relativePath
+                : Regex.Replace(relativePath, @"^[^\\]*", ".");
         }
 
         /// <summary>
@@ -48,14 +52,14 @@
         /// <param name="file">The file we want to create the relation from the baseline folder.</param>
         /// <param name="outputFolder">The output target folder.</param>
         /// <returns>The final folder path, which is the combination of the <paramref name="outputFolder"/> with the relative path, without the file name+extension.</returns>
-        public string EnforceSameFolders(string sourceFolder, string outputFolder, string file)
+        public string EnforceSameFolders([NotNull]string sourceFolder, [NotNull]string outputFolder, [NotNull]string file)
         {
             var relativePath = CreateRelativePath(sourceFolder, Path.GetDirectoryName(file));
             var absoluteFolder = outputFolder;
 
             if (!string.IsNullOrWhiteSpace(relativePath))
             {
-                absoluteFolder = Path.Combine(absoluteFolder, Regex.Replace(relativePath, @"^[^\\]*", "."));
+                absoluteFolder = Path.Combine(absoluteFolder, relativePath);
                 CreateDirectory(absoluteFolder);
             }
 
