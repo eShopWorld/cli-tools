@@ -1,4 +1,4 @@
-﻿namespace Debug.Target
+﻿namespace Integration.Target
 {
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;

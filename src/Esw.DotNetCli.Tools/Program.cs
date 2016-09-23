@@ -2,20 +2,11 @@
 {
     using System;
     using System.Diagnostics;
-    using System.IO;
-    using System.Linq;
-    using System.Xml.Linq;
     using JetBrains.Annotations;
     using Microsoft.DotNet.Cli.Utils;
-    using Microsoft.DotNet.ProjectModel;
-    using Newtonsoft.Json;
 
     public class Program
     {
-        private const string TranslationsFolder = "translations";
-
-        public static PathHelper PathHelper = new PathHelper();
-
         public static int Main([NotNull] string[] args)
         {
             DebugHelper.HandleDebugSwitch(ref args);
@@ -31,34 +22,8 @@
                     return 2;
                 }
 
-                var sourceFolder = Path.GetDirectoryName(Path.GetFullPath(options.ResxProject));
-                var outputFolder = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(options.JsonProject)), "wwwroot", TranslationsFolder);
-
-                PathHelper.CreateDirectory(outputFolder);
-
-                if (!Directory.Exists(outputFolder))
-                {
-                    Directory.CreateDirectory(outputFolder);
-                }
-
-                var resxProject = BuildWorkspace.Create().GetProject(sourceFolder);
-
-                var resxFiles = resxProject.Files.ResourceFiles.Select(f => f.Key);
-
-                foreach (var resxFile in resxFiles)
-                {
-                    var resxDictionary = XElement.Parse(File.ReadAllText(resxFile))
-                                                 .Elements("data")
-                                                 .ToDictionary(
-                                                     x => x.Attribute("name").Value,
-                                                     x => x.Element("value").Value);
-
-                    var json = JsonConvert.SerializeObject(resxDictionary);
-                    var finalFolder = PathHelper.EnforceSameFolders(sourceFolder, outputFolder, resxFile);
-                    var jsonFilePath = Path.Combine(finalFolder, Path.GetFileNameWithoutExtension(resxFile) + ".json");
-
-                    File.WriteAllText(jsonFilePath, json);
-                }
+                var notACommandYet = new Resx2JsonCommand(options.ResxProject, options.JsonProject);
+                notACommandYet.Run();
             }
             catch (Exception ex)
             {

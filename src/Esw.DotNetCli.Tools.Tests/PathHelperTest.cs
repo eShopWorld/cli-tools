@@ -134,5 +134,19 @@ public class PathHelperTest
 
             helperMock.Verify(x => x.CreateDirectory(Path.Combine(targetFolder, ".", extraFolderOne, extraFolderTwo)));
         }
+
+        [Fact, Trait("Category", "Unit")]
+        public void Test_WithTheSameFolder()
+        {
+            const string sourceFolder = @"C:\FolderOne\FolderTwo";
+            var file = Path.Combine(sourceFolder, "file.txt");
+
+            var helperMock = new Mock<PathHelper> { CallBase = true };
+            helperMock.Setup(x => x.CreateDirectory(It.IsAny<string>())).Verifiable();
+
+            helperMock.Object.EnforceSameFolders(sourceFolder, sourceFolder, file);
+
+            helperMock.Verify(x => x.CreateDirectory(It.IsAny<string>()), Times.Never);
+        }
     }
 }
