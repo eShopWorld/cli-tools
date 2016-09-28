@@ -43,7 +43,7 @@
         {
             var app = new CommandLineApplication(throwOnUnexpectedArg: false)
             {
-                Name = "dotnet resx2json",
+                Name = "dotnet esw",
                 FullName = "eShopWorld .NET Core CLI Commands"
             };
 
@@ -61,11 +61,11 @@
         {
             var resxProject = app.Option(
                 "-s|--resx-project <project>",
-                "The project to target (defaults to the project in the current directory). Can be a path to a project.json or a project directory.");
+                "The source project containing the RESX files. It needs to be the path to the proj file, can be absolute or relative.");
 
             var jsonProject = app.Option(
                 "-o|--json-project <project>",
-                "The path to the project containing Startup (defaults to the target project). Can be a path to a project.json or a project directory.");
+                "The target project containing the JSON files. It needs to be the path to the proj file, can be absolute or relative.");
 
             var help = app.HelpOption();
             var verbose = app.VerboseOption();

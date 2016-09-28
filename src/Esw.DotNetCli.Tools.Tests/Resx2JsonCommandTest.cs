@@ -30,7 +30,7 @@ public class Resx2JsonCommandTest
     public class Run
     {
         [Fact, Trait("Category", "Integration")]
-        public void Foo()
+        public void TheOneTestToRuleThemAll()
         {
             // #1 clean up before the test
 

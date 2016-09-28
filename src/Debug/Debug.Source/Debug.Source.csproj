@@ -54,6 +54,12 @@
     <EmbeddedResource Include="Common.it.resx">
       <LastGenOutput>Common.it.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <EmbeddedResource Include="Level1_1\Common.en.resx">
+      <LastGenOutput>Common.en.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Level1_1\Level2_1\Common.en.resx">
+      <LastGenOutput>Common.en.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="Level1_1\Level2_1\Common1_1.de.resx">
       <LastGenOutput>Common1_1.de.Designer.cs</LastGenOutput>
     </EmbeddedResource>
