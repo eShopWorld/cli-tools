@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "dotnet-resx2json": {
-      "commandName": "Project",
-      "commandLineArgs": "-s \"..\\..\\Debug\\Debug.Source\\Debug.Source.csproj\" -o \"..\\..\\Debug\\Debug.Target\\Debug.Target.xproj\""
-    }
-  }
-}

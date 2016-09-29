@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Esw.DotNetCli.Tools": {
+      "commandName": "Project",
+      "commandLineArgs": "-s \"..\\Debug\\Debug.Source\\Debug.Source.csproj\" -o \"..\\Debug\\Debug.Target\\Debug.Target.xproj\""
+    }
+  }
+}
