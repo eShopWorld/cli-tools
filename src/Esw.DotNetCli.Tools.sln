@@ -12,7 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{23782D1B
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Esw.DotNetCli.Tools.Tests", "Esw.DotNetCli.Tools.Tests\Esw.DotNetCli.Tools.Tests.xproj", "{32C11520-C38B-4462-83CE-3F705138ED07}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Esw.DotNetCli.Tools", "dotnet-esw\Esw.DotNetCli.Tools.xproj", "{885F83EA-5EFA-4D2A-BA29-B1505944F379}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "dotnet-esw", "dotnet-esw\dotnet-esw.xproj", "{885F83EA-5EFA-4D2A-BA29-B1505944F379}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
