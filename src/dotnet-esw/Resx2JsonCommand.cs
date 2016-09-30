@@ -19,9 +19,20 @@
         private readonly string _resxProject;
         private readonly string _outputProject;
 
-        private Dictionary<string, List<string>> _resourceDictionary;
+        internal Dictionary<string, List<string>> ResourceDictionary;
 
         public static PathHelper PathHelper = new PathHelper(); // to be INJECTED in the near future! leave it as a prop
+
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="Resx2JsonCommand"/>.
+        /// </summary>
+        /// <remarks>
+        /// Here for testability purposes only.
+        /// </remarks>
+        internal Resx2JsonCommand()
+        {
+        }
 
         /// <summary>
         /// Initializes a new instance of <see cref="Resx2JsonCommand"/>.
@@ -39,7 +50,7 @@
         /// </summary>
         public void Run()
         {
-            _resourceDictionary = new Dictionary<string, List<string>>();
+            ResourceDictionary = new Dictionary<string, List<string>>();
             var sourceFolder = Path.GetDirectoryName(Path.GetFullPath(_resxProject));
             var outputFolder = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(_outputProject)), "wwwroot", TranslationsFolder);
 
@@ -94,9 +105,9 @@
             var fileContent = ReadText(resxFile);
             var fileName = Path.GetFileName(resxFile);
 
-            if (_resourceDictionary.ContainsKey(fileName))
+            if (ResourceDictionary.ContainsKey(fileName))
             {
-                var baseResource = _resourceDictionary[fileName].Where(f => resxFile.Contains(Path.GetDirectoryName(f)))
+                var baseResource = ResourceDictionary[fileName].Where(f => resxFile.Contains(Path.GetDirectoryName(f)))
                                                                 .OrderByDescending(f => f?.Split('\\')?.Length)
                                                                 .FirstOrDefault();
 
@@ -106,11 +117,11 @@
                     WriteText(resxFile, fileContent);
                 }
 
-                _resourceDictionary[fileName].Add(resxFile);
+                ResourceDictionary[fileName].Add(resxFile);
             }
             else
             {
-                _resourceDictionary.Add(Path.GetFileName(resxFile), new List<string> { resxFile });
+                ResourceDictionary.Add(Path.GetFileName(resxFile), new List<string> { resxFile });
             }
 
             return fileContent;

@@ -6,6 +6,7 @@ using System.Xml.Linq;
 using Esw.DotNetCli.Tools;
 using Esw.DotNetCli.Tools.Tests.data;
 using FluentAssertions;
+using Moq;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -48,7 +49,93 @@ public class Resx2JsonCommandTest
 
     public class GetMergedResource
     {
-        
+        [Fact, Trait("Category", "Unit")]
+        public void Test_BaseResxDoesNotMerge()
+        {
+            const string fileContent = "some file content!";
+            const string filePath = @"C:\AFolder\AFile.resx";
+
+            var cmdMock = new Mock<Resx2JsonCommand> {CallBase = true};
+            cmdMock.Object.ResourceDictionary = new Dictionary<string, List<string>>();
+            cmdMock.Setup(x => x.ReadText(filePath)).Returns(fileContent);
+
+            var result = cmdMock.Object.GetMergedResource(filePath);
+
+            result.Should().Be(fileContent);
+        }
+
+        [Fact, Trait("Category", "Unit")]
+        public void Test_MergeWithWrongPath()
+        {
+            const string basefileContent = "some file content!";
+            const string basefilePath = @"C:\AFolder\AFile.resx";
+            const string wrongfileContent = "wrong file content!";
+            const string wrongfilePath = @"C:\WrongFolder\AFile.resx";
+
+            var cmdMock = new Mock<Resx2JsonCommand> { CallBase = true };
+            cmdMock.Object.ResourceDictionary = new Dictionary<string, List<string>>
+            {
+                { Path.GetFileName(wrongfilePath), new List<string> { wrongfilePath } }
+            };
+
+            cmdMock.Setup(x => x.ReadText(basefilePath)).Returns(basefileContent);
+            cmdMock.Setup(x => x.ReadText(wrongfilePath)).Returns(wrongfileContent);
+
+            var result = cmdMock.Object.GetMergedResource(basefilePath);
+
+            result.Should().Be(basefileContent);
+        }
+
+        [Fact, Trait("Category", "Unit")]
+        public void Test_MergeSingleLevel()
+        {
+            const string basefileContent = "some file content!";
+            const string basefilePath = @"C:\AFolder\AnotherFolder\AFile.resx";
+            const string mergefileContent = "merged file content!";
+            const string mergefilePath = @"C:\AFolder\AFile.resx";
+
+            var cmdMock = new Mock<Resx2JsonCommand> { CallBase = true };
+            cmdMock.Object.ResourceDictionary = new Dictionary<string, List<string>>
+            {
+                { Path.GetFileName(mergefilePath), new List<string> { mergefilePath } }
+            };
+
+            cmdMock.Setup(x => x.ReadText(basefilePath)).Returns(basefileContent);
+            cmdMock.Setup(x => x.ReadText(mergefilePath)).Returns(mergefileContent);
+            cmdMock.Setup(x => x.MergeResx(mergefileContent, basefileContent)).Returns(mergefileContent);
+            cmdMock.Setup(x => x.WriteText(It.IsAny<string>(), It.IsAny<string>())).Callback(() => { });
+
+            var result = cmdMock.Object.GetMergedResource(basefilePath);
+
+            result.Should().Be(mergefileContent);
+        }
+
+        [Fact, Trait("Category", "Unit")]
+        public void Test_MergeMutipleSources()
+        {
+            const string basefileContent = "some file content!";
+            const string basefilePath = @"C:\AFolder\AnotherFolder\AndAnotherFolder\AFile.resx";
+            const string wrongfileContent = "wrong file content!";
+            const string wrongfilePath = @"C:\AFolder\AFile.resx";
+            const string mergefileContent = "merged file content!";
+            const string mergefilePath = @"C:\AFolder\AnotherFolder\AFile.resx";
+
+            var cmdMock = new Mock<Resx2JsonCommand> { CallBase = true };
+            cmdMock.Object.ResourceDictionary = new Dictionary<string, List<string>>
+            {
+                { Path.GetFileName(mergefilePath), new List<string> { mergefilePath } }
+            };
+
+            cmdMock.Setup(x => x.ReadText(basefilePath)).Returns(basefileContent);
+            cmdMock.Setup(x => x.ReadText(mergefilePath)).Returns(mergefileContent);
+            cmdMock.Setup(x => x.ReadText(wrongfilePath)).Returns(wrongfileContent);
+            cmdMock.Setup(x => x.MergeResx(mergefileContent, basefileContent)).Returns(mergefileContent);
+            cmdMock.Setup(x => x.WriteText(It.IsAny<string>(), It.IsAny<string>())).Callback(() => { });
+
+            var result = cmdMock.Object.GetMergedResource(basefilePath);
+
+            result.Should().Be(mergefileContent);
+        }
     }
 
     public class MergeResx
@@ -212,7 +299,7 @@ public class Resx2JsonCommandTest
         }
     }
 
-    public class ResxDataComparer
+    public class ResxDataComparerTest
     {
         public class EqualsImp
         {
