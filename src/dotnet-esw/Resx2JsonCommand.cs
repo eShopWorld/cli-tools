@@ -16,6 +16,7 @@
     public class Resx2JsonCommand // THIS IS NOT A COMMAND YET
     {
         private const string TranslationsFolder = "translations";
+        private const string JsonDefaultCulture = "en";
         private readonly string _resxProject;
         private readonly string _outputProject;
 
@@ -74,6 +75,12 @@
                 var json = ConvertResx2Json(fileContent);
                 var finalFolder = PathHelper.EnforceSameFolders(sourceFolder, outputFolder, resxFile);
                 var jsonFilePath = Path.Combine(finalFolder, Path.GetFileNameWithoutExtension(resxFile) + ".json");
+
+                // always insert culture on JSON file names using the default culture constant
+                if (jsonFilePath.Split('.').Length == 2)
+                {
+                    jsonFilePath = jsonFilePath.First() + "." + JsonDefaultCulture + ".json";
+                }
 
                 File.WriteAllText(jsonFilePath, json);
             }

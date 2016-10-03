@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Net.Http.Headers;
 using System.Reflection;
 using System.Xml.Linq;
 using Esw.DotNetCli.Tools;
