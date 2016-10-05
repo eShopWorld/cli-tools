@@ -1,5 +1,5 @@
 {
-  "version": "1.0.2-rc",
+  "version": "1.0.3-rc",
   "buildOptions": {
     "emitEntryPoint": true,
     "outputName": "dotnet-esw",

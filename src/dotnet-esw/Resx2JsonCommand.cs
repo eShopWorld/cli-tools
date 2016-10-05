@@ -74,13 +74,11 @@
 
                 var json = ConvertResx2Json(fileContent);
                 var finalFolder = PathHelper.EnforceSameFolders(sourceFolder, outputFolder, resxFile);
-                var jsonFilePath = Path.Combine(finalFolder, Path.GetFileNameWithoutExtension(resxFile) + ".json");
 
                 // always insert culture on JSON file names using the default culture constant
-                if (jsonFilePath.Split('.').Length == 2)
-                {
-                    jsonFilePath = jsonFilePath.First() + "." + JsonDefaultCulture + ".json";
-                }
+                var jsonFilePath = Path.GetFileNameWithoutExtension(resxFile).Split('.').Length == 1
+                    ? Path.Combine(finalFolder, Path.GetFileNameWithoutExtension(resxFile) + "." + JsonDefaultCulture + ".json")
+                    : Path.Combine(finalFolder, Path.GetFileNameWithoutExtension(resxFile) + ".json");
 
                 File.WriteAllText(jsonFilePath, json);
             }
