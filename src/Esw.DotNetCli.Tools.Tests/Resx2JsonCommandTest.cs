@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Xml.Linq;
 using Esw.DotNetCli.Tools;
 using Esw.DotNetCli.Tools.Tests.data;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyModel;
 using Moq;
 using Newtonsoft.Json;
 using Xunit;
@@ -28,12 +30,44 @@ public class Resx2JsonCommandTest
         }
     }
 
+    public class GetJsonPath
+    {
+        [Fact, Trait("Category", "Integration")]
+        public void Test_WithDefaultCulture()
+        {
+            const string path = @"C:\SomeFolder\AResource.resx";
+            const string outputPath = @"C:\OutFolder\";
+            const string expectedJsonFile = "AResource." + Resx2JsonCommand.JsonDefaultCulture + ".json";
+
+            var cmdMock = new Mock<Resx2JsonCommand> { CallBase = true };
+
+            var result = cmdMock.Object.GetJsonPath(outputPath, path);
+
+            result.Should().Be(Path.Combine(Path.GetDirectoryName(outputPath), expectedJsonFile));
+        }
+
+        [Fact, Trait("Category", "Integration")]
+        public void Test_WithSpecificCulture()
+        {
+            const string path = @"C:\SomeFolder\AResource.it-it.resx";
+            const string outputPath = @"C:\OutFolder\";
+            var expectedJsonFile = Path.GetFileNameWithoutExtension(path) + ".json";
+
+            var cmdMock = new Mock<Resx2JsonCommand> { CallBase = true };
+
+            var result = cmdMock.Object.GetJsonPath(outputPath, path);
+
+            result.Should().Be(Path.Combine(Path.GetDirectoryName(outputPath), expectedJsonFile));
+        }
+    }
+
     public class ConvertResx2Json
     {
         [Fact, Trait("Category", "Integration")]
         public void Test_WithEmbebeddedResxResource()
         {
-            var resx = File.ReadAllText(@".\data\test.resx");
+            var resxPath = AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf(@"\bin", StringComparison.Ordinal)) + @".\data\test.resx";
+            var resx = File.ReadAllText(resxPath);
 
             var json = new Resx2JsonCommand(string.Empty, string.Empty).ConvertResx2Json(resx);
 

@@ -16,10 +16,10 @@
     public class Resx2JsonCommand // THIS IS NOT A COMMAND YET
     {
         private const string TranslationsFolder = "translations";
-        private const string JsonDefaultCulture = "en";
         private readonly string _resxProject;
         private readonly string _outputProject;
 
+        internal const string JsonDefaultCulture = "en";
         internal Dictionary<string, List<string>> ResourceDictionary;
 
         public static PathHelper PathHelper = new PathHelper(); // to be INJECTED in the near future! leave it as a prop
@@ -73,15 +73,26 @@
                 var fileContent = GetMergedResource(resxFile);
 
                 var json = ConvertResx2Json(fileContent);
-                var finalFolder = PathHelper.EnforceSameFolders(sourceFolder, outputFolder, resxFile);
 
                 // always insert culture on JSON file names using the default culture constant
-                var jsonFilePath = Path.GetFileNameWithoutExtension(resxFile).Split('.').Length == 1
-                    ? Path.Combine(finalFolder, Path.GetFileNameWithoutExtension(resxFile) + "." + JsonDefaultCulture + ".json")
-                    : Path.Combine(finalFolder, Path.GetFileNameWithoutExtension(resxFile) + ".json");
-
+                var jsonFilePath = GetJsonPath(PathHelper.EnforceSameFolders(sourceFolder, outputFolder, resxFile), resxFile);
                 File.WriteAllText(jsonFilePath, json);
             }
+        }
+
+        /// <summary>
+        /// Makes sure that localization JSON file names always have culture against them.
+        /// So the default LocalResource.resx file in the C# world would get transformed to LocalResource.en.json if
+        /// the default culture is "en".
+        /// </summary>
+        /// <param name="outputFolder">The target output folder of the JSON file.</param>
+        /// <param name="resxFile">The full path of the RESX file.</param>
+        /// <returns>The full path, including the file name, for the JSON file.</returns>
+        internal virtual string GetJsonPath(string outputFolder, string resxFile)
+        {
+            return Path.GetFileNameWithoutExtension(resxFile).Split('.').Length == 1
+                ? Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(resxFile) + "." + JsonDefaultCulture + ".json")
+                : Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(resxFile) + ".json");
         }
 
         /// <summary>
