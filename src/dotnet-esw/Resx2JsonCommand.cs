@@ -88,7 +88,7 @@
         /// <param name="outputFolder">The target output folder of the JSON file.</param>
         /// <param name="resxFile">The full path of the RESX file.</param>
         /// <returns>The full path, including the file name, for the JSON file.</returns>
-        internal virtual string GetJsonPath(string outputFolder, string resxFile)
+        [NotNull]internal virtual string GetJsonPath([NotNull]string outputFolder, [NotNull]string resxFile)
         {
             return Path.GetFileNameWithoutExtension(resxFile).Split('.').Length == 1
                 ? Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(resxFile) + "." + JsonDefaultCulture + ".json")
@@ -100,7 +100,7 @@
         /// </summary>
         /// <param name="resx">The RESX XML <see cref="string"/>.</param>
         /// <returns>The transformed JSON <see cref="string"/>.</returns>
-        internal virtual string ConvertResx2Json([NotNull]string resx)
+        [NotNull]internal virtual string ConvertResx2Json([NotNull]string resx)
         {
             var resxDictionary = XElement.Parse(resx)
                                          .Elements("data")
@@ -116,7 +116,7 @@
         /// </summary>
         /// <param name="resxFile">The path for the resx file.</param>
         /// <returns>The RESX XML file content after being merged (if merging applies).</returns>
-        internal virtual string GetMergedResource([NotNull]string resxFile)
+        [NotNull]internal virtual string GetMergedResource([NotNull]string resxFile)
         {
             var fileContent = ReadText(resxFile);
             var fileName = Path.GetFileName(resxFile);
@@ -149,7 +149,7 @@
         /// <param name="source">The RESX XML to act as source.</param>
         /// <param name="target">The RESX XML to act as target.</param>
         /// <returns>The merged RESX XML.</returns>
-        internal virtual string MergeResx([NotNull]string source, [NotNull]string target)
+        [NotNull]internal virtual string MergeResx([NotNull]string source, [NotNull]string target)
         {
             var sourceXml = XElement.Parse(source);
             var targetXml = XElement.Parse(target);
@@ -168,7 +168,7 @@
         /// <param name="path">The file to open for reading. </param>
         /// <returns>A string containing all lines of the file.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal virtual string ReadText(string path)
+        [NotNull]internal virtual string ReadText([NotNull]string path)
         {
             return File.ReadAllText(path);
         }
@@ -179,7 +179,7 @@
         /// <param name="path">The file to write to. </param>
         /// <param name="contents">The string to write to the file. </param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal virtual void WriteText(string path, string contents)
+        internal virtual void WriteText([NotNull]string path, string contents)
         {
             File.WriteAllText(path, contents);
         }

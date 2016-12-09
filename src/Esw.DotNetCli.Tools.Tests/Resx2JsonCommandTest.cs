@@ -6,7 +6,6 @@ using System.Xml.Linq;
 using Esw.DotNetCli.Tools;
 using Esw.DotNetCli.Tools.Tests.data;
 using FluentAssertions;
-using Microsoft.Extensions.DependencyModel;
 using Moq;
 using Newtonsoft.Json;
 using Xunit;

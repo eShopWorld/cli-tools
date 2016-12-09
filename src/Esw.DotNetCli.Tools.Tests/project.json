@@ -8,8 +8,8 @@
     "FluentAssertions": "4.*",
     "dotnet-test-xunit": "2.2.0-preview2-build1029",
     "dotnet-esw": "1.0.3-*",
-    "System.Linq": "4.1.0",
-    "System.Reflection": "4.1.0"
+    "System.Linq": "4.3.0",
+    "System.Reflection": "4.3.0"
   },
 
   "frameworks": {

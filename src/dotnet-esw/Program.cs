@@ -5,9 +5,17 @@
     using JetBrains.Annotations;
     using Microsoft.DotNet.Cli.Utils;
 
+    /// <summary>
+    /// Dotnet CLI extension entry point.
+    /// </summary>
     public class Program
     {
-        public static int Main([NotNull] string[] args)
+        /// <summary>
+        /// Dotnet CLI extension entry point.
+        /// </summary>
+        /// <param name="args">The list of arguments for this extension.</param>
+        /// <returns>Executable exit code.</returns>
+        public static int Main([NotNull]string[] args)
         {
             DebugHelper.HandleDebugSwitch(ref args);
 
@@ -40,7 +48,7 @@
             return 0;
         }
 
-        private static void HandleVerboseContext(CommandLineOptions options)
+        private static void HandleVerboseContext([NotNull]CommandLineOptions options)
         {
             bool isVerbose;
             bool.TryParse(Environment.GetEnvironmentVariable(CommandContext.Variables.Verbose), out isVerbose);

@@ -2,6 +2,7 @@
 {
     using System.Collections.Generic;
     using System.Reflection;
+    using JetBrains.Annotations;
     using Microsoft.Extensions.CommandLineUtils;
 
     /// <summary>
@@ -57,7 +58,7 @@
             return options;
         }
 
-        private void Configure(CommandLineApplication app)
+        private void Configure([NotNull]CommandLineApplication app)
         {
             var resxProject = app.Option(
                 "-s|--resx-project <project>",
