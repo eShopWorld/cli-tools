@@ -1,6 +1,6 @@
-﻿using System.IO;
+﻿using Esw.DotNetCli.Tools;
+using System.IO;
 using System.Linq;
-using Esw.DotNetCli.Tools;
 using FluentAssertions;
 using Moq;
 using Xunit;

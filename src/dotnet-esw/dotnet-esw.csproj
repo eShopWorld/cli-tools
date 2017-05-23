@@ -6,13 +6,8 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AssemblyName>dotnet-esw</AssemblyName>
     <OutputType>Exe</OutputType>
-    <PackageId>dotnet-esw</PackageId>
+    <PackageId>Esw.DotNetCli.Tools</PackageId>
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
-    <PackageTargetFallback>$(PackageTargetFallback);dnxcore50;portable-net45+win8+wp8+wpa81</PackageTargetFallback>
-    <RuntimeFrameworkVersion>1.0.4</RuntimeFrameworkVersion>
-    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
-    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Version>1.0.4</Version>
     <Authors>David Rodrigues</Authors>
@@ -22,6 +17,10 @@
     <RepositoryType>open source</RepositoryType>
     <Description>dotnet CLI tools for eShopWorld</Description>
     <Copyright>Copyright 2017</Copyright>
+    <RootNamespace>Esw.DotNetCli.Tools</RootNamespace>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputPath>bin\Debug\netcoreapp1.1\</OutputPath>
