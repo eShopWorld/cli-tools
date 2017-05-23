@@ -1,13 +1,11 @@
 ﻿namespace Esw.DotNetCli.Tools
 {
-    using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Runtime.CompilerServices;
     using System.Xml.Linq;
     using JetBrains.Annotations;
-    using Microsoft.DotNet.ProjectModel;
     using Newtonsoft.Json;
 
     /// <summary>
@@ -62,11 +60,8 @@
                 Directory.CreateDirectory(outputFolder);
             }
 
-            var resxProject = BuildWorkspace.Create().GetProject(sourceFolder);
-            if(resxProject == null)
-                throw new InvalidOperationException($"Couldn't find the source project '{_resxProject}'");
-
-            var resxFiles = resxProject.Files.ResourceFiles.Select(f => f.Key);
+            var resxFiles = Directory.GetFiles(sourceFolder, "*.resx", SearchOption.AllDirectories)
+                                     .Select(Path.GetFullPath);
 
             foreach (var resxFile in resxFiles.OrderBy(f => f?.Split('\\')?.Length))
             {
@@ -105,8 +100,8 @@
             var resxDictionary = XElement.Parse(resx)
                                          .Elements("data")
                                          .ToDictionary(
-                                             x => x.Attribute("name").Value,
-                                             x => x.Element("value").Value);
+                                             x => x.Attribute("name")?.Value,
+                                             x => x.Element("value")?.Value);
 
             return JsonConvert.SerializeObject(resxDictionary);
         }

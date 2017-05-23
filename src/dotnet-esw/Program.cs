@@ -50,8 +50,7 @@
 
         private static void HandleVerboseContext([NotNull]CommandLineOptions options)
         {
-            bool isVerbose;
-            bool.TryParse(Environment.GetEnvironmentVariable(CommandContext.Variables.Verbose), out isVerbose);
+            bool.TryParse(Environment.GetEnvironmentVariable(CommandContext.Variables.Verbose), out bool isVerbose);
 
             options.IsVerbose = options.IsVerbose || isVerbose;
 

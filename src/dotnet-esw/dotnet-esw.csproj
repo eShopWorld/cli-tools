@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <AssemblyName>dotnet-esw</AssemblyName>
+    <OutputType>Exe</OutputType>
+    <PackageId>dotnet-esw</PackageId>
+    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+    <PackageTargetFallback>$(PackageTargetFallback);dnxcore50;portable-net45+win8+wp8+wpa81</PackageTargetFallback>
+    <RuntimeFrameworkVersion>1.0.4</RuntimeFrameworkVersion>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Version>1.0.4</Version>
+    <Authors>David Rodrigues</Authors>
+    <PackageLicenseUrl>https://github.com/eShopWorld/cli-tools/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/eShopWorld/cli-tools</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/eShopWorld/cli-tools</RepositoryUrl>
+    <RepositoryType>open source</RepositoryType>
+    <Description>dotnet CLI tools for eShopWorld</Description>
+    <Copyright>Copyright 2017</Copyright>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>bin\Debug\netcoreapp1.1\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;NETCOREAPP1_1;</DefineConstants>
+    <DocumentationFile />
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="JetBrains.Annotations" Version="10.4.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.2" />
+    <PackageReference Include="Microsoft.ApplicationInsights" Version="2.3.0" />
+    <PackageReference Include="Microsoft.DotNet.Cli.Utils" Version="1.0.1" />
+    <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.1.1" />
+  </ItemGroup>
+</Project>
