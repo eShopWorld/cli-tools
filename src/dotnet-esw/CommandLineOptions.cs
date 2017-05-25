@@ -11,14 +11,14 @@
     public class CommandLineOptions
     {
         /// <summary>
-        /// Gets and sets the project location that contains the resource files we want to transform.
+        /// Gets and sets the folder location that contains the resource files we want to transform.
         /// </summary>
-        public string ResxProject { get; set; }
+        public string ResxFolder { get; set; }
 
         /// <summary>
         /// Gets and sets the project location where the output json files are to be included.
         /// </summary>
-        public string JsonProject { get; set; }
+        public string JsonFolder { get; set; }
 
         /// <summary>
         /// Gets and sets if the help argument was used or not when invoking this console app.
@@ -62,11 +62,11 @@
         {
             var resxProject = app.Option(
                 "-s|--resx-project <project>",
-                "The source project containing the RESX files. It needs to be the path to the proj file, can be absolute or relative.");
+                "The source folder containing the RESX files. Can be absolute or relative.");
 
             var jsonProject = app.Option(
                 "-o|--json-project <project>",
-                "The target project containing the JSON files. It needs to be the path to the proj file, can be absolute or relative.");
+                "The target folder containing the JSON files. Can be absolute or relative.");
 
             var help = app.HelpOption();
             var verbose = app.VerboseOption();
@@ -74,8 +74,8 @@
 
             app.OnExecute(() =>
             {
-                ResxProject = resxProject.Value();
-                JsonProject = jsonProject.Value();
+                ResxFolder = resxProject.Value();
+                JsonFolder = jsonProject.Value();
                 IsHelp = help.HasValue();
                 IsVerbose = verbose.HasValue();
                 RemainingArguments = app.RemainingArguments;

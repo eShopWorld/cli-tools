@@ -30,7 +30,7 @@
                     return 2;
                 }
 
-                var notACommandYet = new Resx2JsonCommand(options.ResxProject, options.JsonProject);
+                var notACommandYet = new Resx2JsonCommand(options.ResxFolder, options.JsonFolder);
                 notACommandYet.Run();
             }
             catch (Exception ex)

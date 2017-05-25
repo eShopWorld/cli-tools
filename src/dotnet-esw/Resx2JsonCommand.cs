@@ -14,8 +14,8 @@
     public class Resx2JsonCommand // THIS IS NOT A COMMAND YET
     {
         private const string TranslationsFolder = "translations";
-        private readonly string _resxProject;
-        private readonly string _outputProject;
+        private readonly string _resxFolder;
+        private readonly string _outputFolder;
 
         internal const string JsonDefaultCulture = "en";
         internal Dictionary<string, List<string>> ResourceDictionary;
@@ -36,12 +36,12 @@
         /// <summary>
         /// Initializes a new instance of <see cref="Resx2JsonCommand"/>.
         /// </summary>
-        /// <param name="resxProject">The path to the VS project that contains the RESX files. Can be absolute or relative.</param>
-        /// <param name="outputProject">The path to the VS project that will contain the JSON files. Can be absolute or relative.</param>
-        public Resx2JsonCommand([NotNull]string resxProject, [NotNull]string outputProject)
+        /// <param name="resxFolder">The path to the folder that contains the RESX files. Can be absolute or relative.</param>
+        /// <param name="outputFolder">The path to the folder that will contain the JSON files. Can be absolute or relative.</param>
+        public Resx2JsonCommand([NotNull]string resxFolder, [NotNull]string outputFolder)
         {
-            _resxProject = resxProject;
-            _outputProject = outputProject;
+            _resxFolder = resxFolder;
+            _outputFolder = outputFolder;
         }
 
         /// <summary>
@@ -50,8 +50,8 @@
         public void Run()
         {
             ResourceDictionary = new Dictionary<string, List<string>>();
-            var sourceFolder = Path.GetDirectoryName(Path.GetFullPath(_resxProject));
-            var outputFolder = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(_outputProject)), "wwwroot", TranslationsFolder);
+            var sourceFolder = Path.GetDirectoryName(Path.GetFullPath(_resxFolder));
+            var outputFolder = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(_outputFolder)), "wwwroot", TranslationsFolder);
 
             PathHelper.CreateDirectory(outputFolder);
 
