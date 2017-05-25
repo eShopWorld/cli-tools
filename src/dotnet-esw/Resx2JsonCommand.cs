@@ -50,8 +50,8 @@
         public void Run()
         {
             ResourceDictionary = new Dictionary<string, List<string>>();
-            var sourceFolder = Path.GetDirectoryName(Path.GetFullPath(_resxFolder));
-            var outputFolder = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(_outputFolder)), "wwwroot", TranslationsFolder);
+            var sourceFolder = Path.GetFullPath(_resxFolder);
+            var outputFolder = Path.GetFullPath(_outputFolder);
 
             PathHelper.CreateDirectory(outputFolder);
 
