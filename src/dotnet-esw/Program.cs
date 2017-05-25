@@ -8,7 +8,7 @@
     /// <summary>
     /// Dotnet CLI extension entry point.
     /// </summary>
-    public class Program
+    public static class Program
     {
         /// <summary>
         /// Dotnet CLI extension entry point.

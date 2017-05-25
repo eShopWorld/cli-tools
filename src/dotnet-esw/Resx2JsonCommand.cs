@@ -13,14 +13,13 @@
     /// </summary>
     public class Resx2JsonCommand // THIS IS NOT A COMMAND YET
     {
-        private const string TranslationsFolder = "translations";
         private readonly string _resxFolder;
         private readonly string _outputFolder;
 
         internal const string JsonDefaultCulture = "en";
         internal Dictionary<string, List<string>> ResourceDictionary;
 
-        public static PathHelper PathHelper = new PathHelper(); // to be INJECTED in the near future! leave it as a prop
+        internal static PathHelper PathHelper = new PathHelper(); // to be INJECTED in the near future! leave it as a prop
 
 
         /// <summary>
