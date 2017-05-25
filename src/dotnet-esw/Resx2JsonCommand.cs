@@ -19,7 +19,7 @@
         internal const string JsonDefaultCulture = "en";
         internal Dictionary<string, List<string>> ResourceDictionary;
 
-        internal static PathHelper PathHelper = new PathHelper(); // to be INJECTED in the near future! leave it as a prop
+        internal PathHelper PathHelper = new PathHelper(); // to be INJECTED in the near future! leave it as a prop
 
 
         /// <summary>
