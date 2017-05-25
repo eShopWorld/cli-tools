@@ -55,11 +55,6 @@
 
             PathHelper.CreateDirectory(outputFolder);
 
-            if (!Directory.Exists(outputFolder))
-            {
-                Directory.CreateDirectory(outputFolder);
-            }
-
             var resxFiles = Directory.GetFiles(sourceFolder, "*.resx", SearchOption.AllDirectories)
                                      .Select(Path.GetFullPath);
 
