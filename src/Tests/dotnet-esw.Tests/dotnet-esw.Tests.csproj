@@ -29,6 +29,7 @@
     <EmbeddedResource Update="data\test.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>test.Designer.cs</LastGenOutput>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
 

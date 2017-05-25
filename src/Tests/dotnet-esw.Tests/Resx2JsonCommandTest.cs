@@ -65,7 +65,7 @@ public class Resx2JsonCommandTest
         [Fact, Trait("Category", "Integration")]
         public void Test_WithEmbebeddedResxResource()
         {
-            var resxPath = AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf(@"\bin", StringComparison.Ordinal)) + @".\data\test.resx";
+            var resxPath = AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf(@"\bin", StringComparison.Ordinal)) + @"\data\test.resx";
             var resx = File.ReadAllText(resxPath);
 
             var json = new Resx2JsonCommand(string.Empty, string.Empty).ConvertResx2Json(resx);
@@ -73,7 +73,7 @@ public class Resx2JsonCommandTest
             var jsonDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
             foreach (var key in jsonDict.Keys)
             {
-                var resourceValue = typeof(test).GetMethod($"get_{key}").Invoke(null, null);
+                var resourceValue = typeof(test).GetMethod($"get_{key}", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, null);
                 Assert.Equal(resourceValue, jsonDict[key]);
             }
         }
