@@ -25,7 +25,7 @@ public class PathHelperTest
 
             var result = new PathHelper().CreateRelativePath(firstPath, secondPath);
 
-            result.ShouldBeEquivalentTo(Path.Combine(new[] { "." }.Concat(folders.Skip(1).Take(2)).ToArray()));
+            result.Should().BeEquivalentTo(Path.Combine(new[] { "." }.Concat(folders.Skip(1).Take(2)).ToArray()));
         }
 
         [Fact, Trait("Category", "Unit")]
@@ -43,7 +43,7 @@ public class PathHelperTest
 
             var result = new PathHelper().CreateRelativePath(firstPath, secondPath);
 
-            result.ShouldBeEquivalentTo(Path.Combine(new[] { "..", ".." }.Concat(folders.Take(1)).ToArray()));
+            result.Should().BeEquivalentTo(Path.Combine(new[] { "..", ".." }.Concat(folders.Take(1)).ToArray()));
         }
 
         [Fact, Trait("Category", "Unit")]
@@ -60,7 +60,7 @@ public class PathHelperTest
 
             var result = new PathHelper().CreateRelativePath(path, path);
 
-            result.ShouldBeEquivalentTo("");
+            result.Should().BeEquivalentTo("");
         }
 
         [Fact, Trait("Category", "Unit")]
