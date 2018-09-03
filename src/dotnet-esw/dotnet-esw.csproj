@@ -1,14 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-
-    <!--REVIEW THIS-->
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AssemblyName>dotnet-esw</AssemblyName>
     <OutputType>Exe</OutputType>
+
     <PackageId>Esw.DotNetCli.Tools</PackageId>
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
@@ -21,6 +17,7 @@
     <Description>dotnet CLI tools for eShopWorld</Description>
     <Copyright>Copyright 2017</Copyright>
     <RootNamespace>Esw.DotNetCli.Tools</RootNamespace>
+
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
