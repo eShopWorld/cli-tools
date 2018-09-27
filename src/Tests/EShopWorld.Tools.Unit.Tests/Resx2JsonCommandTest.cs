@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Xml.Linq;
-using Esw.DotNetCli.Tools;
-using Esw.DotNetCli.Tools.Tests.data;
+using EshopWorld.Tools.Unit.Tests.data;
+using Esw.DotNetCli.Tools.Transforms;
+using EShopWorld.Tools.Common;
 using FluentAssertions;
 using Moq;
 using Newtonsoft.Json;
@@ -63,12 +64,13 @@ public class Resx2JsonCommandTest
     public class ConvertResx2Json
     {
         [Fact, Trait("Category", "Integration")]
-        public void Test_WithEmbebeddedResxResource()
+        public void Test_WithEmbeddedResxResource()
         {
+            var mockPathHelper = new Mock<IPathHelper>();
             var resxPath = AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf(@"\bin", StringComparison.Ordinal)) + @"\data\test.resx";
             var resx = File.ReadAllText(resxPath);
 
-            var json = new Resx2JsonCommand(string.Empty, string.Empty).ConvertResx2Json(resx);
+            var json = new Resx2JsonCommand(string.Empty, string.Empty, mockPathHelper.Object).ConvertResx2Json(resx);
 
             var jsonDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
             foreach (var key in jsonDict.Keys)
@@ -87,8 +89,7 @@ public class Resx2JsonCommandTest
             const string fileContent = "some file content!";
             const string filePath = @"C:\AFolder\AFile.resx";
 
-            var cmdMock = new Mock<Resx2JsonCommand> {CallBase = true};
-            cmdMock.Object.ResourceDictionary = new Dictionary<string, List<string>>();
+            var cmdMock = new Mock<Resx2JsonCommand> { CallBase = true };
             cmdMock.Setup(x => x.ReadText(filePath)).Returns(fileContent);
 
             var result = cmdMock.Object.GetMergedResource(filePath);
@@ -106,9 +107,9 @@ public class Resx2JsonCommandTest
 
             var cmdMock = new Mock<Resx2JsonCommand> { CallBase = true };
             cmdMock.Object.ResourceDictionary = new Dictionary<string, List<string>>
-            {
-                { Path.GetFileName(wrongfilePath), new List<string> { wrongfilePath } }
-            };
+                {
+                    { Path.GetFileName(wrongfilePath), new List<string> { wrongfilePath } }
+                };
 
             cmdMock.Setup(x => x.ReadText(basefilePath)).Returns(basefileContent);
             cmdMock.Setup(x => x.ReadText(wrongfilePath)).Returns(wrongfileContent);
@@ -128,9 +129,9 @@ public class Resx2JsonCommandTest
 
             var cmdMock = new Mock<Resx2JsonCommand> { CallBase = true };
             cmdMock.Object.ResourceDictionary = new Dictionary<string, List<string>>
-            {
-                { Path.GetFileName(mergefilePath), new List<string> { mergefilePath } }
-            };
+                {
+                    { Path.GetFileName(mergefilePath), new List<string> { mergefilePath } }
+                };
 
             cmdMock.Setup(x => x.ReadText(basefilePath)).Returns(basefileContent);
             cmdMock.Setup(x => x.ReadText(mergefilePath)).Returns(mergefileContent);
@@ -143,7 +144,7 @@ public class Resx2JsonCommandTest
         }
 
         [Fact, Trait("Category", "Unit")]
-        public void Test_MergeMutipleSources()
+        public void Test_MergeMultipleSources()
         {
             const string basefileContent = "some file content!";
             const string basefilePath = @"C:\AFolder\AnotherFolder\AndAnotherFolder\AFile.resx";
@@ -154,9 +155,9 @@ public class Resx2JsonCommandTest
 
             var cmdMock = new Mock<Resx2JsonCommand> { CallBase = true };
             cmdMock.Object.ResourceDictionary = new Dictionary<string, List<string>>
-            {
-                { Path.GetFileName(mergefilePath), new List<string> { mergefilePath } }
-            };
+                {
+                    { Path.GetFileName(mergefilePath), new List<string> { mergefilePath } }
+                };
 
             cmdMock.Setup(x => x.ReadText(basefilePath)).Returns(basefileContent);
             cmdMock.Setup(x => x.ReadText(mergefilePath)).Returns(mergefileContent);
@@ -221,13 +222,13 @@ public class Resx2JsonCommandTest
 </root>
 ";
 
-            var result = new Resx2JsonCommand("", "").MergeResx(source, target);
+            var result = new Resx2JsonCommand("", "", new PathHelper()).MergeResx(source, target);
 
             // because we are calling XElement.ToString() there is no <xml> spec ceremony
             // so it needs to start at the root element and end without trivia
             result.Should().Be(@"<root>
   <resheader name=""resmimetype"">
-    <value>text/microsoft-resx</value>
+    <value>text/microsoft-resx</value>B
   </resheader>
   <resheader name=""version"">
     <value>2.0</value>
@@ -248,7 +249,7 @@ public class Resx2JsonCommandTest
     <value>Default_Two</value>
   </data>
 </root>"
-                  );
+            );
         }
 
         [Fact, Trait("Category", "Unit")]
@@ -300,7 +301,7 @@ public class Resx2JsonCommandTest
 </root>
 ";
 
-            var result = new Resx2JsonCommand("", "").MergeResx(source, target);
+            var result = new Resx2JsonCommand("", "", new PathHelper()).MergeResx(source, target);
 
             // because we are calling XElement.ToString() there is no <xml> spec ceremony
             // so it needs to start at the root element and end without trivia
@@ -327,7 +328,7 @@ public class Resx2JsonCommandTest
     <value>Default_Two</value>
   </data>
 </root>"
-                  );
+            );
         }
     }
 

@@ -1,13 +1,14 @@
-﻿namespace Esw.DotNetCli.Tools
-{
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Runtime.CompilerServices;
-    using System.Xml.Linq;
-    using JetBrains.Annotations;
-    using Newtonsoft.Json;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Xml.Linq;
+using EShopWorld.Tools.Common;
+using JetBrains.Annotations;
+using Newtonsoft.Json;
 
+namespace Esw.DotNetCli.Tools.Transforms
+{
     /// <summary>
     /// A command (not yet, but soon) to transform and merge RESX files into their angular JSON equivalents.
     /// </summary>
@@ -15,32 +16,23 @@
     {
         private readonly string _resxFolder;
         private readonly string _outputFolder;
+        private readonly IPathHelper _pathHelper;
 
         internal const string JsonDefaultCulture = "en";
         internal Dictionary<string, List<string>> ResourceDictionary;
-
-        internal PathHelper PathHelper = new PathHelper(); // to be INJECTED in the near future! leave it as a prop
-
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="Resx2JsonCommand"/>.
-        /// </summary>
-        /// <remarks>
-        /// Here for testability purposes only.
-        /// </remarks>
-        internal Resx2JsonCommand()
-        {
-        }
 
         /// <summary>
         /// Initializes a new instance of <see cref="Resx2JsonCommand"/>.
         /// </summary>
         /// <param name="resxFolder">The path to the folder that contains the RESX files. Can be absolute or relative.</param>
         /// <param name="outputFolder">The path to the folder that will contain the JSON files. Can be absolute or relative.</param>
-        public Resx2JsonCommand([NotNull]string resxFolder, [NotNull]string outputFolder)
+        /// <param name="pathHelper"></param>
+        public Resx2JsonCommand([NotNull]string resxFolder, [NotNull]string outputFolder, IPathHelper pathHelper)
         {
             _resxFolder = resxFolder;
             _outputFolder = outputFolder;
+            _pathHelper = pathHelper;
+            ResourceDictionary = new Dictionary<string, List<string>>();
         }
 
         /// <summary>
@@ -48,23 +40,22 @@
         /// </summary>
         public void Run()
         {
-            ResourceDictionary = new Dictionary<string, List<string>>();
             var sourceFolder = Path.GetFullPath(_resxFolder);
             var outputFolder = Path.GetFullPath(_outputFolder);
 
-            PathHelper.CreateDirectory(outputFolder);
+           _pathHelper.CreateDirectory(outputFolder);
 
             var resxFiles = Directory.GetFiles(sourceFolder, "*.resx", SearchOption.AllDirectories)
                                      .Select(Path.GetFullPath);
 
-            foreach (var resxFile in resxFiles.OrderBy(f => f?.Split('\\')?.Length))
+            foreach (var resxFile in resxFiles.OrderBy(f => f?.Split('\\').Length))
             {
                 var fileContent = GetMergedResource(resxFile);
 
                 var json = ConvertResx2Json(fileContent);
 
                 // always insert culture on JSON file names using the default culture constant
-                var jsonFilePath = GetJsonPath(PathHelper.EnforceSameFolders(sourceFolder, outputFolder, resxFile), resxFile);
+                var jsonFilePath = GetJsonPath(_pathHelper.EnforceSameFolders(sourceFolder, outputFolder, resxFile), resxFile);
                 File.WriteAllText(jsonFilePath, json);
             }
         }
@@ -77,7 +68,8 @@
         /// <param name="outputFolder">The target output folder of the JSON file.</param>
         /// <param name="resxFile">The full path of the RESX file.</param>
         /// <returns>The full path, including the file name, for the JSON file.</returns>
-        [NotNull]internal virtual string GetJsonPath([NotNull]string outputFolder, [NotNull]string resxFile)
+        [NotNull]
+        public virtual string GetJsonPath([NotNull]string outputFolder, [NotNull]string resxFile)
         {
             return Path.GetFileNameWithoutExtension(resxFile).Split('.').Length == 1
                 ? Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(resxFile) + "." + JsonDefaultCulture + ".json")
@@ -89,7 +81,8 @@
         /// </summary>
         /// <param name="resx">The RESX XML <see cref="string"/>.</param>
         /// <returns>The transformed JSON <see cref="string"/>.</returns>
-        [NotNull]internal virtual string ConvertResx2Json([NotNull]string resx)
+        [NotNull]
+        public virtual string ConvertResx2Json([NotNull]string resx)
         {
             var resxDictionary = XElement.Parse(resx)
                                          .Elements("data")
@@ -105,7 +98,8 @@
         /// </summary>
         /// <param name="resxFile">The path for the resx file.</param>
         /// <returns>The RESX XML file content after being merged (if merging applies).</returns>
-        [NotNull]internal virtual string GetMergedResource([NotNull]string resxFile)
+        [NotNull]
+        public virtual string GetMergedResource([NotNull]string resxFile)
         {
             var fileContent = ReadText(resxFile);
             var fileName = Path.GetFileName(resxFile);
@@ -138,7 +132,8 @@
         /// <param name="source">The RESX XML to act as source.</param>
         /// <param name="target">The RESX XML to act as target.</param>
         /// <returns>The merged RESX XML.</returns>
-        [NotNull]internal virtual string MergeResx([NotNull]string source, [NotNull]string target)
+        [NotNull]
+        internal virtual string MergeResx([NotNull]string source, [NotNull]string target)
         {
             var sourceXml = XElement.Parse(source);
             var targetXml = XElement.Parse(target);
@@ -157,7 +152,8 @@
         /// <param name="path">The file to open for reading. </param>
         /// <returns>A string containing all lines of the file.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        [NotNull]internal virtual string ReadText([NotNull]string path)
+        [NotNull]
+        public virtual string ReadText([NotNull]string path)
         {
             return File.ReadAllText(path);
         }
@@ -176,7 +172,7 @@
         /// <summary>
         /// Defines methods to support the comparison of RESX data <see cref="XElement"/> objects for equality.
         /// </summary>
-        internal class ResxDataComparer : IEqualityComparer<XElement>
+        public class ResxDataComparer : IEqualityComparer<XElement>
         {
             /// <summary>
             /// Determines whether the specified objects are equal.

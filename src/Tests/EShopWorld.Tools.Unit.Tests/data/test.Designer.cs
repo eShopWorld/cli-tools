@@ -8,11 +8,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Esw.DotNetCli.Tools.Tests.data {
-    using System;
-    using System.Reflection;
-    
-    
+using System.Reflection;
+
+namespace EshopWorld.Tools.Unit.Tests.data {
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>

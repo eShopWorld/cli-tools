@@ -2,13 +2,18 @@
 
   <PropertyGroup>    
     <TargetFramework>netcoreapp2.1</TargetFramework>    
-    <RootNamespace>Esw.DotNetCli.Tools.Tests</RootNamespace>
+    <RootNamespace>EshopWorld.Tools.Unit.Tests</RootNamespace>    
+    <AssemblyName>EshopWorld.Tools.Unit.Tests</AssemblyName>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="fluentassertions" Version="5.4.1" />
+    <PackageReference Include="fluentassertions" Version="5.4.2" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.8.0" />
-    <PackageReference Include="moq" Version="4.9.0" />
+    <PackageReference Include="moq" Version="4.10.0" />
     <PackageReference Include="xunit" Version="2.4.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.0">
       <PrivateAssets>all</PrivateAssets>
@@ -17,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\dotnet-esw\dotnet-esw.csproj" />
+    <ProjectReference Include="..\..\EShopWorld.Tools\EShopWorld.Tools.csproj" />
   </ItemGroup>
 
   <ItemGroup>

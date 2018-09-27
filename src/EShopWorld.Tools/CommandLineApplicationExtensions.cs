@@ -1,8 +1,8 @@
-﻿// ReSharper disable once CheckNamespace
-namespace Microsoft.Extensions.CommandLineUtils
-{
-    using System;
+﻿using System;
+using Microsoft.Extensions.CommandLineUtils;
 
+namespace EShopWorld.Tools
+{
     /// <summary>
     /// Custom extensions to <see cref="CommandLineApplication"/> that setup argument options for this extension.
     /// </summary>

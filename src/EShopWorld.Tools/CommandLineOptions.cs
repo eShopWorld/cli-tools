@@ -1,10 +1,10 @@
-﻿namespace Esw.DotNetCli.Tools
-{
-    using System.Collections.Generic;
-    using System.Reflection;
-    using JetBrains.Annotations;
-    using Microsoft.Extensions.CommandLineUtils;
+﻿using System.Collections.Generic;
+using System.Reflection;
+using JetBrains.Annotations;
+using Microsoft.Extensions.CommandLineUtils;
 
+namespace EShopWorld.Tools
+{
     /// <summary>
     /// Wraps the <see cref="CommandLineApplication"/> args functionallity into specifics for this console app.
     /// </summary>

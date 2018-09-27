@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("eShopWorld")]
-[assembly: AssemblyProduct("Esw.DotNetCli.Tools")]
+[assembly: AssemblyProduct("eShopWorld.Tools")]
 [assembly: AssemblyTrademark("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible
@@ -18,5 +18,5 @@ using System.Runtime.InteropServices;
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("885f83ea-5efa-4d2a-ba29-b1505944f379")]
 
-[assembly: InternalsVisibleTo("dotnet-esw.Tests")]
+[assembly: InternalsVisibleTo("EshopWorld.Tools.Unit.Tests")]
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]

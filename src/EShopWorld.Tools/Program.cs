@@ -1,4 +1,7 @@
-﻿namespace Esw.DotNetCli.Tools
+﻿using Esw.DotNetCli.Tools.Transforms;
+using EShopWorld.Tools.Common;
+
+namespace EShopWorld.Tools
 {
     using System;
     using System.Diagnostics;
@@ -30,7 +33,8 @@
                     return 2;
                 }
 
-                var notACommandYet = new Resx2JsonCommand(options.ResxFolder, options.JsonFolder);
+                //todo ioc PathHelper
+                var notACommandYet = new Resx2JsonCommand(options.ResxFolder, options.JsonFolder, new PathHelper());
                 notACommandYet.Run();
             }
             catch (Exception ex)

@@ -5,18 +5,18 @@
     <AssemblyName>dotnet-esw</AssemblyName>
     <OutputType>Exe</OutputType>
 
-    <PackageId>Esw.DotNetCli.Tools</PackageId>
+    <PackageId>Eshopworld.Tools</PackageId>
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Version>1.1.0</Version>
-    <Authors>David Rodrigues</Authors>
+    <Authors>David Rodrigues, David Guerin</Authors>
     <PackageLicenseUrl>https://github.com/eShopWorld/cli-tools/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/eShopWorld/cli-tools</PackageProjectUrl>
     <RepositoryUrl>https://github.com/eShopWorld/cli-tools</RepositoryUrl>
     <RepositoryType>open source</RepositoryType>
     <Description>dotnet CLI tools for eShopWorld</Description>
-    <Copyright>Copyright 2017</Copyright>
-    <RootNamespace>Esw.DotNetCli.Tools</RootNamespace>
+    <Copyright>Copyright 2018</Copyright>
+    <RootNamespace>EShopWorld.Tools</RootNamespace>
 
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
@@ -34,5 +34,9 @@
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="Microsoft.DotNet.Cli.Utils" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EShopWorld.Tools.Common\EShopWorld.Tools.Common.csproj" />
   </ItemGroup>
 </Project>
