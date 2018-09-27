@@ -4,7 +4,8 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AssemblyName>dotnet-esw</AssemblyName>
     <OutputType>Exe</OutputType>
-
+    <IsPackable>true</IsPackable>
+    <PackAsTool>true</PackAsTool>
     <PackageId>Eshopworld.Tools</PackageId>
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
@@ -13,11 +14,10 @@
     <PackageLicenseUrl>https://github.com/eShopWorld/cli-tools/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/eShopWorld/cli-tools</PackageProjectUrl>
     <RepositoryUrl>https://github.com/eShopWorld/cli-tools</RepositoryUrl>
-    <RepositoryType>open source</RepositoryType>
+    <RepositoryType>Open Source</RepositoryType>
     <Description>dotnet CLI tools for eShopWorld</Description>
     <Copyright>Copyright 2018</Copyright>
     <RootNamespace>EShopWorld.Tools</RootNamespace>
-
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
@@ -38,5 +38,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\EShopWorld.Tools.Common\EShopWorld.Tools.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="AutoRest\" />
   </ItemGroup>
 </Project>
