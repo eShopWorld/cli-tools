@@ -7,7 +7,7 @@ using EShopWorld.Tools.Common;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
 
-namespace Esw.DotNetCli.Tools.Transforms
+namespace EShopWorld.Tools.Transforms
 {
     /// <summary>
     /// A command (not yet, but soon) to transform and merge RESX files into their angular JSON equivalents.
@@ -19,7 +19,10 @@ namespace Esw.DotNetCli.Tools.Transforms
         private readonly IPathHelper _pathHelper;
 
         internal const string JsonDefaultCulture = "en";
-        internal Dictionary<string, List<string>> ResourceDictionary;
+        internal Dictionary<string, List<string>> ResourceDictionary = new Dictionary<string, List<string>>();
+
+        internal Resx2JsonCommand()
+        {}
 
         /// <summary>
         /// Initializes a new instance of <see cref="Resx2JsonCommand"/>.
@@ -32,7 +35,6 @@ namespace Esw.DotNetCli.Tools.Transforms
             _resxFolder = resxFolder;
             _outputFolder = outputFolder;
             _pathHelper = pathHelper;
-            ResourceDictionary = new Dictionary<string, List<string>>();
         }
 
         /// <summary>
@@ -43,7 +45,7 @@ namespace Esw.DotNetCli.Tools.Transforms
             var sourceFolder = Path.GetFullPath(_resxFolder);
             var outputFolder = Path.GetFullPath(_outputFolder);
 
-           _pathHelper.CreateDirectory(outputFolder);
+            _pathHelper.CreateDirectory(outputFolder);
 
             var resxFiles = Directory.GetFiles(sourceFolder, "*.resx", SearchOption.AllDirectories)
                                      .Select(Path.GetFullPath);
