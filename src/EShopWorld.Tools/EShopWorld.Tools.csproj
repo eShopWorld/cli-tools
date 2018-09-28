@@ -4,8 +4,8 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AssemblyName>dotnet-esw</AssemblyName>
     <OutputType>Exe</OutputType>
-    <IsPackable>true</IsPackable>
-    <PackAsTool>true</PackAsTool>
+    <!--<IsPackable>true</IsPackable>
+    <PackAsTool>true</PackAsTool>-->
     <PackageId>Eshopworld.Tools</PackageId>
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
@@ -31,9 +31,9 @@
 
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" Version="2018.2.1" />
+    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.2.5" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="Microsoft.DotNet.Cli.Utils" Version="2.0.0" />
-    <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.1.1" />
   </ItemGroup>
 
   <ItemGroup>

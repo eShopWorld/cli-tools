@@ -33,8 +33,11 @@ namespace EShopWorld.Tools
                     return 2;
                 }
 
+                //switch here for different commands ie: autorest/transforms
+
+
                 //todo ioc PathHelper
-                var notACommandYet = new Resx2JsonCommand(options.ResxFolder, options.JsonFolder, new PathHelper());
+                var notACommandYet = new Resx2JsonCommand(options.Resx2JsonCommandLineOptions.ResxFolder, options.Resx2JsonCommandLineOptions.JsonFolder, new PathHelper());
                 notACommandYet.Run();
             }
             catch (Exception ex)
