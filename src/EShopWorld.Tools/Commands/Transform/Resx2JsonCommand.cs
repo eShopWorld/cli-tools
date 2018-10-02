@@ -14,6 +14,7 @@ namespace EShopWorld.Tools.Transforms
     /// A command to transform and merge RESX files into their angular JSON equivalents.
     /// </summary>
     [Command("transform", Description = "Transforms Resx files into Json for use in Angular Projects"), HelpOption]
+    //[Subcommand("run", typeof(Run))]
     public class Resx2JsonCommand : CommandBase
     {
         private readonly IPathHelper _pathHelper;
@@ -21,7 +22,10 @@ namespace EShopWorld.Tools.Transforms
         internal const string JsonDefaultCulture = "en";
         internal Dictionary<string, List<string>> ResourceDictionary = new Dictionary<string, List<string>>();
 
-        internal Resx2JsonCommand()
+        /// <summary>
+        /// 
+        /// </summary>
+        public Resx2JsonCommand()
         { }
 
         /// <summary>
@@ -52,18 +56,18 @@ namespace EShopWorld.Tools.Transforms
         /// <summary>
         /// Runs this command.
         /// </summary>
-        public void Run()
+        private void OnExecute(IConsole console)
         {
             //TODO put into generic guard method in base class
-            if(string.IsNullOrWhiteSpace(ResxProject))
+            if (string.IsNullOrWhiteSpace(ResxProject))
             {
-                _console.WriteLine("--resx-project cannot be null or empty");
+                console.WriteLine("--resx-project cannot be null or empty");
                 return;
             }
 
-            if(string.IsNullOrWhiteSpace("--json-project"))
+            if (string.IsNullOrWhiteSpace("--json-project"))
             {
-                _console.WriteLine("--json-project cannot be null or empty");
+                console.WriteLine("--json-project cannot be null or empty");
             }
 
             var sourceFolder = Path.GetFullPath(ResxProject);
@@ -85,6 +89,12 @@ namespace EShopWorld.Tools.Transforms
                 File.WriteAllText(jsonFilePath, json);
             }
         }
+
+        //[Command("run", Description = "Runs the transforms")]
+        //private class Run
+        //{
+
+        //}
 
         /// <summary>
         /// Makes sure that localization JSON file names always have culture against them.

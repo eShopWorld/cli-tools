@@ -1,8 +1,7 @@
 {
   "profiles": {
     "dotnet-esw": {
-      "commandName": "Project",
-      "commandLineArgs": "-a http://www.eshopworld.com/swagger"
+      "commandName": "Project"
     }
   }
 }
