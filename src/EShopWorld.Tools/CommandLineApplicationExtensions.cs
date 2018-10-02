@@ -6,6 +6,7 @@ namespace EShopWorld.Tools
     /// <summary>
     /// Custom extensions to <see cref="CommandLineApplication"/> that setup argument options for this extension.
     /// </summary>
+    [Obsolete]
     public static class CommandLineApplicationExtensions
     {
         /// <summary>

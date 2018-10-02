@@ -19,7 +19,9 @@ namespace EshopWorld.Tools.Unit.Tests
     {
         public class Run
         {
-            [Fact, Trait("Category", "Integration")]
+            [Fact] 
+            [Trait("Category", "Integration")]
+            [Trait("SubCommand", "Transform")]
             public void TheOneTestToRuleThemAll()
             {
                 // #1 clean up before the test
@@ -35,7 +37,9 @@ namespace EshopWorld.Tools.Unit.Tests
 
         public class GetJsonPath
         {
-            [Fact, Trait("Category", "Integration")]
+            [Fact]
+            [Trait("Category", "Integration")]
+            [Trait("SubCommand", "Transform")]
             public void Test_WithDefaultCulture()
             {
                 const string path = @"C:\SomeFolder\AResource.resx";
@@ -49,7 +53,9 @@ namespace EshopWorld.Tools.Unit.Tests
                 result.Should().Be(Path.Combine(Path.GetDirectoryName(outputPath), expectedJsonFile));
             }
 
-            [Fact, Trait("Category", "Integration")]
+            [Fact]
+            [Trait("Category", "Integration")]
+            [Trait("SubCommand", "Transform")]
             public void Test_WithSpecificCulture()
             {
                 const string path = @"C:\SomeFolder\AResource.it-it.resx";
@@ -66,7 +72,9 @@ namespace EshopWorld.Tools.Unit.Tests
 
         public class ConvertResx2Json
         {
-            [Fact, Trait("Category", "Integration")]
+            [Fact]
+            [Trait("Category", "Integration")]
+            [Trait("SubCommand", "Transform")]
             public void Test_WithEmbeddedResxResource()
             {
                 var mockPathHelper = new Mock<IPathHelper>();
@@ -90,7 +98,9 @@ namespace EshopWorld.Tools.Unit.Tests
 
         public class GetMergedResource
         {
-            [Fact, Trait("Category", "Unit")]
+            [Fact]
+            [Trait("Category", "Unit")]
+            [Trait("SubCommand", "Transform")]
             public void Test_BaseResxDoesNotMerge()
             {
                 const string fileContent = "some file content!";
@@ -104,7 +114,9 @@ namespace EshopWorld.Tools.Unit.Tests
                 result.Should().Be(fileContent);
             }
 
-            [Fact, Trait("Category", "Unit")]
+            [Fact]
+            [Trait("Category", "Unit")]
+            [Trait("SubCommand", "Transform")]
             public void Test_MergeWithWrongPath()
             {
                 const string basefileContent = "some file content!";
@@ -126,7 +138,9 @@ namespace EshopWorld.Tools.Unit.Tests
                 result.Should().Be(basefileContent);
             }
 
-            [Fact, Trait("Category", "Unit")]
+            [Fact]
+            [Trait("Category", "Unit")]
+            [Trait("SubCommand", "Transform")]
             public void Test_MergeSingleLevel()
             {
                 const string basefileContent = "some file content!";
@@ -150,7 +164,9 @@ namespace EshopWorld.Tools.Unit.Tests
                 result.Should().Be(mergefileContent);
             }
 
-            [Fact, Trait("Category", "Unit")]
+            [Fact]
+            [Trait("Category", "Unit")]
+            [Trait("SubCommand", "Transform")]
             public void Test_MergeMultipleSources()
             {
                 const string basefileContent = "some file content!";
@@ -180,7 +196,9 @@ namespace EshopWorld.Tools.Unit.Tests
 
         public class MergeResx
         {
-            [Fact, Trait("Category", "Unit")]
+            [Fact]
+            [Trait("Category", "Unit")]
+            [Trait("SubCommand", "Transform")]
             public void Test_SourceWithMore_ThanTarget()
             {
                 const string source = @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -262,7 +280,9 @@ namespace EshopWorld.Tools.Unit.Tests
 </root>");
             }
 
-            [Fact, Trait("Category", "Unit")]
+            [Fact]
+            [Trait("Category", "Unit")]
+            [Trait("SubCommand", "Transform")]
             public void Test_SourceWithLess_ThanTarget()
             {
                 const string source = @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -350,7 +370,9 @@ namespace EshopWorld.Tools.Unit.Tests
         {
             public class EqualsImp
             {
-                [Fact, Trait("Category", "Unit")]
+                [Fact]
+                [Trait("Category", "Unit")]
+                [Trait("SubCommand", "Transform")]
                 public void Test_WithDifferentNames()
                 {
                     var element1 = new XElement("data", new XAttribute("name", "1"));
@@ -360,7 +382,9 @@ namespace EshopWorld.Tools.Unit.Tests
                     result.Should().BeFalse();
                 }
 
-                [Fact, Trait("Category", "Unit")]
+                [Fact]
+                [Trait("Category", "Unit")]
+                [Trait("SubCommand", "Transform")]
                 public void Test_WithSameNames()
                 {
                     const string nameValue = "the same name";
@@ -371,7 +395,9 @@ namespace EshopWorld.Tools.Unit.Tests
                     result.Should().BeTrue();
                 }
 
-                [Fact, Trait("Category", "Unit")]
+                [Fact]
+                [Trait("Category", "Unit")]
+                [Trait("SubCommand", "Transform")]
                 public void Test_WithTwoNulls()
                 {
                     var result = new Resx2JsonCommand.ResxDataComparer().Equals(null, null);
@@ -379,7 +405,9 @@ namespace EshopWorld.Tools.Unit.Tests
                     result.Should().BeTrue();
                 }
 
-                [Fact, Trait("Category", "Unit")]
+                [Fact]
+                [Trait("Category", "Unit")]
+                [Trait("SubCommand", "Transform")]
                 public void Test_WithFirstNull()
                 {
                     var result = new Resx2JsonCommand.ResxDataComparer().Equals(null, new XElement("something"));
@@ -387,7 +415,9 @@ namespace EshopWorld.Tools.Unit.Tests
                     result.Should().BeFalse();
                 }
 
-                [Fact, Trait("Category", "Unit")]
+                [Fact]
+                [Trait("Category", "Unit")]
+                [Trait("SubCommand", "Transform")]
                 public void Test_WithSecondNull()
                 {
                     var result = new Resx2JsonCommand.ResxDataComparer().Equals(new XElement("something"), null);
@@ -398,7 +428,9 @@ namespace EshopWorld.Tools.Unit.Tests
 
             public class GetHashCodeImp
             {
-                [Fact, Trait("Category", "Unit")]
+                [Fact]
+                [Trait("Category", "Unit")]
+                [Trait("SubCommand", "Transform")]
                 public void Test_WithProperXElement()
                 {
                     const string nameValue = "some name";
@@ -409,7 +441,9 @@ namespace EshopWorld.Tools.Unit.Tests
                     result.Should().Be(nameValue.GetHashCode());
                 }
 
-                [Fact, Trait("Category", "Unit")]
+                [Fact]
+                [Trait("Category", "Unit")]
+                [Trait("SubCommand", "Transform")]
                 public void Test_WithNull()
                 {
                     var result = new Resx2JsonCommand.ResxDataComparer().GetHashCode(null);
@@ -417,7 +451,9 @@ namespace EshopWorld.Tools.Unit.Tests
                     result.Should().Be(0);
                 }
 
-                [Fact, Trait("Category", "Unit")]
+                [Fact]
+                [Trait("Category", "Unit")]
+                [Trait("SubCommand", "Transform")]
                 public void Test_WithElementWithoutName()
                 {
                     var element = new XElement("data");
