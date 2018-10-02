@@ -4,9 +4,10 @@ using System.IO;
 using System.Reflection;
 using System.Xml.Linq;
 using EshopWorld.Tools.Unit.Tests.Data;
-using EShopWorld.Tools.Common;
+using EShopWorld.Tools;
 using EShopWorld.Tools.Transforms;
 using FluentAssertions;
+using McMaster.Extensions.CommandLineUtils;
 using Moq;
 using Newtonsoft.Json;
 using Xunit;
@@ -72,7 +73,11 @@ namespace EshopWorld.Tools.Unit.Tests
                 var resxPath = AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf(@"\bin", StringComparison.Ordinal)) + @"\data\test.resx";
                 var resx = File.ReadAllText(resxPath);
 
-                var json = new Resx2JsonCommand(string.Empty, string.Empty, mockPathHelper.Object).ConvertResx2Json(resx);
+                var json = new Resx2JsonCommand(new PathHelper(), new Mock<IConsole>().Object)
+                {
+                    ResxProject = string.Empty,
+                    JsonProject = string.Empty
+                }.ConvertResx2Json(resx);
 
                 var jsonDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
                 foreach (var key in jsonDict.Keys)
@@ -224,7 +229,11 @@ namespace EshopWorld.Tools.Unit.Tests
 </root>
 ";
 
-                var result = new Resx2JsonCommand("", "", new PathHelper()).MergeResx(source, target);
+                var result = new Resx2JsonCommand(new PathHelper(), new Mock<IConsole>().Object)
+                {
+                    JsonProject = string.Empty,
+                    ResxProject = string.Empty
+                }.MergeResx(source, target);
 
                 // because we are calling XElement.ToString() there is no <xml> spec ceremony
                 // so it needs to start at the root element and end without trivia
@@ -302,7 +311,11 @@ namespace EshopWorld.Tools.Unit.Tests
 </root>
 ";
 
-                var result = new Resx2JsonCommand("", "", new PathHelper()).MergeResx(source, target);
+                var result = new Resx2JsonCommand(new PathHelper(), new Mock<IConsole>().Object)
+                {
+                    JsonProject = string.Empty,
+                    ResxProject = string.Empty
+                }.MergeResx(source, target);
 
                 // because we are calling XElement.ToString() there is no <xml> spec ceremony
                 // so it needs to start at the root element and end without trivia

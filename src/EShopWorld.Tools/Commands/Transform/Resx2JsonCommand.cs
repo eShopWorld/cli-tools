@@ -1,49 +1,73 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
-using EShopWorld.Tools.Common;
 using JetBrains.Annotations;
+using McMaster.Extensions.CommandLineUtils;
 using Newtonsoft.Json;
 
 namespace EShopWorld.Tools.Transforms
 {
     /// <summary>
-    /// A command (not yet, but soon) to transform and merge RESX files into their angular JSON equivalents.
+    /// A command to transform and merge RESX files into their angular JSON equivalents.
     /// </summary>
-    public class Resx2JsonCommand // THIS IS NOT A COMMAND YET
+    [Command("transform", Description = "Transforms Resx files into Json for use in Angular Projects"), HelpOption]
+    public class Resx2JsonCommand : CommandBase
     {
-        private readonly string _resxFolder;
-        private readonly string _outputFolder;
         private readonly IPathHelper _pathHelper;
-
+        private readonly IConsole _console;
         internal const string JsonDefaultCulture = "en";
         internal Dictionary<string, List<string>> ResourceDictionary = new Dictionary<string, List<string>>();
 
         internal Resx2JsonCommand()
-        {}
+        { }
 
         /// <summary>
         /// Initializes a new instance of <see cref="Resx2JsonCommand"/>.
         /// </summary>
-        /// <param name="resxFolder">The path to the folder that contains the RESX files. Can be absolute or relative.</param>
-        /// <param name="outputFolder">The path to the folder that will contain the JSON files. Can be absolute or relative.</param>
         /// <param name="pathHelper"></param>
-        public Resx2JsonCommand([NotNull]string resxFolder, [NotNull]string outputFolder, IPathHelper pathHelper)
+        /// <param name="console"></param>
+        public Resx2JsonCommand(IPathHelper pathHelper, IConsole console)
         {
-            _resxFolder = resxFolder;
-            _outputFolder = outputFolder;
             _pathHelper = pathHelper;
+            _console = console;
         }
+
+        /// <summary>
+        /// The path to the folder that contains the RESX files. Can be absolute or relative.
+        /// </summary>
+        [Option("-s|--resx-project <project>", Description = "The source folder containing the RESX files. Can be absolute or relative.")]
+        [Required]
+        public string ResxProject { get; set; }
+
+        /// <summary>
+        /// The path to the folder that will contain the JSON files. Can be absolute or relative.
+        /// </summary>
+        [Option("-o|--json-project <project>", Description = "The target folder containing the JSON files. Can be absolute or relative.")]
+        [Required]
+        public string JsonProject { get; set; }
 
         /// <summary>
         /// Runs this command.
         /// </summary>
         public void Run()
         {
-            var sourceFolder = Path.GetFullPath(_resxFolder);
-            var outputFolder = Path.GetFullPath(_outputFolder);
+            //TODO put into generic guard method in base class
+            if(string.IsNullOrWhiteSpace(ResxProject))
+            {
+                _console.WriteLine("--resx-project cannot be null or empty");
+                return;
+            }
+
+            if(string.IsNullOrWhiteSpace("--json-project"))
+            {
+                _console.WriteLine("--json-project cannot be null or empty");
+            }
+
+            var sourceFolder = Path.GetFullPath(ResxProject);
+            var outputFolder = Path.GetFullPath(JsonProject);
 
             _pathHelper.CreateDirectory(outputFolder);
 

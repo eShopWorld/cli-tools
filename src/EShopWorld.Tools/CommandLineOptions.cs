@@ -1,57 +1,17 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using JetBrains.Annotations;
 using McMaster.Extensions.CommandLineUtils;
 
 namespace EShopWorld.Tools
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    public class Resx2JsonCommandLineOptions
-    {
-        /// <summary>
-        /// Gets and sets the folder location that contains the resource files we want to transform.
-        /// </summary>
-        public string ResxFolder { get; set; }
-
-        /// <summary>
-        /// Gets and sets the project location where the output json files are to be included.
-        /// </summary>
-        public string JsonFolder { get; set; }
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public class AutoRestCommandLineOptions
-    {
-        /// <summary>
-        /// Gets and sets the folder location that contains the resource files we want to transform.
-        /// </summary>
-        public string ResxFolder { get; set; }
-
-        /// <summary>
-        /// Gets and sets the project location where the output json files are to be included.
-        /// </summary>
-        public string JsonFolder { get; set; }
-    }
-
-    /// <summary>
+    // <summary>
     /// Wraps the <see cref="CommandLineApplication"/> args functionality into specifics for this console app.
     /// </summary>
+    [Obsolete]
     public class CommandLineOptions
     {
-        /// <summary>
-        /// Gets and sets if the help argument was used or not when invoking this console app.
-        /// </summary>
-        public Resx2JsonCommandLineOptions Resx2JsonCommandLineOptions { get; set; }
-
-        /// <summary>
-        /// Gets and sets if the help argument was used or not when invoking this console app.
-        /// </summary>
-        public AutoRestCommandLineOptions AutoRestCommandLineOptions { get; set; }
-
         /// <summary>
         /// Gets and sets if the help argument was used or not when invoking this console app.
         /// </summary>
@@ -90,55 +50,54 @@ namespace EShopWorld.Tools
                 FullName = "eShopWorld .NET Core CLI Tools"
             };
 
-            var options = new CommandLineOptions();
-
-            options.Configure(app);
-
-            app.Execute(args);
-            options.IsHelp = app.IsShowingInformation;
-
-            return options;
-        }
-
-        private void Configure([NotNull]CommandLineApplication app)
-        {
-            //todo move to transform help
-            var resxProject = app.Option(
-                "-s|--resx-project <project>",
-                "The source folder containing the RESX files. Can be absolute or relative.");
-
-            var jsonProject = app.Option(
-                "-o|--json-project <project>",
-                "The target folder containing the JSON files. Can be absolute or relative.");
-
-            var transformOption = app.Option(
-                "-t|--transform",
-                "Transform resx files to JSON");
-
-            var autoRestOption = app.Option(
-                "-a|--autorest <URI>",
-                "The path to the swagger documentation to create an auto rest client");
-
-            var help = app.HelpOption("-?|-h|--help");
-            var verbose = app.VerboseOption();
-            app.VersionOption(() => AssemblyVersion);
-
-            app.OnExecute(() =>
+            app.HelpOption(inherited: true);
+            app.Command("transform", cmd =>
             {
-                Transform = transformOption.Value();
-                AutoRest = autoRestOption.Value();
-                //todo cleanup
-                ////ResxFolder = resxProject.Value();
-                //JsonFolder = jsonProject.Value();
-                IsHelp = help.HasValue();
-                IsVerbose = verbose.HasValue();
-                RemainingArguments = app.RemainingArguments;
+                cmd.OnExecute(() =>
+                {
+                    cmd.ShowHelp();
+                    return 1;
+                });
             });
+
+            //options.Configure(app);
+
+            //app.Execute(args);
+            //options.IsHelp = app.IsShowingInformation;
+
+            //return options;
+            return null;
         }
 
-        private static readonly Assembly ThisAssembly = typeof(CommandLineOptions).GetTypeInfo().Assembly;
+        //private void Configure([NotNull]CommandLineApplication app)
+        //{
+        //    app.Command("transform", doIt => {
 
-        private static readonly string AssemblyVersion = ThisAssembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
-                                                         ?? ThisAssembly.GetName().Version.ToString();
+        //        doIt. = new Resx2JsonCommand();
+        //    });
+
+        //    var transformOption = app.Option(
+        //        "-t|--transform",
+        //        "Transform resx files to JSON");
+
+        //    var autoRestOption = app.Option(
+        //        "-a|--autorest <URI>",
+        //        "The path to the swagger documentation to create an auto rest client");
+
+        //    var help = app.HelpOption("-?|-h|--help");
+        //    var verbose = app.VerboseOption();
+
+        //    app.OnExecute(() =>
+        //    {
+        //        Transform = transformOption.Value();
+        //        AutoRest = autoRestOption.Value();
+        //        //todo cleanup
+        //        ////ResxFolder = resxProject.Value();
+        //        //JsonFolder = jsonProject.Value();
+        //        IsHelp = help.HasValue();
+        //        IsVerbose = verbose.HasValue();
+        //        RemainingArguments = app.RemainingArguments;
+        //    });
+        //}
     }
 }

@@ -37,10 +37,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\EShopWorld.Tools.Common\EShopWorld.Tools.Common.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="AutoRest\" />
   </ItemGroup>
 </Project>

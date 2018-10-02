@@ -1,6 +1,6 @@
 ﻿using System.IO;
 using System.Linq;
-using EShopWorld.Tools.Common;
+using EShopWorld.Tools;
 using FluentAssertions;
 using Moq;
 using Xunit;
