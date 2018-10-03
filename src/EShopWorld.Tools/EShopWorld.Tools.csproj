@@ -2,14 +2,17 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <AssemblyName>dotnet-esw</AssemblyName>
+    <AssemblyName>EShopWorld.Tools</AssemblyName>
+    <RootNamespace>EShopWorld.Tools</RootNamespace>
     <OutputType>Exe</OutputType>
-    <!--<IsPackable>true</IsPackable>
-    <PackAsTool>true</PackAsTool>-->
-    <PackageId>Eshopworld.Tools</PackageId>
+    <PackAsTool>true</PackAsTool>
+    <PackageOutputPath>./nupkg</PackageOutputPath>
+    <PackageId>dotnet-esw</PackageId>
+    <ToolCommandName>dotnet-esw</ToolCommandName>
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Version>1.1.0</Version>
+    <Owners>eShopWorld</Owners>
     <Authors>David Rodrigues, David Guerin</Authors>
     <PackageLicenseUrl>https://github.com/eShopWorld/cli-tools/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/eShopWorld/cli-tools</PackageProjectUrl>
@@ -17,10 +20,7 @@
     <RepositoryType>Open Source</RepositoryType>
     <Description>dotnet CLI tools for eShopWorld</Description>
     <Copyright>Copyright 2018</Copyright>
-    <RootNamespace>EShopWorld.Tools</RootNamespace>
-    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
-    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">

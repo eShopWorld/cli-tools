@@ -31,7 +31,7 @@ namespace EShopWorld.Tools.Commands.AutoRest
         [Command("run", Description = "Generates the AutoRest Client Code")]
         private class Run
         {
-            [Option("-s|--swagger <name>",
+            [Option("-s|--swagger <URI>",
                 Description = "url to the swagger JSON file",
                 ShowInHelpText = true)]
             [Required]
