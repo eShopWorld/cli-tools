@@ -41,7 +41,7 @@ namespace EShopWorld.Tools.Commands.AutoRest
 
         public virtual void Render(ProjectFileViewModel model, string outputFile)
         {
-            Run(outputFile, model, "Views\\ProjectFile.cshtml");
+            Run(outputFile, model, "Commands\\AutoRest\\Views\\ProjectFile.cshtml");
         }
 
         public virtual string RenderViewToString(ProjectFileViewModel viewModel, string viewPath)
@@ -118,7 +118,6 @@ namespace EShopWorld.Tools.Commands.AutoRest
             throw new InvalidOperationException(errorMessage);
         }
     }
-
 
     public static class SwaggerJsonParser
     {

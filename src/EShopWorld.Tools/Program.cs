@@ -1,6 +1,7 @@
 ﻿using EShopWorld.Tools.Commands.AutoRest;
 using EShopWorld.Tools.Transforms;
 using McMaster.Extensions.CommandLineUtils;
+using System.Diagnostics;
 
 namespace EShopWorld.Tools
 {
@@ -9,7 +10,7 @@ namespace EShopWorld.Tools
     /// </summary>
     [Command(Name = "esw", Description = "eShopWorld CLI tool set")]
     [Subcommand("transform", typeof(Resx2JsonCommand))] //todo when 2.3 McMaster.Extensions.CommandLineUtils use the new subcommand convention
-    //[Subcommand("autorest", typeof(AutoRestCommand))] //todo when 2.3 McMaster.Extensions.CommandLineUtils use the new subcommand convention
+    [Subcommand("autorest", typeof(AutoRestCommand))] //todo when 2.3 McMaster.Extensions.CommandLineUtils use the new subcommand convention
     [VersionOptionFromMember("--version", MemberName = nameof(GetVersion))]
     public class Program : CommandBase
     {
@@ -30,7 +31,15 @@ namespace EShopWorld.Tools
         {
             console.Error.WriteLine("You must specify a subcommand to execute.");
             app.ShowHelp();
+
+#if DEBUG
+            if (Debugger.IsAttached)
+            {
+                Debugger.Break();
+            }
+#endif
             return 1;
+
         }
     }
 }

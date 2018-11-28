@@ -1,7 +1,8 @@
 {
   "profiles": {
     "dotnet-esw": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "commandLineArgs": "autorest run -s https://tahoe-api.ci.eshopworld.net/swagger/v1/swagger.json --output test/"
     }
   }
 }

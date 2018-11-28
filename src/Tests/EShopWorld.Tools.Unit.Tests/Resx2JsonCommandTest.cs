@@ -106,7 +106,7 @@ namespace EshopWorld.Tools.Unit.Tests
                 const string fileContent = "some file content!";
                 const string filePath = @"C:\AFolder\AFile.resx";
 
-                var cmdMock = new Mock<Resx2JsonCommand> { CallBase = true };
+                var cmdMock = new Mock<Run> { CallBase = true };
                 cmdMock.Setup(x => x.ReadText(filePath)).Returns(fileContent);
 
                 var result = cmdMock.Object.GetMergedResource(filePath);

@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 
 namespace EShopWorld.Tools.Commands.AutoRest
@@ -22,55 +23,52 @@ namespace EShopWorld.Tools.Commands.AutoRest
     [Subcommand("run", typeof(Run))]
     public class AutoRestCommand : CommandBase
     {
-        private int OnExecute(IConsole console)
+        private int OnExecute(CommandLineApplication app, IConsole console)
         {
-            console.Error.WriteLine("You must specify an action. See --help for more details.");
+            console.Error.WriteLine("You must specify a subcommand");
+            app.ShowHelp();
+
+#if DEBUG
+            if (Debugger.IsAttached)
+            {
+                Debugger.Break();
+            }
+#endif
             return 1;
         }
 
         [Command("run", Description = "Generates the AutoRest Client Code")]
         private class Run
         {
-            [Option("-s|--swagger <URI>",
+            [Option(
                 Description = "url to the swagger JSON file",
+                ShortName = "s",
+                LongName = "swagger",
                 ShowInHelpText = true)]
             [Required]
             public string SwaggerFile { get; set; }
 
-            [Option("-o|--output <outputFolder>",
+            [Option(
                 Description = "output folder path to generate files into",
+                ShortName = "o",
+                LongName = "output",
                 ShowInHelpText = true)]
             [Required]
             public string Output { get; set; }
 
-            [Option("-t|--tfm <tfm>",
+            [Option(
                 Description = "Target framework moniker name (default: netstandard1.5)",
+                ShortName = "t",
+                LongName = "tfm",
                 ShowInHelpText = true)]
             public List<string> TFMs { get; set; }
 
             private int OnExecute(IConsole console)
             {
-                //validation first for required params
-                //if (!SwaggerFile.HasValue())
-                //{
-                //    ValidationSucceeded = false;
-                //    ValidationErrors = new List<string>(new[] {"Required parameter 'swagger file' missing (-s). See help (-h) for details"});
-                //    return -1;
-                //}
-
-                //if (!outputFolderOption.HasValue())
-                //{
-                //    ValidationSucceeded = false;
-                //    ValidationErrors = new List<string>(new[]
-                //        {"Required parameter 'output' missing (-o). See help (-h) for details"});
-                //    return -1;
-                //}
-
-                ////pass back to execution
-                //IsHelp = help.HasValue();
-                //SwaggerJsonUrl = swaggerFileOption.Value();
-                //OutputFolder = outputFolderOption.Value();
-                //TFMs = tfmOption.Values == null || tfmOption.Values.Count == 0 ? new[] { "net462", "netstandard2.0" }.ToList() : tfmOption.Values;
+                if (TFMs == null)
+                {
+                    TFMs = new[] { "net462", "netstandard2.0" }.ToList();
+                }
 
                 // Initialize the necessary services
                 var services = new ServiceCollection();
@@ -87,10 +85,9 @@ namespace EShopWorld.Tools.Commands.AutoRest
                     var projectFileCommand = provider.GetRequiredService<RenderProjectFileCommand>();
                     projectFileCommand.Render(new ProjectFileViewModel { TFMs = TFMs.ToArray(), ProjectName = swaggerInfo.Item1, Version = swaggerInfo.Item2 }, Path.Combine(Output, projectFileName));
                 }
-                
+
                 return 0;
             }
-
 
             public static void ConfigureDefaultServices(IServiceCollection services, string customApplicationBasePath)
             {

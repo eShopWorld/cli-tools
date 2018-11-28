@@ -12,7 +12,6 @@
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Version>1.1.0</Version>
-    <Owners>eShopWorld</Owners>
     <Authors>David Rodrigues, David Guerin</Authors>
     <PackageLicenseUrl>https://github.com/eShopWorld/cli-tools/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/eShopWorld/cli-tools</PackageProjectUrl>
@@ -20,7 +19,9 @@
     <RepositoryType>Open Source</RepositoryType>
     <Description>dotnet CLI tools for eShopWorld</Description>
     <Copyright>Copyright 2018</Copyright>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -28,6 +29,16 @@
     <DefineConstants>TRACE;DEBUG</DefineConstants>
     <DocumentationFile />
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Commands\AutoRest\Views\ProjectFile.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Commands\AutoRest\Views\ProjectFile.cshtml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="JetBrains.Annotations" Version="2018.2.1" />
