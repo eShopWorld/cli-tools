@@ -14,25 +14,7 @@ using Xunit;
 namespace EShopWorld.Tools.Unit.Tests
 {
     public class Resx2JsonCommandTest
-    {
-        //public class Run
-        //{
-        //    [Fact] 
-        //    [Trait("Category", "Integration")]
-        //    [Trait("SubCommand", "Transform")]
-        //    public void TheOneTestToRuleThemAll()
-        //    {
-        //        // #1 clean up before the test
-
-        //        // #2 run the command to export the json
-
-        //        // #3 ensure folder structure
-
-        //        // #4 inspect all the json and compare it to the resx
-        //        // #4.1 use roslyn to emit the assembly with the resources on the integration project
-        //    }
-        //}
-
+    {      
         public class GetJsonPath
         {
             [Fact]

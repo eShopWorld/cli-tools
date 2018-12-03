@@ -15,7 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{23782D1B
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EShopWorld.Tools", "EShopWorld.Tools\EShopWorld.Tools.csproj", "{0AEA009C-E0E2-468E-AC26-BEE6B3E5269E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EShopWorld.Tools.Unit.Tests", "Tests\EShopWorld.Tools.Unit.Tests\EShopWorld.Tools.Unit.Tests.csproj", "{0618362C-DA6B-4DA6-851C-6DDD9B9B6415}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EShopWorld.Tools.Tests", "Tests\EShopWorld.Tools.Tests\EShopWorld.Tools.Tests.csproj", "{0618362C-DA6B-4DA6-851C-6DDD9B9B6415}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

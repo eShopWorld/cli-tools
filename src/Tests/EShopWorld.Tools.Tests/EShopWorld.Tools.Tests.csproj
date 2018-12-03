@@ -4,11 +4,22 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>    
     <RootNamespace>EshopWorld.Tools.Unit.Tests</RootNamespace>    
     <AssemblyName>EshopWorld.Tools.Unit.Tests</AssemblyName>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>DEBUG;TRACE</DefineConstants>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Views\TestTemplate.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Views\TestTemplate.cshtml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="fluentassertions" Version="5.5.3" />

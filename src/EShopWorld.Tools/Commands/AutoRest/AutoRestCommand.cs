@@ -38,7 +38,7 @@ namespace EShopWorld.Tools.Commands.AutoRest
         }
 
         [Command("run", Description = "Generates the AutoRest Client Code")]
-        private class Run
+        internal class Run
         {
             [Option(
                 Description = "url to the swagger JSON file",
@@ -57,7 +57,7 @@ namespace EShopWorld.Tools.Commands.AutoRest
             public string Output { get; set; }
 
             [Option(
-                Description = "Target framework moniker name (default: netstandard1.5)",
+                Description = "Target framework moniker name (default: net462, netstandard2.0)",
                 ShortName = "t",
                 LongName = "tfm",
                 ShowInHelpText = true)]
@@ -82,7 +82,7 @@ namespace EShopWorld.Tools.Commands.AutoRest
                     var projectFileName = swaggerInfo.Item1 + ".csproj";
 
                     //generate project file
-                    var projectFileCommand = provider.GetRequiredService<RenderProjectFileCommand>();
+                    var projectFileCommand = provider.GetRequiredService<RenderProjectFileInternalCommand>();
                     projectFileCommand.Render(new ProjectFileViewModel { TFMs = TFMs.ToArray(), ProjectName = swaggerInfo.Item1, Version = swaggerInfo.Item2 }, Path.Combine(Output, projectFileName));
                 }
 
@@ -125,7 +125,7 @@ namespace EShopWorld.Tools.Commands.AutoRest
                 services.AddSingleton<DiagnosticSource>(diagnosticSource);
                 services.AddLogging();
                 services.AddMvc();
-                services.AddTransient<RenderProjectFileCommand>();
+                services.AddTransient<RenderProjectFileInternalCommand>();
             }
         }
     }
