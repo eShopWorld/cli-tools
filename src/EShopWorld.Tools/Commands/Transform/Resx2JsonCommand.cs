@@ -1,38 +1,23 @@
-﻿using McMaster.Extensions.CommandLineUtils;
-using Newtonsoft.Json;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using McMaster.Extensions.CommandLineUtils;
 
-namespace EShopWorld.Tools.Transforms
+namespace EShopWorld.Tools.Commands.Transform
 {
     /// <summary>
     /// A command to transform and merge RESX files into their angular JSON equivalents.
     /// </summary>
     [Command("transform", Description = "Transforms Resx files into Json for use in Angular Projects"), HelpOption]
-    [Subcommand("run", typeof(Run))] //todo when 2.3 McMaster.Extensions.CommandLineUtils use the new subcommand convention
+    [Subcommand("run", typeof(Run))] 
     public class Resx2JsonCommand : CommandBase
-    {
-        private readonly IPathHelper _pathHelper;
-        private readonly IConsole _console;
-        
+    {       
         /// <summary>
         /// 
         /// </summary>
         public Resx2JsonCommand()
         { }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="Resx2JsonCommand"/>.
-        /// </summary>
-        /// <param name="pathHelper"></param>
-        /// <param name="console"></param>
-        public Resx2JsonCommand(IPathHelper pathHelper, IConsole console)
-        {
-            _pathHelper = pathHelper;
-            _console = console;
-        }
                
         /// <summary>
         /// Runs this command.
@@ -56,7 +41,7 @@ namespace EShopWorld.Tools.Transforms
         /// 
         /// </summary>
         [Command("run", Description = "Runs the transforms")]
-        protected class Run : TransfromBase
+        protected internal class Run : TransfromBase
         {
             /// <summary>
             /// The path to the folder that contains the RESX files. Can be absolute or relative.

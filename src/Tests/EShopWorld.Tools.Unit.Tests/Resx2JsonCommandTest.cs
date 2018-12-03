@@ -4,49 +4,47 @@ using System.IO;
 using System.Reflection;
 using System.Xml.Linq;
 using EshopWorld.Tools.Unit.Tests.Data;
-using EShopWorld.Tools;
-using EShopWorld.Tools.Transforms;
+using EShopWorld.Tools.Commands.Transform;
 using FluentAssertions;
-using McMaster.Extensions.CommandLineUtils;
 using Moq;
 using Newtonsoft.Json;
 using Xunit;
 
 // ReSharper disable once CheckNamespace
-namespace EshopWorld.Tools.Unit.Tests
+namespace EShopWorld.Tools.Unit.Tests
 {
     public class Resx2JsonCommandTest
     {
-        public class Run
-        {
-            [Fact] 
-            [Trait("Category", "Integration")]
-            [Trait("SubCommand", "Transform")]
-            public void TheOneTestToRuleThemAll()
-            {
-                // #1 clean up before the test
+        //public class Run
+        //{
+        //    [Fact] 
+        //    [Trait("Category", "Integration")]
+        //    [Trait("SubCommand", "Transform")]
+        //    public void TheOneTestToRuleThemAll()
+        //    {
+        //        // #1 clean up before the test
 
-                // #2 run the command to export the json
+        //        // #2 run the command to export the json
 
-                // #3 ensure folder structure
+        //        // #3 ensure folder structure
 
-                // #4 inspect all the json and compare it to the resx
-                // #4.1 use roslyn to emit the assembly with the resources on the integration project
-            }
-        }
+        //        // #4 inspect all the json and compare it to the resx
+        //        // #4.1 use roslyn to emit the assembly with the resources on the integration project
+        //    }
+        //}
 
         public class GetJsonPath
         {
             [Fact]
             [Trait("Category", "Integration")]
-            [Trait("SubCommand", "Transform")]
+            [Trait("SubCommand", "Run")]
             public void Test_WithDefaultCulture()
             {
                 const string path = @"C:\SomeFolder\AResource.resx";
                 const string outputPath = @"C:\OutFolder\";
-                const string expectedJsonFile = "AResource." + Resx2JsonCommand.JsonDefaultCulture + ".json";
+                const string expectedJsonFile = "AResource." + TransfromBase.JsonDefaultCulture + ".json";
 
-                var cmdMock = new Mock<Resx2JsonCommand> { CallBase = true };
+                var cmdMock = new Mock<Resx2JsonCommand.Run> { CallBase = true };
 
                 var result = cmdMock.Object.GetJsonPath(outputPath, path);
 
@@ -55,14 +53,14 @@ namespace EshopWorld.Tools.Unit.Tests
 
             [Fact]
             [Trait("Category", "Integration")]
-            [Trait("SubCommand", "Transform")]
+            [Trait("SubCommand", "Run")]
             public void Test_WithSpecificCulture()
             {
                 const string path = @"C:\SomeFolder\AResource.it-it.resx";
                 const string outputPath = @"C:\OutFolder\";
                 var expectedJsonFile = Path.GetFileNameWithoutExtension(path) + ".json";
 
-                var cmdMock = new Mock<Resx2JsonCommand> { CallBase = true };
+                var cmdMock = new Mock<Resx2JsonCommand.Run> { CallBase = true };
 
                 var result = cmdMock.Object.GetJsonPath(outputPath, path);
 
@@ -74,14 +72,13 @@ namespace EshopWorld.Tools.Unit.Tests
         {
             [Fact]
             [Trait("Category", "Integration")]
-            [Trait("SubCommand", "Transform")]
+            [Trait("SubCommand", "Run")]
             public void Test_WithEmbeddedResxResource()
-            {
-                var mockPathHelper = new Mock<IPathHelper>();
+            {               
                 var resxPath = AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf(@"\bin", StringComparison.Ordinal)) + @"\data\test.resx";
                 var resx = File.ReadAllText(resxPath);
 
-                var json = new Resx2JsonCommand(new PathHelper(), new Mock<IConsole>().Object)
+                var json = new Resx2JsonCommand.Run()
                 {
                     ResxProject = string.Empty,
                     JsonProject = string.Empty
@@ -100,13 +97,13 @@ namespace EshopWorld.Tools.Unit.Tests
         {
             [Fact]
             [Trait("Category", "Unit")]
-            [Trait("SubCommand", "Transform")]
+            [Trait("SubCommand", "Run")]
             public void Test_BaseResxDoesNotMerge()
             {
                 const string fileContent = "some file content!";
                 const string filePath = @"C:\AFolder\AFile.resx";
 
-                var cmdMock = new Mock<Run> { CallBase = true };
+                var cmdMock = new Mock<Resx2JsonCommand.Run> { CallBase = true };
                 cmdMock.Setup(x => x.ReadText(filePath)).Returns(fileContent);
 
                 var result = cmdMock.Object.GetMergedResource(filePath);
@@ -116,7 +113,7 @@ namespace EshopWorld.Tools.Unit.Tests
 
             [Fact]
             [Trait("Category", "Unit")]
-            [Trait("SubCommand", "Transform")]
+            [Trait("SubCommand", "Run")]
             public void Test_MergeWithWrongPath()
             {
                 const string basefileContent = "some file content!";
@@ -124,7 +121,7 @@ namespace EshopWorld.Tools.Unit.Tests
                 const string wrongfileContent = "wrong file content!";
                 const string wrongfilePath = @"C:\WrongFolder\AFile.resx";
 
-                var cmdMock = new Mock<Resx2JsonCommand> { CallBase = true };
+                var cmdMock = new Mock<Resx2JsonCommand.Run> { CallBase = true };
                 cmdMock.Object.ResourceDictionary = new Dictionary<string, List<string>>
                 {
                     { Path.GetFileName(wrongfilePath), new List<string> { wrongfilePath } }
@@ -140,7 +137,7 @@ namespace EshopWorld.Tools.Unit.Tests
 
             [Fact]
             [Trait("Category", "Unit")]
-            [Trait("SubCommand", "Transform")]
+            [Trait("SubCommand", "Run")]
             public void Test_MergeSingleLevel()
             {
                 const string basefileContent = "some file content!";
@@ -148,7 +145,7 @@ namespace EshopWorld.Tools.Unit.Tests
                 const string mergefileContent = "merged file content!";
                 const string mergefilePath = @"C:\AFolder\AFile.resx";
 
-                var cmdMock = new Mock<Resx2JsonCommand> { CallBase = true };
+                var cmdMock = new Mock<Resx2JsonCommand.Run> { CallBase = true };
                 cmdMock.Object.ResourceDictionary = new Dictionary<string, List<string>>
                 {
                     { Path.GetFileName(mergefilePath), new List<string> { mergefilePath } }
@@ -166,7 +163,7 @@ namespace EshopWorld.Tools.Unit.Tests
 
             [Fact]
             [Trait("Category", "Unit")]
-            [Trait("SubCommand", "Transform")]
+            [Trait("SubCommand", "Run")]
             public void Test_MergeMultipleSources()
             {
                 const string basefileContent = "some file content!";
@@ -176,7 +173,7 @@ namespace EshopWorld.Tools.Unit.Tests
                 const string mergefileContent = "merged file content!";
                 const string mergefilePath = @"C:\AFolder\AnotherFolder\AFile.resx";
 
-                var cmdMock = new Mock<Resx2JsonCommand> { CallBase = true };
+                var cmdMock = new Mock<Resx2JsonCommand.Run> { CallBase = true };
                 cmdMock.Object.ResourceDictionary = new Dictionary<string, List<string>>
                 {
                     { Path.GetFileName(mergefilePath), new List<string> { mergefilePath } }
@@ -198,7 +195,7 @@ namespace EshopWorld.Tools.Unit.Tests
         {
             [Fact]
             [Trait("Category", "Unit")]
-            [Trait("SubCommand", "Transform")]
+            [Trait("SubCommand", "Run")]
             public void Test_SourceWithMore_ThanTarget()
             {
                 const string source = @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -247,7 +244,7 @@ namespace EshopWorld.Tools.Unit.Tests
 </root>
 ";
 
-                var result = new Resx2JsonCommand(new PathHelper(), new Mock<IConsole>().Object)
+                var result = new Resx2JsonCommand.Run()
                 {
                     JsonProject = string.Empty,
                     ResxProject = string.Empty
@@ -277,7 +274,8 @@ namespace EshopWorld.Tools.Unit.Tests
   <data name=""CommonResource_Two"" xml:space=""preserve"">
     <value>Default_Two</value>
   </data>
-</root>");
+</root>"
+                );
             }
 
             [Fact]
@@ -331,7 +329,7 @@ namespace EshopWorld.Tools.Unit.Tests
 </root>
 ";
 
-                var result = new Resx2JsonCommand(new PathHelper(), new Mock<IConsole>().Object)
+                var result = new Resx2JsonCommand.Run()
                 {
                     JsonProject = string.Empty,
                     ResxProject = string.Empty
@@ -372,55 +370,55 @@ namespace EshopWorld.Tools.Unit.Tests
             {
                 [Fact]
                 [Trait("Category", "Unit")]
-                [Trait("SubCommand", "Transform")]
+                [Trait("SubCommand", "Run")]
                 public void Test_WithDifferentNames()
                 {
                     var element1 = new XElement("data", new XAttribute("name", "1"));
                     var element2 = new XElement("data", new XAttribute("name", "2"));
-                    var result = new Resx2JsonCommand.ResxDataComparer().Equals(element1, element2);
+                    var result = new TransfromBase.ResxDataComparer().Equals(element1, element2);
 
                     result.Should().BeFalse();
                 }
 
                 [Fact]
                 [Trait("Category", "Unit")]
-                [Trait("SubCommand", "Transform")]
+                [Trait("SubCommand", "Run")]
                 public void Test_WithSameNames()
                 {
                     const string nameValue = "the same name";
                     var element1 = new XElement("data", new XAttribute("name", nameValue));
                     var element2 = new XElement("data", new XAttribute("name", nameValue));
-                    var result = new Resx2JsonCommand.ResxDataComparer().Equals(element1, element2);
+                    var result = new TransfromBase.ResxDataComparer().Equals(element1, element2);
 
                     result.Should().BeTrue();
                 }
 
                 [Fact]
                 [Trait("Category", "Unit")]
-                [Trait("SubCommand", "Transform")]
+                [Trait("SubCommand", "Run")]
                 public void Test_WithTwoNulls()
                 {
-                    var result = new Resx2JsonCommand.ResxDataComparer().Equals(null, null);
+                    var result = new TransfromBase.ResxDataComparer().Equals(null, null);
 
                     result.Should().BeTrue();
                 }
 
                 [Fact]
                 [Trait("Category", "Unit")]
-                [Trait("SubCommand", "Transform")]
+                [Trait("SubCommand", "Run")]
                 public void Test_WithFirstNull()
                 {
-                    var result = new Resx2JsonCommand.ResxDataComparer().Equals(null, new XElement("something"));
+                    var result = new TransfromBase.ResxDataComparer().Equals(null, new XElement("something"));
 
                     result.Should().BeFalse();
                 }
 
                 [Fact]
                 [Trait("Category", "Unit")]
-                [Trait("SubCommand", "Transform")]
+                [Trait("SubCommand", "Run")]
                 public void Test_WithSecondNull()
                 {
-                    var result = new Resx2JsonCommand.ResxDataComparer().Equals(new XElement("something"), null);
+                    var result = new TransfromBase.ResxDataComparer().Equals(new XElement("something"), null);
 
                     result.Should().BeFalse();
                 }
@@ -430,35 +428,35 @@ namespace EshopWorld.Tools.Unit.Tests
             {
                 [Fact]
                 [Trait("Category", "Unit")]
-                [Trait("SubCommand", "Transform")]
+                [Trait("SubCommand", "Run")]
                 public void Test_WithProperXElement()
                 {
                     const string nameValue = "some name";
                     var element = new XElement("data", new XAttribute("name", nameValue));
 
-                    var result = new Resx2JsonCommand.ResxDataComparer().GetHashCode(element);
+                    var result = new TransfromBase.ResxDataComparer().GetHashCode(element);
 
                     result.Should().Be(nameValue.GetHashCode());
                 }
 
                 [Fact]
                 [Trait("Category", "Unit")]
-                [Trait("SubCommand", "Transform")]
+                [Trait("SubCommand", "Run")]
                 public void Test_WithNull()
                 {
-                    var result = new Resx2JsonCommand.ResxDataComparer().GetHashCode(null);
+                    var result = new TransfromBase.ResxDataComparer().GetHashCode(null);
 
                     result.Should().Be(0);
                 }
 
                 [Fact]
                 [Trait("Category", "Unit")]
-                [Trait("SubCommand", "Transform")]
+                [Trait("SubCommand", "Run")]
                 public void Test_WithElementWithoutName()
                 {
                     var element = new XElement("data");
 
-                    var result = new Resx2JsonCommand.ResxDataComparer().GetHashCode(element);
+                    var result = new TransfromBase.ResxDataComparer().GetHashCode(element);
 
                     result.Should().Be(0);
                 }

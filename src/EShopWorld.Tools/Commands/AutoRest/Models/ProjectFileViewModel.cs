@@ -1,4 +1,4 @@
-﻿namespace EShopWorld.Tools.Commands.AutoRest.Views
+﻿namespace EShopWorld.Tools.Commands.AutoRest.Models
 {
     public class ProjectFileViewModel
     {

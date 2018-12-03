@@ -1,7 +1,7 @@
 ﻿using EShopWorld.Tools.Commands.AutoRest;
-using EShopWorld.Tools.Transforms;
 using McMaster.Extensions.CommandLineUtils;
 using System.Diagnostics;
+using EShopWorld.Tools.Commands.Transform;
 
 namespace EShopWorld.Tools
 {

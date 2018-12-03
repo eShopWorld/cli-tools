@@ -1,5 +1,4 @@
-﻿using EShopWorld.Tools.Commands.AutoRest.Views;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -14,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
+using EShopWorld.Tools.Commands.AutoRest.Models;
 
 namespace EShopWorld.Tools.Commands.AutoRest
 {

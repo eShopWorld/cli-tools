@@ -1,5 +1,4 @@
-﻿using EShopWorld.Tools.Commands.AutoRest.Views;
-using McMaster.Extensions.CommandLineUtils;
+﻿using McMaster.Extensions.CommandLineUtils;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Mvc.Razor;
@@ -13,6 +12,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using EShopWorld.Tools.Commands.AutoRest.Models;
 
 namespace EShopWorld.Tools.Commands.AutoRest
 {

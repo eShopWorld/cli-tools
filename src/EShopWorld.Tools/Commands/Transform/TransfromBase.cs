@@ -6,7 +6,7 @@ using System.Xml.Linq;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
 
-namespace EShopWorld.Tools.Transforms
+namespace EShopWorld.Tools.Commands.Transform
 {
     /// <summary>
     /// Base class for any transform work
