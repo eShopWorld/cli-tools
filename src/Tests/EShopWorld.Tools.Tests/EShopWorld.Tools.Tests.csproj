@@ -12,20 +12,26 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Views\TestTemplate.cshtml" />
+    <None Remove="Views\PocoClass.cshtml" />
+    <None Remove="Views\PocoProjectFile.cshtml" />
+    <None Remove="Views\TestAutorestProjectFileTemplate.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Views\TestTemplate.cshtml">
+    <Content Include="Views\PocoClass.cshtml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Views\PocoProjectFile.cshtml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Views\TestAutorestProjectFileTemplate.cshtml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="fluentassertions" Version="5.5.3" />
+    <PackageReference Include="Eshopworld.Tests.Core" Version="1.0.5" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
-    <PackageReference Include="moq" Version="4.10.0" />
-    <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>

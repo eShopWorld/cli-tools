@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using EShopWorld.Tools.Base;
 using McMaster.Extensions.CommandLineUtils;
 
 namespace EShopWorld.Tools.Commands.Transform

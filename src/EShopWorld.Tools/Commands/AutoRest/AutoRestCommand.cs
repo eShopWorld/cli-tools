@@ -1,23 +1,19 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Internal;
-using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.ObjectPool;
-using Microsoft.Extensions.PlatformAbstractions;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using EShopWorld.Tools.Base;
 using EShopWorld.Tools.Commands.AutoRest.Models;
+using EShopWorld.Tools.Helpers;
 
 namespace EShopWorld.Tools.Commands.AutoRest
 {
     /// <summary>
-    /// 
+    /// autorest command - top level
     /// </summary>
     [Command("autorest", Description = "Generates a rest client when targeted against a swagger version"), HelpOption] //todo when 2.3 McMaster.Extensions.CommandLineUtils use the new subcommand convention
     [Subcommand("run", typeof(Run))]
@@ -61,18 +57,14 @@ namespace EShopWorld.Tools.Commands.AutoRest
                 ShortName = "t",
                 LongName = "tfm",
                 ShowInHelpText = true)]
-            public List<string> TFMs { get; set; }
+            public List<string> TFMs { get; set; } = new[] {"net462", "netstandard2.0"}.ToList();
 
             private int OnExecute(IConsole console)
-            {
-                if (TFMs == null)
-                {
-                    TFMs = new[] { "net462", "netstandard2.0" }.ToList();
-                }
-
+            {             
+                Directory.CreateDirectory(Output);
                 // Initialize the necessary services
                 var services = new ServiceCollection();
-                ConfigureDefaultServices(services, Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+                AspNetRazorEngineServiceSetup.ConfigureDefaultServices<RenderProjectFileInternalCommand>(services, Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
 
                 var provider = services.BuildServiceProvider();
                 var serviceScope = provider.GetRequiredService<IServiceScopeFactory>();
@@ -89,44 +81,6 @@ namespace EShopWorld.Tools.Commands.AutoRest
                 return 0;
             }
 
-            public static void ConfigureDefaultServices(IServiceCollection services, string customApplicationBasePath)
-            {
-                var applicationEnvironment = PlatformServices.Default.Application;
-
-                services.AddSingleton(applicationEnvironment);
-                services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
-
-                IFileProvider fileProvider;
-                string applicationName;
-                if (!string.IsNullOrEmpty(customApplicationBasePath))
-                {
-                    applicationName = Assembly.GetEntryAssembly().GetName().Name;
-                    fileProvider = new PhysicalFileProvider(customApplicationBasePath);
-                }
-                else
-                {
-                    applicationName = Assembly.GetEntryAssembly().GetName().Name;
-                    fileProvider = new PhysicalFileProvider(Directory.GetCurrentDirectory());
-                }
-
-                services.AddSingleton<IHostingEnvironment>(new HostingEnvironment
-                {
-                    ApplicationName = applicationName,
-                    WebRootFileProvider = fileProvider,
-                });
-
-                services.Configure<RazorViewEngineOptions>(options =>
-                {
-                    options.FileProviders.Clear();
-                    options.FileProviders.Add(fileProvider);
-                });
-
-                var diagnosticSource = new DiagnosticListener("Microsoft.AspNetCore");
-                services.AddSingleton<DiagnosticSource>(diagnosticSource);
-                services.AddLogging();
-                services.AddMvc();
-                services.AddTransient<RenderProjectFileInternalCommand>();
-            }
         }
     }
 }

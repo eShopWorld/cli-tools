@@ -1,7 +1,6 @@
-﻿using McMaster.Extensions.CommandLineUtils;
-using System.Reflection;
+﻿using System.Reflection;
 
-namespace EShopWorld.Tools
+namespace EShopWorld.Tools.Base
 {
     /// <summary>
     /// 
@@ -12,6 +11,6 @@ namespace EShopWorld.Tools
         /// Gets the version of the assembly of the class calling this
         /// </summary>
         /// <returns></returns>
-        protected string GetVersion() => this.GetType().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+        protected string GetVersion() => GetType().Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
     }
 }

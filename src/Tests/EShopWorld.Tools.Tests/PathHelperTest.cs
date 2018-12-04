@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Linq;
+using Eshopworld.Tests.Core;
 using EShopWorld.Tools;
 using FluentAssertions;
 using Moq;
@@ -11,7 +12,7 @@ namespace EshopWorld.Tools.Unit.Tests
     {
         public class CreateRelativePath
         {
-            [Fact, Trait("Category", "Unit")]
+            [Fact, IsUnit]
             public void Test_SecondBiggerThanFirst()
             {
                 var folders = new[]
@@ -29,7 +30,7 @@ namespace EshopWorld.Tools.Unit.Tests
                 result.Should().BeEquivalentTo(Path.Combine(new[] { "." }.Concat(folders.Skip(1).Take(2)).ToArray()));
             }
 
-            [Fact, Trait("Category", "Unit")]
+            [Fact, IsUnit]
             public void Test_FirstBiggerThanSecond()
             {
                 var folders = new[]
@@ -47,7 +48,7 @@ namespace EshopWorld.Tools.Unit.Tests
                 result.Should().BeEquivalentTo(Path.Combine(new[] { "..", ".." }.Concat(folders.Take(1)).ToArray()));
             }
 
-            [Fact, Trait("Category", "Unit")]
+            [Fact, IsUnit]
             public void Test_FirstEqualsSecond()
             {
                 var folders = new[]
@@ -64,7 +65,7 @@ namespace EshopWorld.Tools.Unit.Tests
                 result.Should().BeEquivalentTo("");
             }
 
-            [Fact, Trait("Category", "Unit")]
+            [Fact, IsUnit]
             public void Ensure_UnrelativePaths_ReturnNull()
             {
                 var folders = new[]
@@ -82,7 +83,7 @@ namespace EshopWorld.Tools.Unit.Tests
                 result.Should().BeNull();
             }
 
-            [Fact, Trait("Category", "Unit")]
+            [Fact, IsUnit]
             public void Ensure_NonFileSchemes_ReturnNull()
             {
                 var folders = new[]
@@ -103,7 +104,7 @@ namespace EshopWorld.Tools.Unit.Tests
 
         public class EnforceSameFolders
         {
-            [Fact, Trait("Category", "Unit")]
+            [Fact, IsUnit]
             public void Test_WithOneLevelFolder()
             {
                 const string extraFolder = "FolderTwo";
@@ -119,7 +120,7 @@ namespace EshopWorld.Tools.Unit.Tests
                 helperMock.Verify(x => x.CreateDirectory(Path.Combine(targetFolder, ".", extraFolder)));
             }
 
-            [Fact, Trait("Category", "Unit")]
+            [Fact, IsUnit]
             public void Test_WithTwoLevelsFolder()
             {
                 const string extraFolderOne = "FolderTwo";
@@ -136,7 +137,7 @@ namespace EshopWorld.Tools.Unit.Tests
                 helperMock.Verify(x => x.CreateDirectory(Path.Combine(targetFolder, ".", extraFolderOne, extraFolderTwo)));
             }
 
-            [Fact, Trait("Category", "Unit")]
+            [Fact, IsUnit]
             public void Test_WithTheSameFolder()
             {
                 const string sourceFolder = @"C:\FolderOne\FolderTwo";
