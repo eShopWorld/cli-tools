@@ -68,13 +68,13 @@ namespace EshopWorld.Tools.Unit.Tests
                 var pocoCommand = provider.GetRequiredService<GeneratePocoClassInternalCommand>();
                 var content = pocoCommand.RenderViewToString(new GeneratePocoClassViewModel
                 {
-                    Namespace = "appName",
+                    Namespace = "NS",
                     Fields = secrets.Select(i => new Tuple<string, bool>(
                         i.Tags != null && i.Tags.ContainsKey("Name") ? i.Tags["Name"] : i.Identifier.Name,
                         i.Tags != null && i.Tags.ContainsKey("Obsolete") && Convert.ToBoolean(i.Tags["Obsolete"])))
                 });
                 content.Should().Be(
-                    "using System;\r\n\r\nnamespace eShopWorld.appName\r\n{\r\n    public class ConfigurationSecrets\r\n    {\r\n\t\tpublic string Field1 {get; set;}\n\t\tpublic string Field2 {get; set;}\n\t\t[Obsolete]\n\t\tpublic string Field3 {get; set;}\n    }\r\n}");
+                    "using System;\r\n\r\nnamespace eShopWorld.NS\r\n{\r\n    public class ConfigurationSecrets\r\n    {\r\n\t\tpublic string Field1 {get; set;}\n\t\tpublic string Field2 {get; set;}\n\t\t[Obsolete]\n\t\tpublic string Field3 {get; set;}\n    }\r\n}");
             }
         }
 
