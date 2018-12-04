@@ -140,7 +140,7 @@ namespace EShopWorld.Tools.Commands.KeyVault
                     var pocoCommand = provider.GetRequiredService<GeneratePocoClassInternalCommand>();
                     pocoCommand.Render(new GeneratePocoClassViewModel
                     {
-                        Namespace = AppName,
+                        Namespace = Namespace,
                         Fields = secrets.Select(i => new Tuple<string, bool>(
                             i.Tags != null && i.Tags.ContainsKey(NameTagName) ? i.Tags[NameTagName] : i.Identifier.Name,
                             i.Tags != null && i.Tags.ContainsKey(ObsoleteTagName) && Convert.ToBoolean(i.Tags[ObsoleteTagName])))
