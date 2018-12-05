@@ -27,7 +27,7 @@ namespace EShopWorld.Tools.Unit.Tests
                 const string outputPath = @"C:\OutFolder\";
                 const string expectedJsonFile = "AResource." + TransfromBase.JsonDefaultCulture + ".json";
 
-                var cmdMock = new Mock<Resx2JsonCommand.Run> { CallBase = true };
+                var cmdMock = new Mock<TransformCommand.Resx2JsonCommand> { CallBase = true };
 
                 var result = cmdMock.Object.GetJsonPath(outputPath, path);
 
@@ -43,7 +43,7 @@ namespace EShopWorld.Tools.Unit.Tests
                 const string outputPath = @"C:\OutFolder\";
                 var expectedJsonFile = Path.GetFileNameWithoutExtension(path) + ".json";
 
-                var cmdMock = new Mock<Resx2JsonCommand.Run> { CallBase = true };
+                var cmdMock = new Mock<TransformCommand.Resx2JsonCommand> { CallBase = true };
 
                 var result = cmdMock.Object.GetJsonPath(outputPath, path);
 
@@ -61,7 +61,7 @@ namespace EShopWorld.Tools.Unit.Tests
                 var resxPath = AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf(@"\bin", StringComparison.Ordinal)) + @"\data\test.resx";
                 var resx = File.ReadAllText(resxPath);
 
-                var json = new Resx2JsonCommand.Run()
+                var json = new TransformCommand.Resx2JsonCommand()
                 {
                     ResxProject = string.Empty,
                     JsonProject = string.Empty
@@ -86,7 +86,7 @@ namespace EShopWorld.Tools.Unit.Tests
                 const string fileContent = "some file content!";
                 const string filePath = @"C:\AFolder\AFile.resx";
 
-                var cmdMock = new Mock<Resx2JsonCommand.Run> { CallBase = true };
+                var cmdMock = new Mock<TransformCommand.Resx2JsonCommand> { CallBase = true };
                 cmdMock.Setup(x => x.ReadText(filePath)).Returns(fileContent);
 
                 var result = cmdMock.Object.GetMergedResource(filePath);
@@ -104,7 +104,7 @@ namespace EShopWorld.Tools.Unit.Tests
                 const string wrongfileContent = "wrong file content!";
                 const string wrongfilePath = @"C:\WrongFolder\AFile.resx";
 
-                var cmdMock = new Mock<Resx2JsonCommand.Run> { CallBase = true };
+                var cmdMock = new Mock<TransformCommand.Resx2JsonCommand> { CallBase = true };
                 cmdMock.Object.ResourceDictionary = new Dictionary<string, List<string>>
                 {
                     { Path.GetFileName(wrongfilePath), new List<string> { wrongfilePath } }
@@ -128,7 +128,7 @@ namespace EShopWorld.Tools.Unit.Tests
                 const string mergefileContent = "merged file content!";
                 const string mergefilePath = @"C:\AFolder\AFile.resx";
 
-                var cmdMock = new Mock<Resx2JsonCommand.Run> { CallBase = true };
+                var cmdMock = new Mock<TransformCommand.Resx2JsonCommand> { CallBase = true };
                 cmdMock.Object.ResourceDictionary = new Dictionary<string, List<string>>
                 {
                     { Path.GetFileName(mergefilePath), new List<string> { mergefilePath } }
@@ -156,7 +156,7 @@ namespace EShopWorld.Tools.Unit.Tests
                 const string mergefileContent = "merged file content!";
                 const string mergefilePath = @"C:\AFolder\AnotherFolder\AFile.resx";
 
-                var cmdMock = new Mock<Resx2JsonCommand.Run> { CallBase = true };
+                var cmdMock = new Mock<TransformCommand.Resx2JsonCommand> { CallBase = true };
                 cmdMock.Object.ResourceDictionary = new Dictionary<string, List<string>>
                 {
                     { Path.GetFileName(mergefilePath), new List<string> { mergefilePath } }
@@ -227,7 +227,7 @@ namespace EShopWorld.Tools.Unit.Tests
 </root>
 ";
 
-                var result = new Resx2JsonCommand.Run()
+                var result = new TransformCommand.Resx2JsonCommand()
                 {
                     JsonProject = string.Empty,
                     ResxProject = string.Empty
@@ -312,7 +312,7 @@ namespace EShopWorld.Tools.Unit.Tests
 </root>
 ";
 
-                var result = new Resx2JsonCommand.Run()
+                var result = new TransformCommand.Resx2JsonCommand()
                 {
                     JsonProject = string.Empty,
                     ResxProject = string.Empty

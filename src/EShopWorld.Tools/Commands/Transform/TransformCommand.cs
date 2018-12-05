@@ -10,16 +10,10 @@ namespace EShopWorld.Tools.Commands.Transform
     /// <summary>
     /// A command to transform and merge RESX files into their angular JSON equivalents.
     /// </summary>
-    [Command("transform", Description = "Transforms Resx files into Json for use in Angular Projects"), HelpOption]
-    [Subcommand("run", typeof(Run))] 
-    public class Resx2JsonCommand : CommandBase
-    {       
-        /// <summary>
-        /// 
-        /// </summary>
-        public Resx2JsonCommand()
-        { }
-               
+    [Command("transform", Description = "data transformation tool set"), HelpOption]
+    [Subcommand(typeof(Resx2JsonCommand))] 
+    public class TransformCommand : CommandBase
+    {                            
         /// <summary>
         /// Runs this command.
         /// </summary>
@@ -41,8 +35,8 @@ namespace EShopWorld.Tools.Commands.Transform
         /// <summary>
         /// 
         /// </summary>
-        [Command("run", Description = "Runs the transforms")]
-        protected internal class Run : TransfromBase
+        [Command("resx2json", Description = "Resx 2 json transform")]
+        protected internal class Resx2JsonCommand : TransfromBase
         {
             /// <summary>
             /// The path to the folder that contains the RESX files. Can be absolute or relative.

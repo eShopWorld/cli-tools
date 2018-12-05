@@ -15,8 +15,8 @@ namespace EShopWorld.Tools.Commands.AutoRest
     /// <summary>
     /// autorest command - top level
     /// </summary>
-    [Command("autorest", Description = "Generates a rest client when targeted against a swagger version"), HelpOption] //todo when 2.3 McMaster.Extensions.CommandLineUtils use the new subcommand convention
-    [Subcommand("run", typeof(Run))]
+    [Command("autorest", Description = "AutoRest associated functionality"), HelpOption]
+    [Subcommand(typeof(GenerateClientCommand))]
     public class AutoRestCommand : CommandBase
     {
         private int OnExecute(CommandLineApplication app, IConsole console)
@@ -33,8 +33,8 @@ namespace EShopWorld.Tools.Commands.AutoRest
             return 1;
         }
 
-        [Command("run", Description = "Generates the AutoRest Client Code")]
-        internal class Run
+        [Command("generateClient", Description = "Generates the AutoRest Client Code")]
+        internal class GenerateClientCommand
         {
             [Option(
                 Description = "url to the swagger JSON file",

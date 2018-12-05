@@ -14,8 +14,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace EShopWorld.Tools.Commands.KeyVault
 {
-    [Command("keyvault", Description = "Generates POCOs and the project file for the KEyVault content"), HelpOption] //todo when 2.3 McMaster.Extensions.CommandLineUtils use the new subcommand convention
-    [Subcommand("run", typeof(Run))]
+    [Command("keyvault", Description = "keyvault associated functionality"), HelpOption]
+    [Subcommand(typeof(GeneratePOCOsCommand))]
     public class KeyVaultCommand : CommandBase
     {
         private int OnExecute(CommandLineApplication app, IConsole console)
@@ -32,8 +32,8 @@ namespace EShopWorld.Tools.Commands.KeyVault
             return 1;
         }
 
-        [Command("run", Description = "Generates the POCOs and the project file")]
-        internal class Run : TransfromBase
+        [Command("generatePOCOs", Description = "Generates the POCOs and the project file")]
+        internal class GeneratePOCOsCommand : TransfromBase
         {
             [Option(
                 Description = "application id - credential to access the vault",

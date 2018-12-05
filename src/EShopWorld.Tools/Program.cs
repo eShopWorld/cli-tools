@@ -11,9 +11,9 @@ namespace EShopWorld.Tools
     /// Dotnet CLI extension entry point.
     /// </summary>
     [Command(Name = "esw", Description = "eShopWorld CLI tool set")]
-    [Subcommand("transform", typeof(Resx2JsonCommand))] //todo when 2.3 McMaster.Extensions.CommandLineUtils use the new subcommand convention
-    [Subcommand("autorest", typeof(AutoRestCommand))] //todo when 2.3 McMaster.Extensions.CommandLineUtils use the new subcommand convention
-    [Subcommand("keyvault", typeof(KeyVaultCommand))] //todo when 2.3 McMaster.Extensions.CommandLineUtils use the new subcommand convention
+    [Subcommand(typeof(TransformCommand))]
+    [Subcommand(typeof(AutoRestCommand))] 
+    [Subcommand(typeof(KeyVaultCommand))]
     [VersionOptionFromMember("--version", MemberName = nameof(GetVersion))]
     public class Program : CommandBase
     {
