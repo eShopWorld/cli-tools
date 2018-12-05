@@ -33,7 +33,7 @@ namespace EShopWorld.Tools.Commands.Transform
         }
         
         /// <summary>
-        /// 
+        /// command implementation for resx2json
         /// </summary>
         [Command("resx2json", Description = "Resx 2 json transform")]
         protected internal class Resx2JsonCommand : TransfromBase

@@ -6,9 +6,11 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 namespace EShopWorld.Tools.Commands.AutoRest
 {
+    /// <summary>
+    /// internal "command" to render the project file
+    /// </summary>
     public class RenderProjectFileInternalCommand : AbstractRazorCommand<ProjectFileViewModel>
-    {
-    
+    {    
         /// <summary>
         /// DI constructor to supply all necessary services for razor engine to work
         /// </summary>
