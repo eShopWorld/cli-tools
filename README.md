@@ -7,48 +7,41 @@ Includes both dotnet CLI and azure CLI tool chains.
 
 ## dotnet CLI tools
 
-This tool contains the dotnet cli tools produced by the eShopWorld Tooling Team.
+This tool contains the dotnet cli commands/subcommands produced by the eShopWorld Tooling Team.
 
-* AutoRest Wrapper and Helper
-* Resx to Json Transformer
+* autoRest - top level 
+  * generateClient - generates client for the given swagger manifest including the project file with appropriate NuGet metadata
+* transform - aggregates data transformation tool set
+  * resx2json - transform resx file(s) into json file (e.g. for Angular use)
+* keyvault - aggregates keyvault tool set
+  * generatesPOCOs - generates POCO classes based on keyvault content
 
 
 ## Usage Examples
 
-#### AutoRest Commands
+see command with --help option to get full option list
+
+#### AutoRest Generate Client Command
 
 Usage
 
 ```console
-dotnet-esw autorest run -s <JSON target> -o <output>
+dotnet-esw autorest generateClient -s <JSON target> -o <output>
 
 ```
 
-
-#### ResxtoJson Commands
+#### Transform Resx to JSON Command
 
 Usage 
 
 ```console
-dotnet-esw transfrom -s <source project> -o <output>
+dotnet-esw transform  resx2json -s <source project> -o <output>
 ```
 
-###
-Local Debug Stuff
+#### KeyVault Generate POCOs Command
 
-Application Arguement
-
-transform
+Usage 
 
 ```console
-transform run -s "..\..\..\..\..\Debug\Debug.Source" -o "..\..\..\..\..\Debug\Debug.Target"
-```
-
-
-autorest
-
-````console
-
-autorest run -s https://tahoe-api.ci.eshopworld.net/swagger/v1/swagger.json --output test/
-
+dotnet-esw keyvault generatePOCOs -aid 123 -as secret -t esw -k maxmara -an maxmara -n Esw.MaxMara -v 1.2.3 -o .
 ```
