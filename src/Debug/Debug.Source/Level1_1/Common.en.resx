@@ -1,4 +1,3 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -122,5 +121,8 @@
   </data>
   <data name="CommonResource_Two" xml:space="preserve">
     <value>Level1_Two</value>
+  </data>
+  <data name="CommonResource_One" xml:space="preserve">
+    <value>Default_One</value>
   </data>
 </root>

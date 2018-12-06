@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "dotnet-esw": {
-      "commandName": "Project",
-      "commandLineArgs": "-s \"..\\Debug\\Debug.Source\" -o \"..\\Debug\\Debug.Target\""
-    }
-  }
-}
