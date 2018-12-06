@@ -1,4 +1,5 @@
-﻿using EShopWorld.Tools.Commands.AutoRest;
+﻿using Eshopworld.Tests.Core;
+using EShopWorld.Tools.Commands.AutoRest;
 using FluentAssertions;
 using Xunit;
 
@@ -7,7 +8,7 @@ namespace EshopWorld.Tools.Unit.Tests
     // ReSharper disable once InconsistentNaming
     public class SwaggerJSONParserTests
     {
-        [Theory, Trait("Category", "Unit")]
+        [Theory, IsUnit]
         [InlineData("v1", "1")]
         [InlineData("v1.3", "1.3")]
         [InlineData("1", "1")]
@@ -21,7 +22,7 @@ namespace EshopWorld.Tools.Unit.Tests
             SwaggerJsonParser.SanitizeVersion(input).Should().Be(expected);
         }
 
-        [Theory, Trait("Category", "Unit")]
+        [Theory, IsUnit]
         [InlineData("lorem ipsum", "loremipsum")]
         [InlineData("a/", "a")]
         [InlineData("a?", "a")]

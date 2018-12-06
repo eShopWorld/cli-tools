@@ -18,7 +18,7 @@ namespace EshopWorld.Tools.Unit.Tests
     {
         [Fact, IsIntegration]
         [Trait("Command", "keyvault")]
-
+        [Trait("SubCommand ", "generatePOCOs")]
         public void GeneratePocoClass_Success()
         {   
             var secrets = new List<SecretItem>(new[]
@@ -80,6 +80,7 @@ namespace EshopWorld.Tools.Unit.Tests
 
         [Fact, IsIntegration]
         [Trait("Command", "keyvault")]
+        [Trait("SubCommand ", "generatePOCOs")]
         public void GeneratePocoProject_Success()
         {
             var services = new ServiceCollection();

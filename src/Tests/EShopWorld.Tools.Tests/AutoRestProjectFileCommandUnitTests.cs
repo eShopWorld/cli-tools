@@ -28,6 +28,7 @@ namespace EshopWorld.Tools.Unit.Tests
 
         [Fact, IsUnit]
         [Trait("Command", "autorest")]
+        [Trait("SubCommand ", "generateClient")]
         public void RenderViewToString_FindsView_Success()
         {
             //arrange         
@@ -45,6 +46,7 @@ namespace EshopWorld.Tools.Unit.Tests
 
         [Fact, IsUnit]
         [Trait("Command", "autorest")]
+        [Trait("SubCommand ", "generateClient")]
         public void RenderViewToString_NonexistentView_ThrowsException()
         {
             //arrange
@@ -57,6 +59,7 @@ namespace EshopWorld.Tools.Unit.Tests
 
         [Fact, IsUnit]
         [Trait("Command", "autorest")]
+        [Trait("SubCommand ", "generateClient")]
         public void RenderViewToString_CallsViewRender_Success()
         {
             //arrange

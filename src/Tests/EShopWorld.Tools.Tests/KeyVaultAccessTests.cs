@@ -12,6 +12,7 @@ namespace EshopWorld.Tools.Unit.Tests
     {
         [Fact, IsUnit]
         [Trait("Command", "keyvault")]
+        [Trait("SubCommand ", "generatePOCOs")]
         public void RunSemanticChecks_NoTags_Fail()
         {
             //arrange
@@ -24,6 +25,7 @@ namespace EshopWorld.Tools.Unit.Tests
 
         [Fact, IsUnit]
         [Trait("Command", "keyvault")]
+        [Trait("SubCommand ", "generatePOCOs")]
         public void RunSemanticChecks_MissingTag_Fail()
         {
             //arrange
@@ -38,6 +40,7 @@ namespace EshopWorld.Tools.Unit.Tests
 
         [Fact, IsUnit]
         [Trait("Command", "keyvault")]
+        [Trait("SubCommand ", "generatePOCOs")]
         public void RunSemanticChecks_Success()
         {
             //arrange

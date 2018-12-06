@@ -24,6 +24,7 @@ namespace EshopWorld.Tools.Unit.Tests
 
         [Fact, IsIntegration]
         [Trait("Command", "autorest")]
+        [Trait("SubCommand ", "generateClient")]
         public void RenderView_GeneratesExpectedContent()
         {
             

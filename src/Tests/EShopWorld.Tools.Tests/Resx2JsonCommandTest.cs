@@ -21,6 +21,7 @@ namespace EShopWorld.Tools.Unit.Tests
             [Fact]
             [IsUnit]
             [Trait("Command", "Transform")]
+            [Trait("SubCommand ", "resx2json")]
             public void Test_WithDefaultCulture()
             {
                 const string path = @"C:\SomeFolder\AResource.resx";
@@ -37,6 +38,7 @@ namespace EShopWorld.Tools.Unit.Tests
             [Fact]
             [IsIntegration]
             [Trait("Command", "Transform")]
+            [Trait("SubCommand ", "resx2json")]
             public void Test_WithSpecificCulture()
             {
                 const string path = @"C:\SomeFolder\AResource.it-it.resx";
@@ -56,6 +58,7 @@ namespace EShopWorld.Tools.Unit.Tests
             [Fact]
             [IsIntegration]
             [Trait("Command", "Transform")]
+            [Trait("SubCommand ", "resx2json")]
             public void Test_WithEmbeddedResxResource()
             {               
                 var resxPath = AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf(@"\bin", StringComparison.Ordinal)) + @"\data\test.resx";
@@ -81,6 +84,7 @@ namespace EShopWorld.Tools.Unit.Tests
             [Fact]
             [IsUnit]
             [Trait("Command", "Transform")]
+            [Trait("SubCommand ", "resx2json")]
             public void Test_BaseResxDoesNotMerge()
             {
                 const string fileContent = "some file content!";
@@ -97,6 +101,7 @@ namespace EShopWorld.Tools.Unit.Tests
             [Fact]
             [IsUnit]
             [Trait("Command", "Transform")]
+            [Trait("SubCommand ", "resx2json")]
             public void Test_MergeWithWrongPath()
             {
                 const string basefileContent = "some file content!";
@@ -121,6 +126,7 @@ namespace EShopWorld.Tools.Unit.Tests
             [Fact]
             [IsUnit]
             [Trait("Command", "Transform")]
+            [Trait("SubCommand ", "resx2json")]
             public void Test_MergeSingleLevel()
             {
                 const string basefileContent = "some file content!";
@@ -147,6 +153,7 @@ namespace EShopWorld.Tools.Unit.Tests
             [Fact]
             [IsUnit]
             [Trait("Command", "Transform")]
+            [Trait("SubCommand ", "resx2json")]
             public void Test_MergeMultipleSources()
             {
                 const string basefileContent = "some file content!";
@@ -179,6 +186,7 @@ namespace EShopWorld.Tools.Unit.Tests
             [Fact]
             [IsUnit]
             [Trait("Command", "Transform")]
+            [Trait("SubCommand ", "resx2json")]
             public void Test_SourceWithMore_ThanTarget()
             {
                 const string source = @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -264,6 +272,7 @@ namespace EShopWorld.Tools.Unit.Tests
             [Fact]
             [IsUnit]
             [Trait("Command", "Transform")]
+            [Trait("SubCommand ", "resx2json")]
             public void Test_SourceWithLess_ThanTarget()
             {
                 const string source = @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -354,6 +363,7 @@ namespace EShopWorld.Tools.Unit.Tests
                 [Fact]
                 [IsUnit]
                 [Trait("Command", "Transform")]
+                [Trait("SubCommand ", "resx2json")]
                 public void Test_WithDifferentNames()
                 {
                     var element1 = new XElement("data", new XAttribute("name", "1"));
@@ -366,6 +376,7 @@ namespace EShopWorld.Tools.Unit.Tests
                 [Fact]
                 [IsUnit]
                 [Trait("Command", "Transform")]
+                [Trait("SubCommand ", "resx2json")]
                 public void Test_WithSameNames()
                 {
                     const string nameValue = "the same name";
@@ -379,6 +390,7 @@ namespace EShopWorld.Tools.Unit.Tests
                 [Fact]
                 [IsUnit]
                 [Trait("Command", "Transform")]
+                [Trait("SubCommand ", "resx2json")]
                 public void Test_WithTwoNulls()
                 {
                     var result = new TransfromBase.ResxDataComparer().Equals(null, null);
@@ -389,6 +401,7 @@ namespace EShopWorld.Tools.Unit.Tests
                 [Fact]
                 [IsUnit]
                 [Trait("Command", "Transform")]
+                [Trait("SubCommand ", "resx2json")]
                 public void Test_WithFirstNull()
                 {
                     var result = new TransfromBase.ResxDataComparer().Equals(null, new XElement("something"));
@@ -399,6 +412,7 @@ namespace EShopWorld.Tools.Unit.Tests
                 [Fact]
                 [IsUnit]
                 [Trait("Command", "Transform")]
+                [Trait("SubCommand ", "resx2json")]
                 public void Test_WithSecondNull()
                 {
                     var result = new TransfromBase.ResxDataComparer().Equals(new XElement("something"), null);
@@ -412,6 +426,7 @@ namespace EShopWorld.Tools.Unit.Tests
                 [Fact]
                 [IsUnit]
                 [Trait("Command", "Transform")]
+                [Trait("SubCommand ", "resx2json")]
                 public void Test_WithProperXElement()
                 {
                     const string nameValue = "some name";
@@ -425,6 +440,7 @@ namespace EShopWorld.Tools.Unit.Tests
                 [Fact]
                 [IsUnit]
                 [Trait("Command", "Transform")]
+                [Trait("SubCommand ", "resx2json")]
                 public void Test_WithNull()
                 {
                     var result = new TransfromBase.ResxDataComparer().GetHashCode(null);
@@ -435,6 +451,7 @@ namespace EShopWorld.Tools.Unit.Tests
                 [Fact]
                 [IsUnit]
                 [Trait("Command", "Transform")]
+                [Trait("SubCommand ", "resx2json")]
                 public void Test_WithElementWithoutName()
                 {
                     var element = new XElement("data");
