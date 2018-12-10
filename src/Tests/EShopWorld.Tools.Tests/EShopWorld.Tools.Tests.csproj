@@ -12,12 +12,24 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="appsettings.Development.json" />
+    <None Remove="appsettings.INTEGRATION.json" />
+    <None Remove="appsettings.json" />
     <None Remove="Views\PocoClass.cshtml" />
     <None Remove="Views\PocoProjectFile.cshtml" />
     <None Remove="Views\TestAutorestProjectFileTemplate.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="appsettings.Development.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="appsettings.INTEGRATION.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Views\PocoClass.cshtml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -30,6 +42,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Eshopworld.DevOps" Version="2.0.0" />
     <PackageReference Include="Eshopworld.Tests.Core" Version="1.0.5" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1">
@@ -41,7 +54,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\EShopWorld.Tools\EShopWorld.Tools.csproj" />
   </ItemGroup>
-
+  
   <ItemGroup>
     <Compile Update="Data\test.Designer.cs">
       <DesignTime>True</DesignTime>

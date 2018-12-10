@@ -33,7 +33,7 @@ namespace EShopWorld.Tools.Commands.KeyVault
             {
                 secrets = await kv.GetSecretsAsync(!string.IsNullOrWhiteSpace(secrets?.NextPageLink) ? secrets.NextPageLink : $"https://{keyVaultName}.vault.azure.net/");
                 allSecrets                    
-                    .AddRange(secrets.Where(i => i.Tags.Contains(new KeyValuePair<string, string>(typeTagName, appName)))); //filter for the target app only, use the type tag
+                    .AddRange(secrets.Where(i => i.Tags!=null && i.Tags.Contains(new KeyValuePair<string, string>(typeTagName, appName)))); //filter for the target app only, use the type tag
 
             } while (!string.IsNullOrWhiteSpace(secrets.NextPageLink));
 

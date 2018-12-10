@@ -36,7 +36,7 @@ namespace EShopWorld.Tools.Unit.Tests
             }
 
             [Fact]
-            [IsIntegration]
+            [IsUnit]
             [Trait("Command", "Transform")]
             [Trait("SubCommand ", "resx2json")]
             public void Test_WithSpecificCulture()

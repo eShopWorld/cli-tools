@@ -16,7 +16,7 @@ namespace EShopWorld.Tools.Commands.KeyVault
         public GeneratePocoClassInternalCommand(
             IRazorViewEngine viewEngine,
             ITempDataProvider tempDataProvider,
-            IServiceProvider serviceProvider):base(viewEngine, tempDataProvider, serviceProvider, "Views\\PocoClass.cshtml")
+            IServiceProvider serviceProvider):base(viewEngine, tempDataProvider, serviceProvider, "Commands\\KeyVault\\Views\\PocoClass.cshtml")
         {
         }
     }

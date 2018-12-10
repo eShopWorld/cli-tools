@@ -5,9 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using EShopWorld.Tools.Base;
-using EShopWorld.Tools.Commands.AutoRest;
 using EShopWorld.Tools.Commands.KeyVault.Models;
-using EShopWorld.Tools.Commands.Transform;
 using EShopWorld.Tools.Helpers;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,11 +31,11 @@ namespace EShopWorld.Tools.Commands.KeyVault
         }
 
         [Command("generatePOCOs", Description = "Generates the POCOs and the project file")]
-        internal class GeneratePOCOsCommand : TransfromBase
+        internal class GeneratePOCOsCommand 
         {
             [Option(
                 Description = "application id - credential to access the vault",
-                ShortName = "aid",
+                ShortName = "a",
                 LongName = "appId",
                 ShowInHelpText = true)]
             [Required]           
@@ -45,7 +43,7 @@ namespace EShopWorld.Tools.Commands.KeyVault
 
             [Option(
                 Description = "application secret given to the application id - credential to access the vault",
-                ShortName = "as",
+                ShortName = "s",
                 LongName = "appSecret",
                 ShowInHelpText = true)]
             [Required]        
@@ -70,7 +68,7 @@ namespace EShopWorld.Tools.Commands.KeyVault
 
             [Option(
                 Description = "name of the application to generate the POCO for",
-                ShortName = "an",
+                ShortName = "m",
                 LongName = "appName",
                 ShowInHelpText = true)]
             [Required] 
@@ -86,36 +84,36 @@ namespace EShopWorld.Tools.Commands.KeyVault
 
             [Option(
                 Description = "name of the tag to denote obsolete status (defaults to 'Obsolete')",
-                ShortName = "ot",
+                ShortName = "b",
                 LongName = "obsoleteTag",
                 ShowInHelpText = true)]
             public string ObsoleteTagName { get; set; } = "Obsolete";
 
             [Option(
                 Description = "name of the tag denoting type name assignation (class) (defaults to 'Type')",
-                ShortName = "typeTag",
-                LongName = "tt",
+                ShortName = "g",
+                LongName = "typeTag",
                 ShowInHelpText = true)]
             public string TypeTagName { get; set; } = "Type";
 
             [Option(
                 Description = "name of the tag denoting name of the field (defaults to 'Name')",
-                ShortName = "nameTag",
-                LongName = "nt",
+                ShortName = "f",
+                LongName = "nameTag",
                 ShowInHelpText = true)]
             public string NameTagName { get; set; } = "Name";
 
             [Option(
                 Description = "folder to output generated files into (defaults to '.')",
-                ShortName = "output",
-                LongName = "o",
+                ShortName = "o",
+                LongName = "output",
                 ShowInHelpText = true)]
             public string OutputFolder { get; set; } = ".";
 
             [Option(
                 Description = "version number to inject into nuspec",
-                ShortName = "version",
-                LongName = "v",
+                ShortName = "v",
+                LongName = "version",
                 ShowInHelpText = true)]
             [Required]    
             public string Version { get; set; }
@@ -130,7 +128,7 @@ namespace EShopWorld.Tools.Commands.KeyVault
 
                 // Initialize the necessary services
                 var services = new ServiceCollection();
-                AspNetRazorEngineServiceSetup.ConfigureDefaultServices<RenderProjectFileInternalCommand>(services, Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+                AspNetRazorEngineServiceSetup.ConfigureDefaultServices<GeneratePocoClassInternalCommand>(services, Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
 
                 var provider = services.BuildServiceProvider();
                 var serviceScope = provider.GetRequiredService<IServiceScopeFactory>();
@@ -145,12 +143,19 @@ namespace EShopWorld.Tools.Commands.KeyVault
                             i.Tags != null && i.Tags.ContainsKey(NameTagName) ? i.Tags[NameTagName] : i.Identifier.Name,
                             i.Tags != null && i.Tags.ContainsKey(ObsoleteTagName) && Convert.ToBoolean(i.Tags[ObsoleteTagName])))
                     }, Path.Combine(OutputFolder, Path.Combine(OutputFolder, "ConfigurationSecrets.cs")));
+                }
 
+                AspNetRazorEngineServiceSetup.ConfigureDefaultServices<GeneratePocoProjectInternalCommand>(services, Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+                provider = services.BuildServiceProvider();
+                serviceScope = provider.GetRequiredService<IServiceScopeFactory>();
+                using (serviceScope.CreateScope())
+                {
                     //generate project file
                     var projectCommand = provider.GetRequiredService<GeneratePocoProjectInternalCommand>();
-                    projectCommand.Render(new GeneratePocoProjectViewModel { AppName = AppName, Version = Version }, Path.Combine(OutputFolder, $"{AppName}.csproj"));
+                    projectCommand.Render(new GeneratePocoProjectViewModel {AppName = AppName, Version = Version},
+                        Path.Combine(OutputFolder, $"{AppName}.csproj"));
                 }
-              
+
                 return 0;
             }
         }
