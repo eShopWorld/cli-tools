@@ -32,5 +32,21 @@ namespace EshopWorld.Tools.Unit.Tests
             File.Exists(Path.Combine(output, "ConfigurationSecrets.cs")).Should().BeTrue();
             File.Exists(Path.Combine(output, "KeyVaultCLITest.csproj")).Should().BeTrue();
         }
+
+        [Fact, IsLayer1]
+        public void GeneratePOCOsFlow_ShortNames()
+        {
+            //config load
+            var config = EswDevOpsSdk.BuildConfiguration(true);
+            var output = Path.GetTempPath();
+
+            DeleteTestFiles(output, "ConfigurationSecrets.cs", "KeyVaultCLITest.csproj");
+            GetStandardOutput("keyvault", "generatePOCOs", "-s", $"\"{config["appSecret"]}\"", "-a",
+                $"\"{config["appId"]}\"", "-t", $"\"{config["tenantId"]}\"", "-k",
+                config["keyvault"], "-m", "KeyVaultCLITest", "-o", output, "--namespace", "n", "-v", "1.2");
+
+            File.Exists(Path.Combine(output, "ConfigurationSecrets.cs")).Should().BeTrue();
+            File.Exists(Path.Combine(output, "KeyVaultCLITest.csproj")).Should().BeTrue();
+        }
     }
 }
