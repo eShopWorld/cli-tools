@@ -43,7 +43,7 @@ namespace EShopWorld.Tools.Commands.Transform
             /// </summary>
             [Option(
                 Description = "The source folder containing the RESX files. Can be absolute or relative.",
-                ShortName = "s",
+                ShortName = "r",
                 LongName = "resx-project",
                 ShowInHelpText = true)]
             [Required]
@@ -54,7 +54,7 @@ namespace EShopWorld.Tools.Commands.Transform
             /// </summary>
             [Option(
                 Description = "The target folder containing the JSON files. Can be absolute or relative.",
-                ShortName = "o",
+                ShortName = "j",
                 LongName = "json-project",
                 ShowInHelpText = true)]
             [Required]

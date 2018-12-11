@@ -11,7 +11,7 @@ namespace EShopWorld.Tools.Commands.KeyVault
         /// <inheritdoc/>
         public GeneratePocoProjectInternalCommand(IRazorViewEngine viewEngine,
         ITempDataProvider tempDataProvider,
-            IServiceProvider serviceProvider):base(viewEngine, tempDataProvider, serviceProvider, "Views\\PocoProjectFile.cshtml")
+            IServiceProvider serviceProvider):base(viewEngine, tempDataProvider, serviceProvider, "Commands\\KeyVault\\Views\\PocoProjectFile.cshtml")
         {
                 
         }

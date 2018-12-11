@@ -16,7 +16,7 @@ namespace EShopWorld.Tools.Commands.AutoRest
     /// autorest command - top level
     /// </summary>
     [Command("autorest", Description = "AutoRest associated functionality"), HelpOption]
-    [Subcommand(typeof(GenerateClientCommand))]
+    [Subcommand(typeof(GenerateProjectFileCommand))]
     public class AutoRestCommand : CommandBase
     {
         private int OnExecute(CommandLineApplication app, IConsole console)
@@ -33,8 +33,8 @@ namespace EShopWorld.Tools.Commands.AutoRest
             return 1;
         }
 
-        [Command("generateClient", Description = "Generates the AutoRest Client Code")]
-        internal class GenerateClientCommand
+        [Command("generateProjectFile", Description = "Generates project file for the Autorest generated code")]
+        internal class GenerateProjectFileCommand
         {
             [Option(
                 Description = "url to the swagger JSON file",

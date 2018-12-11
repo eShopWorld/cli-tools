@@ -22,7 +22,7 @@ namespace EShopWorld.Tools
         /// </summary>
         /// <param name="args">The list of arguments for this extension.</param>
         /// <returns>Executable exit code.</returns>
-        public static void Main(string[] args) => CommandLineApplication.Execute<Program>(args);
+        public static void Main(string[] args) =>  CommandLineApplication.Execute<Program>(args);
         
         /// <summary>
         /// 
@@ -34,7 +34,7 @@ namespace EShopWorld.Tools
         {
             console.Error.WriteLine("You must specify a sub-command to execute.");
             app.ShowHelp();
-
+            app.ClusterOptions = false;
 #if DEBUG
             if (Debugger.IsAttached)
             {
