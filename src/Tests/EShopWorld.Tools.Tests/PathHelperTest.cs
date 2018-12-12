@@ -2,6 +2,7 @@
 using System.Linq;
 using Eshopworld.Tests.Core;
 using EShopWorld.Tools;
+using EShopWorld.Tools.Helpers;
 using FluentAssertions;
 using Moq;
 using Xunit;

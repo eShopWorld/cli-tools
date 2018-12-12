@@ -3,8 +3,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using EShopWorld.Tools.Base;
 using EShopWorld.Tools.Commands.KeyVault.Models;
 using EShopWorld.Tools.Helpers;
 using McMaster.Extensions.CommandLineUtils;
@@ -16,7 +14,7 @@ namespace EShopWorld.Tools.Commands.KeyVault
     [Subcommand(typeof(GeneratePOCOsCommand))]
     public class KeyVaultCommand : CommandBase
     {
-        private int OnExecute(CommandLineApplication app, IConsole console)
+        protected override int InternalExecute(CommandLineApplication app, IConsole console)
         {
             console.Error.WriteLine("You must specify a subcommand");
             app.ShowHelp();
@@ -31,30 +29,27 @@ namespace EShopWorld.Tools.Commands.KeyVault
         }
 
         [Command("generatePOCOs", Description = "Generates the POCOs and the project file")]
-        internal class GeneratePOCOsCommand 
+        internal class GeneratePOCOsCommand :RazorCommandBase
         {
             [Option(
                 Description = "application id - credential to access the vault",
                 ShortName = "a",
                 LongName = "appId",
-                ShowInHelpText = true)]
-            [Required]           
+                ShowInHelpText = true)]         
             public string AppId { get; set; }
 
             [Option(
                 Description = "application secret given to the application id - credential to access the vault",
                 ShortName = "s",
                 LongName = "appSecret",
-                ShowInHelpText = true)]
-            [Required]        
+                ShowInHelpText = true)]     
             public string AppSecret { get; set; }
 
             [Option(
                 Description = "tenant identifier hosting the vault",
                 ShortName = "t",
                 LongName = "tenantId",
-                ShowInHelpText = true)]
-            [Required]            
+                ShowInHelpText = true)]        
             public string TenantId { get; set; }
 
             [Option(
@@ -118,44 +113,38 @@ namespace EShopWorld.Tools.Commands.KeyVault
             [Required]    
             public string Version { get; set; }
 
-            private int OnExecute(IConsole console)
+            protected internal override void ConfigureDI()
+            {
+                base.ConfigureDI();
+                ServiceCollection.AddSingleton<GeneratePocoClassInternalCommand>();
+                ServiceCollection.AddSingleton<GeneratePocoProjectInternalCommand>();
+            }
+
+            protected  override int InternalExecute(CommandLineApplication app, IConsole console)
             {
                 //collect all secrets
-                var secrets = KeyValueAccess.GetAllSecrets(TenantId, AppId, AppSecret, KeyVaultName, TypeTagName, NameTagName, AppName)
+                var secrets = KeyVaultAccess.GetAllSecrets(TenantId, AppId, AppSecret, KeyVaultName, TypeTagName, NameTagName, AppName)
                     .GetAwaiter().GetResult();
 
-                Directory.CreateDirectory(OutputFolder);
+                Directory.CreateDirectory(OutputFolder);             
 
-                // Initialize the necessary services
-                var services = new ServiceCollection();
-                AspNetRazorEngineServiceSetup.ConfigureDefaultServices<GeneratePocoClassInternalCommand>(services, Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
-
-                var provider = services.BuildServiceProvider();
-                var serviceScope = provider.GetRequiredService<IServiceScopeFactory>();
-                using (serviceScope.CreateScope())
-                {                   
-                    //generate POCOs
-                    var pocoCommand = provider.GetRequiredService<GeneratePocoClassInternalCommand>();
-                    pocoCommand.Render(new GeneratePocoClassViewModel
-                    {
-                        Namespace = Namespace,
-                        Fields = secrets.Select(i => new Tuple<string, bool>(
-                            i.Tags != null && i.Tags.ContainsKey(NameTagName) ? i.Tags[NameTagName] : i.Identifier.Name,
-                            i.Tags != null && i.Tags.ContainsKey(ObsoleteTagName) && Convert.ToBoolean(i.Tags[ObsoleteTagName])))
-                    }, Path.Combine(OutputFolder, Path.Combine(OutputFolder, "ConfigurationSecrets.cs")));
-                }
-
-                AspNetRazorEngineServiceSetup.ConfigureDefaultServices<GeneratePocoProjectInternalCommand>(services, Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
-                provider = services.BuildServiceProvider();
-                serviceScope = provider.GetRequiredService<IServiceScopeFactory>();
-                using (serviceScope.CreateScope())
+                var provider = ServiceCollection.BuildServiceProvider();
+                       
+                //generate POCOs
+                var pocoCommand = provider.GetRequiredService<GeneratePocoClassInternalCommand>();
+                pocoCommand.Render(new GeneratePocoClassViewModel
                 {
-                    //generate project file
-                    var projectCommand = provider.GetRequiredService<GeneratePocoProjectInternalCommand>();
-                    projectCommand.Render(new GeneratePocoProjectViewModel {AppName = AppName, Version = Version},
-                        Path.Combine(OutputFolder, $"{AppName}.csproj"));
-                }
-
+                    Namespace = Namespace,
+                    Fields = secrets.Select(i => new Tuple<string, bool>(
+                        i.Tags != null && i.Tags.ContainsKey(NameTagName) ? i.Tags[NameTagName] : i.Identifier.Name,
+                        i.Tags != null && i.Tags.ContainsKey(ObsoleteTagName) && Convert.ToBoolean(i.Tags[ObsoleteTagName])))
+                }, Path.Combine(OutputFolder, Path.Combine(OutputFolder, "ConfigurationSecrets.cs")));
+                
+                //generate project file
+                var projectCommand = provider.GetRequiredService<GeneratePocoProjectInternalCommand>();
+                projectCommand.Render(new GeneratePocoProjectViewModel {AppName = AppName, Version = Version},
+                    Path.Combine(OutputFolder, $"{AppName}.csproj"));
+      
                 return 0;
             }
         }

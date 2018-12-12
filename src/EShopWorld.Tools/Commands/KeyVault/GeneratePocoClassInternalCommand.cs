@@ -1,5 +1,4 @@
 ﻿using System;
-using EShopWorld.Tools.Base;
 using EShopWorld.Tools.Commands.KeyVault.Models;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -10,7 +9,7 @@ namespace EShopWorld.Tools.Commands.KeyVault
     /// <summary>
     /// specific "command" to generate poco class that has recognized secrets as fields and is bindable to keyvault configuration extensions
     /// </summary>
-    public class GeneratePocoClassInternalCommand : AbstractRazorCommand<GeneratePocoClassViewModel>
+    public class GeneratePocoClassInternalCommand : RazorInternalCommandBase<GeneratePocoClassViewModel>
     { 
         /// <inheritdoc />      
         public GeneratePocoClassInternalCommand(

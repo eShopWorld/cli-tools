@@ -6,7 +6,6 @@ using System.Reflection;
 using Eshopworld.Tests.Core;
 using EShopWorld.Tools.Commands.KeyVault;
 using EShopWorld.Tools.Commands.KeyVault.Models;
-using EShopWorld.Tools.Helpers;
 using FluentAssertions;
 using Microsoft.Azure.KeyVault.Models;
 using Microsoft.Extensions.DependencyInjection;
@@ -57,10 +56,10 @@ namespace EshopWorld.Tools.Unit.Tests
             });
             //act
             // Initialize the necessary services
-            var services = new ServiceCollection();
-            AspNetRazorEngineServiceSetup.ConfigureDefaultServices<GeneratePocoClassInternalCommand>(services, Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
-
-            var provider = services.BuildServiceProvider();
+            var command = new KeyVaultCommand.GeneratePOCOsCommand();
+            command.ConfigureDI();
+            
+            var provider = command.ServiceCollection.BuildServiceProvider();
             var serviceScope = provider.GetRequiredService<IServiceScopeFactory>();
             using (serviceScope.CreateScope())
             {
@@ -83,10 +82,9 @@ namespace EshopWorld.Tools.Unit.Tests
         [Trait("SubCommand ", "generatePOCOs")]
         public void GeneratePocoProject_Success()
         {
-            var services = new ServiceCollection();
-            AspNetRazorEngineServiceSetup.ConfigureDefaultServices<GeneratePocoProjectInternalCommand>(services, Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
-
-            var provider = services.BuildServiceProvider();
+            var command = new KeyVaultCommand.GeneratePOCOsCommand();
+            command.ConfigureDI();
+            var provider = command.ServiceCollection.BuildServiceProvider();
             var serviceScope = provider.GetRequiredService<IServiceScopeFactory>();
             using (serviceScope.CreateScope())
             {

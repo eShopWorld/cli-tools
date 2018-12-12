@@ -4,7 +4,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
-namespace EShopWorld.Tools
+namespace EShopWorld.Tools.Helpers
 {
     /// <summary>
     /// Contains extensions to the <see cref="Path"/> class in System.IO as a helper class to improve mocking.

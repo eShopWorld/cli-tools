@@ -9,12 +9,12 @@ using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.Rest;
 using Microsoft.Rest.Azure;
 
-namespace EShopWorld.Tools.Commands.KeyVault
+namespace EShopWorld.Tools.Helpers
 {
     /// <summary>
     /// this class encapsulates operations against the key vault
     /// </summary>
-    public static class KeyValueAccess
+    public static class KeyVaultAccess
     {       
         internal static async Task<IList<SecretItem>> GetAllSecrets(string tenantId, string appId, string appSecret, string keyVaultName, string typeTagName, string nameTagName, string appName)
         {

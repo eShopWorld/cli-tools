@@ -5,10 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using EShopWorld.Tools.Base;
 using EShopWorld.Tools.Commands.AutoRest.Models;
-using EShopWorld.Tools.Helpers;
 
 namespace EShopWorld.Tools.Commands.AutoRest
 {
@@ -19,7 +16,7 @@ namespace EShopWorld.Tools.Commands.AutoRest
     [Subcommand(typeof(GenerateProjectFileCommand))]
     public class AutoRestCommand : CommandBase
     {
-        private int OnExecute(CommandLineApplication app, IConsole console)
+        protected override int InternalExecute(CommandLineApplication app, IConsole console)
         {
             console.Error.WriteLine("You must specify a subcommand");
             app.ShowHelp();
@@ -34,7 +31,7 @@ namespace EShopWorld.Tools.Commands.AutoRest
         }
 
         [Command("generateProjectFile", Description = "Generates project file for the Autorest generated code")]
-        internal class GenerateProjectFileCommand
+        internal class GenerateProjectFileCommand : RazorCommandBase
         {
             [Option(
                 Description = "url to the swagger JSON file",
@@ -59,28 +56,26 @@ namespace EShopWorld.Tools.Commands.AutoRest
                 ShowInHelpText = true)]
             public List<string> TFMs { get; set; } = new[] {"net462", "netstandard2.0"}.ToList();
 
-            private int OnExecute(IConsole console)
+            protected internal override void ConfigureDI()
+            {
+                base.ConfigureDI();
+                ServiceCollection.AddSingleton<RenderProjectFileInternalCommand>();
+            }
+
+            protected override int InternalExecute(CommandLineApplication app, IConsole console)
             {             
                 Directory.CreateDirectory(Output);
-                // Initialize the necessary services
-                var services = new ServiceCollection();
-                AspNetRazorEngineServiceSetup.ConfigureDefaultServices<RenderProjectFileInternalCommand>(services, Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+                
+                var provider = ServiceCollection.BuildServiceProvider();
+                var swaggerInfo = SwaggerJsonParser.ParsetOut(SwaggerFile);
+                var projectFileName = swaggerInfo.Item1 + ".csproj";
 
-                var provider = services.BuildServiceProvider();
-                var serviceScope = provider.GetRequiredService<IServiceScopeFactory>();
-                using (serviceScope.CreateScope())
-                {
-                    var swaggerInfo = SwaggerJsonParser.ParsetOut(SwaggerFile);
-                    var projectFileName = swaggerInfo.Item1 + ".csproj";
-
-                    //generate project file
-                    var projectFileCommand = provider.GetRequiredService<RenderProjectFileInternalCommand>();
-                    projectFileCommand.Render(new ProjectFileViewModel { TFMs = TFMs.ToArray(), ProjectName = swaggerInfo.Item1, Version = swaggerInfo.Item2 }, Path.Combine(Output, projectFileName));
-                }
+                //generate project file
+                var projectFileCommand = provider.GetRequiredService<RenderProjectFileInternalCommand>();
+                projectFileCommand.Render(new ProjectFileViewModel { TFMs = TFMs.ToArray(), ProjectName = swaggerInfo.Item1, Version = swaggerInfo.Item2 }, Path.Combine(Output, projectFileName));
 
                 return 0;
             }
-
         }
     }
 }

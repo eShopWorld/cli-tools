@@ -1,6 +1,6 @@
 ﻿using JetBrains.Annotations;
 
-namespace EShopWorld.Tools
+namespace EShopWorld.Tools.Helpers
 {
     public interface IPathHelper
     {

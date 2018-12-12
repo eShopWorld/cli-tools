@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using EShopWorld.Tools.Base;
+using EShopWorld.Tools.Helpers;
 using McMaster.Extensions.CommandLineUtils;
 
 namespace EShopWorld.Tools.Commands.Transform
@@ -17,7 +17,7 @@ namespace EShopWorld.Tools.Commands.Transform
         /// <summary>
         /// Runs this command.
         /// </summary>
-        private int OnExecute(CommandLineApplication app, IConsole console)
+        protected override int InternalExecute(CommandLineApplication app, IConsole console)
         {
             console.WriteLine("Please specify a subcommand");
             app.ShowHelp();
@@ -36,7 +36,7 @@ namespace EShopWorld.Tools.Commands.Transform
         /// command implementation for resx2json
         /// </summary>
         [Command("resx2json", Description = "Resx 2 json transform")]
-        protected internal class Resx2JsonCommand : TransfromBase
+        protected internal class Resx2JsonCommand : TransformBase
         {
             /// <summary>
             /// The path to the folder that contains the RESX files. Can be absolute or relative.
@@ -60,7 +60,7 @@ namespace EShopWorld.Tools.Commands.Transform
             [Required]
             public string JsonProject { get; set; }
 
-            private void OnExecute(IConsole console)
+            protected override int InternalExecute(CommandLineApplication app, IConsole console)
             {
                 var sourceFolder = Path.GetFullPath(ResxProject);
                 var outputFolder = Path.GetFullPath(JsonProject);
@@ -81,6 +81,8 @@ namespace EShopWorld.Tools.Commands.Transform
                     var jsonFilePath = GetJsonPath(pathHelper.EnforceSameFolders(sourceFolder, outputFolder, resxFile), resxFile);
                     File.WriteAllText(jsonFilePath, json);
                 }
+
+                return 0;
             }
         }
     }
