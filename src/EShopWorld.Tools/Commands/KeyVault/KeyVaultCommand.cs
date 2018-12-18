@@ -128,7 +128,7 @@ namespace EShopWorld.Tools.Commands.KeyVault
                     string.IsNullOrWhiteSpace(AppSecret))
                 {
                     console?.Out.WriteLine("using MSI authentication mode");
-                    ServiceCollection.AddSingleton(new KeyVaultClient(
+                    ServiceCollection.AddTransient(provider => new KeyVaultClient(
                         new KeyVaultClient.AuthenticationCallback(new AzureServiceTokenProvider()
                             .KeyVaultTokenCallback)));
                 }
