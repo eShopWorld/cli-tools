@@ -56,9 +56,9 @@ namespace EShopWorld.Tools.Commands.AutoRest
                 ShowInHelpText = true)]
             public List<string> TFMs { get; set; } = new[] {"net462", "netstandard2.0"}.ToList();
 
-            protected internal override void ConfigureDI()
+            protected internal override void ConfigureDI(IConsole console)
             {
-                base.ConfigureDI();
+                base.ConfigureDI(console);
                 ServiceCollection.AddSingleton<RenderProjectFileInternalCommand>();
             }
 
@@ -66,12 +66,11 @@ namespace EShopWorld.Tools.Commands.AutoRest
             {             
                 Directory.CreateDirectory(Output);
                 
-                var provider = ServiceCollection.BuildServiceProvider();
                 var swaggerInfo = SwaggerJsonParser.ParsetOut(SwaggerFile);
                 var projectFileName = swaggerInfo.Item1 + ".csproj";
 
                 //generate project file
-                var projectFileCommand = provider.GetRequiredService<RenderProjectFileInternalCommand>();
+                var projectFileCommand = ServiceProvider.GetRequiredService<RenderProjectFileInternalCommand>();
                 projectFileCommand.Render(new ProjectFileViewModel { TFMs = TFMs.ToArray(), ProjectName = swaggerInfo.Item1, Version = swaggerInfo.Item2 }, Path.Combine(Output, projectFileName));
 
                 return 0;

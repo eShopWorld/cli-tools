@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -17,15 +18,27 @@ namespace EShopWorld.Tools.Commands
 
         internal IServiceCollection ServiceCollection = new ServiceCollection();
 
+        private IServiceProvider _serviceProvider;
+
+        public IServiceProvider ServiceProvider
+        {
+            get
+            {
+                if (_serviceProvider == null)
+                    _serviceProvider = ServiceCollection.BuildServiceProvider();
+
+                return _serviceProvider;
+            }
+        }
         // ReSharper disable once InconsistentNaming
-        protected internal virtual void ConfigureDI()
+        protected internal virtual void ConfigureDI(IConsole console)
         {
 
         }
 
         public int OnExecute(CommandLineApplication app, IConsole console)
         {
-            ConfigureDI();
+            ConfigureDI(console);
             return InternalExecute(app, console);
         }
 

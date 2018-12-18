@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using Eshopworld.Tests.Core;
 using EShopWorld.Tools.Commands.KeyVault;
 using EShopWorld.Tools.Commands.KeyVault.Models;
 using FluentAssertions;
+using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Azure.KeyVault.Models;
 using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using Xunit;
 
 namespace EshopWorld.Tools.Unit.Tests
@@ -57,8 +58,10 @@ namespace EshopWorld.Tools.Unit.Tests
             //act
             // Initialize the necessary services
             var command = new KeyVaultCommand.GeneratePOCOsCommand();
-            command.ConfigureDI();
-            
+            var consoleMock = new Mock<IConsole>();
+            consoleMock.SetupGet(i => i.Out).Returns(TextWriter.Null);
+            command.ConfigureDI(consoleMock.Object);
+
             var provider = command.ServiceCollection.BuildServiceProvider();
             var serviceScope = provider.GetRequiredService<IServiceScopeFactory>();
             using (serviceScope.CreateScope())
@@ -83,7 +86,9 @@ namespace EshopWorld.Tools.Unit.Tests
         public void GeneratePocoProject_Success()
         {
             var command = new KeyVaultCommand.GeneratePOCOsCommand();
-            command.ConfigureDI();
+            var consoleMock = new Mock<IConsole>();
+            consoleMock.SetupGet(i => i.Out).Returns(TextWriter.Null);
+            command.ConfigureDI(consoleMock.Object);
             var provider = command.ServiceCollection.BuildServiceProvider();
             var serviceScope = provider.GetRequiredService<IServiceScopeFactory>();
             using (serviceScope.CreateScope())

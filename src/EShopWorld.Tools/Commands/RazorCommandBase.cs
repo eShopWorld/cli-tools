@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using McMaster.Extensions.CommandLineUtils;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Mvc.Razor;
@@ -13,7 +14,7 @@ namespace EShopWorld.Tools.Commands
 {
     public abstract class RazorCommandBase: CommandBase
     {
-        protected internal override void ConfigureDI()
+        protected internal override void ConfigureDI(IConsole console)
         {
             var applicationEnvironment = PlatformServices.Default.Application;
 

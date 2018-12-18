@@ -5,7 +5,9 @@ using Eshopworld.Tests.Core;
 using EShopWorld.Tools.Commands.AutoRest;
 using EShopWorld.Tools.Commands.AutoRest.Models;
 using FluentAssertions;
+using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using Xunit;
 
 namespace EshopWorld.Tools.Unit.Tests
@@ -19,7 +21,7 @@ namespace EshopWorld.Tools.Unit.Tests
         public void RenderView_GeneratesExpectedContent()
         {
             var command = new AutoRestCommand.GenerateProjectFileCommand();
-            command.ConfigureDI();
+            command.ConfigureDI(Mock.Of<IConsole>());
             var serviceProvider = command.ServiceCollection.BuildServiceProvider();
 
             var sut = serviceProvider.GetRequiredService<RenderProjectFileInternalCommand>();
