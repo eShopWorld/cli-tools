@@ -12,13 +12,13 @@ using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
 
-namespace EShopWorld.Tools.Base
+namespace EShopWorld.Tools.Commands
 {
     /// <summary>
     /// abstract class to run razor view generator for specified view and view model
     /// </summary>
     /// <typeparam name="T">type of model for the template</typeparam>
-    public abstract class AbstractRazorCommand<T>: CommandBase where T:class
+    public abstract class RazorInternalCommandBase<T>
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly ITempDataProvider _tempDataProvider;
@@ -32,7 +32,7 @@ namespace EShopWorld.Tools.Base
         /// <param name="tempDataProvider">temporary cross-request data storage provider</param>
         /// <param name="serviceProvider">service provider for other services as requested by the view</param>
         /// <param name="viewPath">path to the view</param>
-        public AbstractRazorCommand(
+        public RazorInternalCommandBase(
             IRazorViewEngine viewEngine,
             ITempDataProvider tempDataProvider,
             IServiceProvider serviceProvider, string viewPath)

@@ -1,5 +1,4 @@
 ﻿using System;
-using EShopWorld.Tools.Base;
 using EShopWorld.Tools.Commands.AutoRest.Models;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -9,7 +8,7 @@ namespace EShopWorld.Tools.Commands.AutoRest
     /// <summary>
     /// internal "command" to render the project file
     /// </summary>
-    public class RenderProjectFileInternalCommand : AbstractRazorCommand<ProjectFileViewModel>
+    public class RenderProjectFileInternalCommand : RazorInternalCommandBase<ProjectFileViewModel>
     {    
         /// <summary>
         /// DI constructor to supply all necessary services for razor engine to work

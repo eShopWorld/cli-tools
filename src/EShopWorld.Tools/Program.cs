@@ -1,7 +1,7 @@
 ﻿using EShopWorld.Tools.Commands.AutoRest;
 using McMaster.Extensions.CommandLineUtils;
 using System.Diagnostics;
-using EShopWorld.Tools.Base;
+using EShopWorld.Tools.Commands;
 using EShopWorld.Tools.Commands.KeyVault;
 using EShopWorld.Tools.Commands.Transform;
 
@@ -30,7 +30,7 @@ namespace EShopWorld.Tools
         /// <param name="app"></param>
         /// <param name="console"></param>
         /// <returns></returns>
-        private int OnExecute(CommandLineApplication app, IConsole console)
+        protected override int InternalExecute(CommandLineApplication app, IConsole console)
         {
             console.Error.WriteLine("You must specify a sub-command to execute.");
             app.ShowHelp();

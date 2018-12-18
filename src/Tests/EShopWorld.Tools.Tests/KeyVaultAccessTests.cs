@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Eshopworld.Tests.Core;
 using EShopWorld.Tools.Commands.KeyVault;
+using EShopWorld.Tools.Helpers;
 using FluentAssertions;
 using Microsoft.Azure.KeyVault.Models;
 using Xunit;
@@ -18,7 +19,7 @@ namespace EshopWorld.Tools.Unit.Tests
             //arrange
             var secret = new SecretItem("https://rmtestkeyvault.vault.azure.net:443/secrets/Secret1");
             //act
-            var ret = KeyValueAccess.RunSemanticChecks(new List<SecretItem>(new[] {secret}), "Name");
+            var ret = KeyVaultExtensions.RunSemanticChecks(new List<SecretItem>(new[] {secret}), "Name");
             //asert
             ret.Should().BeFalse();
         }
@@ -33,7 +34,7 @@ namespace EshopWorld.Tools.Unit.Tests
                 new ConcurrentDictionary<string, string>(
                     new List<KeyValuePair<string, string>>(new[] {new KeyValuePair<string, string>("Blah", "Blah")})));
             //act
-            var ret = KeyValueAccess.RunSemanticChecks(new List<SecretItem>(new[] { secret }), "Name");
+            var ret = KeyVaultExtensions.RunSemanticChecks(new List<SecretItem>(new[] { secret }), "Name");
             //asert
             ret.Should().BeFalse();
         }
@@ -52,7 +53,7 @@ namespace EshopWorld.Tools.Unit.Tests
                         new KeyValuePair<string, string>("Type", "Blah")
                     })));
             //act
-            var ret = KeyValueAccess.RunSemanticChecks(new List<SecretItem>(new[] { secret }), "Name", "Type");
+            var ret = KeyVaultExtensions.RunSemanticChecks(new List<SecretItem>(new[] { secret }), "Name", "Type");
             //asert
             ret.Should().BeTrue();
         }

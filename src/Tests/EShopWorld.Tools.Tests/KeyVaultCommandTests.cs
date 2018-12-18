@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using Eshopworld.Tests.Core;
 using EShopWorld.Tools.Commands.KeyVault;
 using EShopWorld.Tools.Commands.KeyVault.Models;
-using EShopWorld.Tools.Helpers;
 using FluentAssertions;
+using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Azure.KeyVault.Models;
 using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using Xunit;
 
 namespace EshopWorld.Tools.Unit.Tests
@@ -57,10 +57,12 @@ namespace EshopWorld.Tools.Unit.Tests
             });
             //act
             // Initialize the necessary services
-            var services = new ServiceCollection();
-            AspNetRazorEngineServiceSetup.ConfigureDefaultServices<GeneratePocoClassInternalCommand>(services, Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+            var command = new KeyVaultCommand.GeneratePOCOsCommand();
+            var consoleMock = new Mock<IConsole>();
+            consoleMock.SetupGet(i => i.Out).Returns(TextWriter.Null);
+            command.ConfigureDI(consoleMock.Object);
 
-            var provider = services.BuildServiceProvider();
+            var provider = command.ServiceCollection.BuildServiceProvider();
             var serviceScope = provider.GetRequiredService<IServiceScopeFactory>();
             using (serviceScope.CreateScope())
             {
@@ -83,10 +85,11 @@ namespace EshopWorld.Tools.Unit.Tests
         [Trait("SubCommand ", "generatePOCOs")]
         public void GeneratePocoProject_Success()
         {
-            var services = new ServiceCollection();
-            AspNetRazorEngineServiceSetup.ConfigureDefaultServices<GeneratePocoProjectInternalCommand>(services, Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
-
-            var provider = services.BuildServiceProvider();
+            var command = new KeyVaultCommand.GeneratePOCOsCommand();
+            var consoleMock = new Mock<IConsole>();
+            consoleMock.SetupGet(i => i.Out).Returns(TextWriter.Null);
+            command.ConfigureDI(consoleMock.Object);
+            var provider = command.ServiceCollection.BuildServiceProvider();
             var serviceScope = provider.GetRequiredService<IServiceScopeFactory>();
             using (serviceScope.CreateScope())
             {

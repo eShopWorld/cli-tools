@@ -1,37 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.KeyVault.Models;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
-using Microsoft.Rest;
 using Microsoft.Rest.Azure;
 
-namespace EShopWorld.Tools.Commands.KeyVault
+namespace EShopWorld.Tools.Helpers
 {
     /// <summary>
     /// this class encapsulates operations against the key vault
     /// </summary>
-    public static class KeyValueAccess
+    public static class KeyVaultExtensions
     {       
-        internal static async Task<IList<SecretItem>> GetAllSecrets(string tenantId, string appId, string appSecret, string keyVaultName, string typeTagName, string nameTagName, string appName)
-        {
-            //authenticate using the  application id and secrets
-            var authContext = new AuthenticationContext($"https://login.windows.net/{tenantId}"); 
-            var credential = new ClientCredential(appId, appSecret);
-            var token = await authContext.AcquireTokenAsync("https://vault.azure.net", credential);
-
-            //open the vault
-            var kv = new KeyVaultClient(new TokenCredentials(token.AccessToken), new HttpClientHandler());
-
+        internal static async Task<IList<SecretItem>> GetAllSecrets(this KeyVaultClient client, string keyVaultName, string typeTagName, string nameTagName, string appName)
+        {        
             //iterate via secret pages
             var allSecrets = new List<SecretItem>();
             IPage<SecretItem> secrets = null;
             do
             {
-                secrets = await kv.GetSecretsAsync(!string.IsNullOrWhiteSpace(secrets?.NextPageLink) ? secrets.NextPageLink : $"https://{keyVaultName}.vault.azure.net/");
+                secrets = await client.GetSecretsAsync(!string.IsNullOrWhiteSpace(secrets?.NextPageLink) ? secrets.NextPageLink : $"https://{keyVaultName}.vault.azure.net/");
                 allSecrets                    
                     .AddRange(secrets.Where(i => i.Tags!=null && i.Tags.Contains(new KeyValuePair<string, string>(typeTagName, appName)))); //filter for the target app only, use the type tag
 

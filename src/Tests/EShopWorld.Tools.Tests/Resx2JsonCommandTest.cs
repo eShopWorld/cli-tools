@@ -26,7 +26,7 @@ namespace EShopWorld.Tools.Unit.Tests
             {
                 const string path = @"C:\SomeFolder\AResource.resx";
                 const string outputPath = @"C:\OutFolder\";
-                const string expectedJsonFile = "AResource." + TransfromBase.JsonDefaultCulture + ".json";
+                const string expectedJsonFile = "AResource." + TransformBase.JsonDefaultCulture + ".json";
 
                 var cmdMock = new Mock<TransformCommand.Resx2JsonCommand> { CallBase = true };
 
@@ -368,7 +368,7 @@ namespace EShopWorld.Tools.Unit.Tests
                 {
                     var element1 = new XElement("data", new XAttribute("name", "1"));
                     var element2 = new XElement("data", new XAttribute("name", "2"));
-                    var result = new TransfromBase.ResxDataComparer().Equals(element1, element2);
+                    var result = new TransformBase.ResxDataComparer().Equals(element1, element2);
 
                     result.Should().BeFalse();
                 }
@@ -382,7 +382,7 @@ namespace EShopWorld.Tools.Unit.Tests
                     const string nameValue = "the same name";
                     var element1 = new XElement("data", new XAttribute("name", nameValue));
                     var element2 = new XElement("data", new XAttribute("name", nameValue));
-                    var result = new TransfromBase.ResxDataComparer().Equals(element1, element2);
+                    var result = new TransformBase.ResxDataComparer().Equals(element1, element2);
 
                     result.Should().BeTrue();
                 }
@@ -393,7 +393,7 @@ namespace EShopWorld.Tools.Unit.Tests
                 [Trait("SubCommand ", "resx2json")]
                 public void Test_WithTwoNulls()
                 {
-                    var result = new TransfromBase.ResxDataComparer().Equals(null, null);
+                    var result = new TransformBase.ResxDataComparer().Equals(null, null);
 
                     result.Should().BeTrue();
                 }
@@ -404,7 +404,7 @@ namespace EShopWorld.Tools.Unit.Tests
                 [Trait("SubCommand ", "resx2json")]
                 public void Test_WithFirstNull()
                 {
-                    var result = new TransfromBase.ResxDataComparer().Equals(null, new XElement("something"));
+                    var result = new TransformBase.ResxDataComparer().Equals(null, new XElement("something"));
 
                     result.Should().BeFalse();
                 }
@@ -415,7 +415,7 @@ namespace EShopWorld.Tools.Unit.Tests
                 [Trait("SubCommand ", "resx2json")]
                 public void Test_WithSecondNull()
                 {
-                    var result = new TransfromBase.ResxDataComparer().Equals(new XElement("something"), null);
+                    var result = new TransformBase.ResxDataComparer().Equals(new XElement("something"), null);
 
                     result.Should().BeFalse();
                 }
@@ -432,7 +432,7 @@ namespace EShopWorld.Tools.Unit.Tests
                     const string nameValue = "some name";
                     var element = new XElement("data", new XAttribute("name", nameValue));
 
-                    var result = new TransfromBase.ResxDataComparer().GetHashCode(element);
+                    var result = new TransformBase.ResxDataComparer().GetHashCode(element);
 
                     result.Should().Be(nameValue.GetHashCode());
                 }
@@ -443,7 +443,7 @@ namespace EShopWorld.Tools.Unit.Tests
                 [Trait("SubCommand ", "resx2json")]
                 public void Test_WithNull()
                 {
-                    var result = new TransfromBase.ResxDataComparer().GetHashCode(null);
+                    var result = new TransformBase.ResxDataComparer().GetHashCode(null);
 
                     result.Should().Be(0);
                 }
@@ -456,7 +456,7 @@ namespace EShopWorld.Tools.Unit.Tests
                 {
                     var element = new XElement("data");
 
-                    var result = new TransfromBase.ResxDataComparer().GetHashCode(element);
+                    var result = new TransformBase.ResxDataComparer().GetHashCode(element);
 
                     result.Should().Be(0);
                 }
