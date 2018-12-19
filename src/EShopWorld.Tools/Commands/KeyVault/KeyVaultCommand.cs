@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Threading.Tasks;
 using EShopWorld.Tools.Commands.KeyVault.Models;
 using EShopWorld.Tools.Helpers;
 using McMaster.Extensions.CommandLineUtils;
@@ -19,7 +20,7 @@ namespace EShopWorld.Tools.Commands.KeyVault
     [Subcommand(typeof(GeneratePOCOsCommand))]
     public class KeyVaultCommand : CommandBase
     {
-        protected override int InternalExecute(CommandLineApplication app, IConsole console)
+        protected override async Task<int> InternalExecuteAsync(CommandLineApplication app, IConsole console)
         {
             console.Error.WriteLine("You must specify a subcommand");
             app.ShowHelp();
@@ -120,6 +121,7 @@ namespace EShopWorld.Tools.Commands.KeyVault
 
             protected internal override void ConfigureDI(IConsole console)
             {
+                
                 base.ConfigureDI(console);
                 ServiceCollection.AddSingleton<GeneratePocoClassInternalCommand>();
                 ServiceCollection.AddSingleton<GeneratePocoProjectInternalCommand>();
@@ -148,9 +150,8 @@ namespace EShopWorld.Tools.Commands.KeyVault
                 }
             }
 
-            protected  override int InternalExecute(CommandLineApplication app, IConsole console)
+            protected  override async Task<int> InternalExecuteAsync(CommandLineApplication app, IConsole console)
             {
-               
                 KeyVaultClient client = ServiceProvider.GetRequiredService<KeyVaultClient>();
                 //collect all secrets
                 var secrets = client.GetAllSecrets(KeyVaultName, TypeTagName, NameTagName, AppName)
@@ -173,6 +174,8 @@ namespace EShopWorld.Tools.Commands.KeyVault
                 projectCommand.Render(new GeneratePocoProjectViewModel {AppName = AppName, Version = Version},
                     Path.Combine(OutputFolder, $"{AppName}.csproj"));
       
+                BigBrother?.Publish(new KeyVaultPOCOGeneratedEvent{AppName = AppName, Version = Version, Namespace = Namespace, KeyVaultName = KeyVaultName});
+
                 return 0;
             }
         }

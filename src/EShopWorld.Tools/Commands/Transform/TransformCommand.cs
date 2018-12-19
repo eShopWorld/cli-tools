@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using EShopWorld.Tools.Helpers;
 using McMaster.Extensions.CommandLineUtils;
 
@@ -17,7 +18,7 @@ namespace EShopWorld.Tools.Commands.Transform
         /// <summary>
         /// Runs this command.
         /// </summary>
-        protected override int InternalExecute(CommandLineApplication app, IConsole console)
+        protected override async Task<int> InternalExecuteAsync(CommandLineApplication app, IConsole console)
         {
             console.WriteLine("Please specify a subcommand");
             app.ShowHelp();
@@ -60,7 +61,7 @@ namespace EShopWorld.Tools.Commands.Transform
             [Required]
             public string JsonProject { get; set; }
 
-            protected override int InternalExecute(CommandLineApplication app, IConsole console)
+            protected override async Task<int> InternalExecuteAsync(CommandLineApplication app, IConsole console)
             {
                 var sourceFolder = Path.GetFullPath(ResxProject);
                 var outputFolder = Path.GetFullPath(JsonProject);
@@ -81,6 +82,8 @@ namespace EShopWorld.Tools.Commands.Transform
                     var jsonFilePath = GetJsonPath(pathHelper.EnforceSameFolders(sourceFolder, outputFolder, resxFile), resxFile);
                     File.WriteAllText(jsonFilePath, json);
                 }
+
+                BigBrother?.Publish(new ResxTransformedEvent{ResxProject = ResxProject});
 
                 return 0;
             }
