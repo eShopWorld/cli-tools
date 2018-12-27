@@ -2,6 +2,7 @@
 using EShopWorld.Tools.Commands.AutoRest;
 using McMaster.Extensions.CommandLineUtils;
 using EShopWorld.Tools.Commands;
+using EShopWorld.Tools.Commands.AzScan;
 using EShopWorld.Tools.Commands.KeyVault;
 using EShopWorld.Tools.Commands.Transform;
 
@@ -14,6 +15,7 @@ namespace EShopWorld.Tools
     [Subcommand(typeof(TransformCommand))]
     [Subcommand(typeof(AutoRestCommand))]
     [Subcommand(typeof(KeyVaultCommand))]
+    [Subcommand(typeof(AzScanCommand))]
     [VersionOptionFromMember("--version", MemberName = nameof(GetVersion))]
     public class Program : CommandBase
     {
