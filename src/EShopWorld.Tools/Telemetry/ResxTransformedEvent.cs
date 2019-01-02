@@ -1,6 +1,6 @@
 ﻿using Eshopworld.Core;
 
-namespace EShopWorld.Tools.Commands.Transform
+namespace EShopWorld.Tools.Telemetry
 {
     /// <summary>
     /// resx resources converted event

@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using EShopWorld.Tools.Helpers;
+using EShopWorld.Tools.Telemetry;
 using McMaster.Extensions.CommandLineUtils;
 
 namespace EShopWorld.Tools.Commands.Transform

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Eshopworld.Core;
 using Eshopworld.DevOps;
 using Eshopworld.Telemetry;
-using EShopWorld.Tools.Helpers;
+using EShopWorld.Tools.Telemetry;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.DependencyInjection;
 

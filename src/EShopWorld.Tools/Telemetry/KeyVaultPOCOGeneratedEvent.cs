@@ -1,6 +1,6 @@
 ﻿using Eshopworld.Core;
 
-namespace EShopWorld.Tools.Commands.KeyVault
+namespace EShopWorld.Tools.Telemetry
 {
     /// <summary>
     /// event describing POCO being generated for certain keyvault

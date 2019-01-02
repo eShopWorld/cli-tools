@@ -1,7 +1,7 @@
 ﻿using System;
 using Eshopworld.Core;
 
-namespace EShopWorld.Tools.Helpers
+namespace EShopWorld.Tools.Telemetry
 {
     // ReSharper disable once InconsistentNaming
     public sealed class CLIExceptionEvent : ExceptionEvent

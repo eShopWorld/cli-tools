@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using EShopWorld.Tools.Commands.KeyVault.Models;
 using EShopWorld.Tools.Helpers;
+using EShopWorld.Tools.Telemetry;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.Services.AppAuthentication;
