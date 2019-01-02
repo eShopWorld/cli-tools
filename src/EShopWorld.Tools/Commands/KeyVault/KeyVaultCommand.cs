@@ -1,9 +1,9 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Threading.Tasks;
 using EShopWorld.Tools.Commands.KeyVault.Models;
 using EShopWorld.Tools.Helpers;
 using McMaster.Extensions.CommandLineUtils;
@@ -15,25 +15,23 @@ using Microsoft.Rest;
 
 namespace EShopWorld.Tools.Commands.KeyVault
 {
+    /// <summary>
+    /// key vault top level command 
+    /// </summary>
     [Command("keyvault", Description = "keyvault associated functionality"), HelpOption]
     [Subcommand(typeof(GeneratePOCOsCommand))]
     public class KeyVaultCommand : CommandBase
     {
-        protected override int InternalExecute(CommandLineApplication app, IConsole console)
+        protected internal override Task<int> InternalExecuteAsync(CommandLineApplication app, IConsole console)
         {
-            console.Error.WriteLine("You must specify a subcommand");
+            console.Error.WriteLine("You must specify a sub-command");
             app.ShowHelp();
 
-#if DEBUG
-            if (Debugger.IsAttached)
-            {
-                Debugger.Break();
-            }
-#endif
-            return 1;
+            return Task.FromResult(1);
         }
 
         [Command("generatePOCOs", Description = "Generates the POCOs and the project file")]
+        // ReSharper disable once InconsistentNaming
         internal class GeneratePOCOsCommand :RazorCommandBase
         {
             [Option(
@@ -41,6 +39,7 @@ namespace EShopWorld.Tools.Commands.KeyVault
                 ShortName = "a",
                 LongName = "appId",
                 ShowInHelpText = true)]         
+            // ReSharper disable once MemberCanBePrivate.Global
             public string AppId { get; set; }
 
             [Option(
@@ -48,6 +47,7 @@ namespace EShopWorld.Tools.Commands.KeyVault
                 ShortName = "s",
                 LongName = "appSecret",
                 ShowInHelpText = true)]     
+            // ReSharper disable once MemberCanBePrivate.Global
             public string AppSecret { get; set; }
 
             [Option(
@@ -55,6 +55,7 @@ namespace EShopWorld.Tools.Commands.KeyVault
                 ShortName = "t",
                 LongName = "tenantId",
                 ShowInHelpText = true)]        
+            // ReSharper disable once MemberCanBePrivate.Global
             public string TenantId { get; set; }
 
             [Option(
@@ -63,6 +64,7 @@ namespace EShopWorld.Tools.Commands.KeyVault
                 LongName = "keyVault",
                 ShowInHelpText = true)]
             [Required]
+            // ReSharper disable once MemberCanBePrivate.Global
             public string KeyVaultName { get; set; }
 
 
@@ -72,6 +74,7 @@ namespace EShopWorld.Tools.Commands.KeyVault
                 LongName = "appName",
                 ShowInHelpText = true)]
             [Required] 
+            // ReSharper disable once MemberCanBePrivate.Global
             public string AppName { get; set; }
 
             [Option(
@@ -80,6 +83,7 @@ namespace EShopWorld.Tools.Commands.KeyVault
                 LongName = "namespace",
                 ShowInHelpText = true)]
             [Required]
+            // ReSharper disable once MemberCanBePrivate.Global
             public string Namespace { get; set; }
 
             [Option(
@@ -87,6 +91,7 @@ namespace EShopWorld.Tools.Commands.KeyVault
                 ShortName = "b",
                 LongName = "obsoleteTag",
                 ShowInHelpText = true)]
+            // ReSharper disable once MemberCanBePrivate.Global
             public string ObsoleteTagName { get; set; } = "Obsolete";
 
             [Option(
@@ -94,6 +99,7 @@ namespace EShopWorld.Tools.Commands.KeyVault
                 ShortName = "g",
                 LongName = "typeTag",
                 ShowInHelpText = true)]
+            // ReSharper disable once MemberCanBePrivate.Global
             public string TypeTagName { get; set; } = "Type";
 
             [Option(
@@ -101,6 +107,7 @@ namespace EShopWorld.Tools.Commands.KeyVault
                 ShortName = "f",
                 LongName = "nameTag",
                 ShowInHelpText = true)]
+            // ReSharper disable once MemberCanBePrivate.Global
             public string NameTagName { get; set; } = "Name";
 
             [Option(
@@ -108,18 +115,21 @@ namespace EShopWorld.Tools.Commands.KeyVault
                 ShortName = "o",
                 LongName = "output",
                 ShowInHelpText = true)]
+            // ReSharper disable once MemberCanBePrivate.Global
             public string OutputFolder { get; set; } = ".";
 
             [Option(
-                Description = "version number to inject into nuspec",
+                Description = "version number to inject into NuSpec",
                 ShortName = "v",
                 LongName = "version",
                 ShowInHelpText = true)]
             [Required]    
+            // ReSharper disable once MemberCanBePrivate.Global
             public string Version { get; set; }
 
             protected internal override void ConfigureDI(IConsole console)
             {
+                
                 base.ConfigureDI(console);
                 ServiceCollection.AddSingleton<GeneratePocoClassInternalCommand>();
                 ServiceCollection.AddSingleton<GeneratePocoProjectInternalCommand>();
@@ -142,19 +152,17 @@ namespace EShopWorld.Tools.Commands.KeyVault
                         var credential = new ClientCredential(AppId, AppSecret);
                         var token = authContext.AcquireTokenAsync("https://vault.azure.net", credential).GetAwaiter().GetResult();
 
-                        ////open the vault
+                        //open the vault
                         return new KeyVaultClient(new TokenCredentials(token.AccessToken), new HttpClientHandler());
                     }));
                 }
             }
 
-            protected  override int InternalExecute(CommandLineApplication app, IConsole console)
+            protected internal override async Task<int> InternalExecuteAsync(CommandLineApplication app, IConsole console)
             {
-               
-                KeyVaultClient client = ServiceProvider.GetRequiredService<KeyVaultClient>();
+                var client = ServiceProvider.GetRequiredService<KeyVaultClient>();
                 //collect all secrets
-                var secrets = client.GetAllSecrets(KeyVaultName, TypeTagName, NameTagName, AppName)
-                    .GetAwaiter().GetResult();
+                var secrets = await client.GetAllSecrets(KeyVaultName, TypeTagName, NameTagName, AppName);
 
                 Directory.CreateDirectory(OutputFolder);             
                                       
@@ -173,6 +181,8 @@ namespace EShopWorld.Tools.Commands.KeyVault
                 projectCommand.Render(new GeneratePocoProjectViewModel {AppName = AppName, Version = Version},
                     Path.Combine(OutputFolder, $"{AppName}.csproj"));
       
+                BigBrother?.Publish(new KeyVaultPOCOGeneratedEvent{AppName = AppName, Version = Version, Namespace = Namespace, KeyVaultName = KeyVaultName});
+
                 return 0;
             }
         }

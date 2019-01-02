@@ -1,7 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Eshopworld.Tests.Core;
-using EShopWorld.Tools.Commands.KeyVault;
 using EShopWorld.Tools.Helpers;
 using FluentAssertions;
 using Microsoft.Azure.KeyVault.Models;

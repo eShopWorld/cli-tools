@@ -16,6 +16,7 @@ namespace EShopWorld.Tools.Commands
     {
         protected internal override void ConfigureDI(IConsole console)
         {
+            base.ConfigureDI(console);
             var applicationEnvironment = PlatformServices.Default.Application;
 
             ServiceCollection.AddSingleton(applicationEnvironment);

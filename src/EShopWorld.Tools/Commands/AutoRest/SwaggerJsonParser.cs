@@ -1,19 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.Razor;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Mvc.ViewEngines;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Routing;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
-using EShopWorld.Tools.Commands.AutoRest.Models;
 
 namespace EShopWorld.Tools.Commands.AutoRest
 {   
@@ -73,8 +62,8 @@ namespace EShopWorld.Tools.Commands.AutoRest
         /// <returns>sanitised version</returns>
         public static string SanitizeVersion(string unsanitised)
         {
-            Regex pattern = new Regex("\\d+(\\.\\d+)*");
-            Match m = pattern.Match(unsanitised);
+            var pattern = new Regex("\\d+(\\.\\d+)*");
+            var m = pattern.Match(unsanitised);
             return m?.Value ?? throw new ApplicationException($"Unrecognized version number {unsanitised}");
         }
 

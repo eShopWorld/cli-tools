@@ -155,7 +155,7 @@ namespace EShopWorld.Tools.Commands.Transform
         /// <param name="obj">The <see cref="T:System.Object" /> for which a hash code is to be returned.</param>
         public int GetHashCode(XElement obj)
         {
-            var hash = obj?.Attribute("name")?.Value?.GetHashCode();
+            var hash = obj?.Attribute("name")?.Value.GetHashCode();
             return hash ?? 0;
         }
     }
