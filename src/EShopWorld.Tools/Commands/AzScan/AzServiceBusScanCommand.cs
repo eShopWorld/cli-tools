@@ -1,14 +1,13 @@
 ﻿using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Azure.Management.Fluent;
-using Microsoft.Azure.Management.ResourceManager.Fluent;
 
 namespace EShopWorld.Tools.Commands.AzScan
 {
-    [Command("servicebus", Description = "scan project service bus configuration into KV")]
-    public class AzSBScanCommand : AzScanCommandBase
+    [Command("serviceBus", Description = "scan project service bus configuration into KV")]
+    public class AzServiceBusScanCommand : AzScanCommandBase
     {
-        protected override async Task<int> RunScanAsync(IAzure client, ISubscription sub)
+        protected override async Task<int> RunScanAsync(IAzure client)
         {
 
             //list sb namespaces
@@ -18,10 +17,7 @@ namespace EShopWorld.Tools.Commands.AzScan
 
             foreach (var @namespace in namespaces)
             {
-                if (!string.IsNullOrWhiteSpace(Environment) && !@namespace.Name.EndsWith(Environment))
-                    continue;
-
-                if (!StringMatchRegexp(@namespace.Name, Regex))
+                if (!CheckBasicFilters(@namespace.Name))
                     continue;
 
                 var rule = await @namespace.AuthorizationRules.GetByNameAsync("RootManageSharedAccessKey");
@@ -30,7 +26,7 @@ namespace EShopWorld.Tools.Commands.AzScan
                 var name = @namespace.Name.Contains('-')
                     ? @namespace.Name.Remove(@namespace.Name.LastIndexOf('-')) : @namespace.Name;
 
-                await UpsertSecretToKV(name,keys.PrimaryConnectionString);
+                await SetKeyVaultSecretAsync(name,keys.PrimaryConnectionString);
             }
 
             return 1;

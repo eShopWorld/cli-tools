@@ -33,6 +33,7 @@ namespace EShopWorld.Tools.Commands
                 if (_serviceProvider == null)
                     _serviceProvider = ServiceCollection.BuildServiceProvider();
 
+
                 return _serviceProvider;
             }
         }
@@ -78,6 +79,6 @@ namespace EShopWorld.Tools.Commands
             }
         }
 
-        protected abstract Task<int> InternalExecuteAsync(CommandLineApplication app, IConsole console);
+        protected internal abstract Task<int> InternalExecuteAsync(CommandLineApplication app, IConsole console);
     }
 }

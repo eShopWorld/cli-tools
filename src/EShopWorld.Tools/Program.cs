@@ -30,16 +30,17 @@ namespace EShopWorld.Tools
         }
 
         /// <summary>
-        /// 
+        /// global command execution logic
         /// </summary>
         /// <param name="app"></param>
         /// <param name="console"></param>
         /// <returns></returns>
-        protected override async Task<int> InternalExecuteAsync(CommandLineApplication app, IConsole console)
+        protected internal override Task<int> InternalExecuteAsync(CommandLineApplication app, IConsole console)
         {
             console.Error.WriteLine("You must specify a sub-command to execute.");
             app.ShowHelp();
-            return 1;
+
+            return Task.FromResult(1);
         }
     }
 }

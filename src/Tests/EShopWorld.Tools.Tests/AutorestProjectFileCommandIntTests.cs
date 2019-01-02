@@ -1,7 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Reflection;
-using Eshopworld.Tests.Core;
+﻿using Eshopworld.Tests.Core;
 using EShopWorld.Tools.Commands.AutoRest;
 using EShopWorld.Tools.Commands.AutoRest.Models;
 using FluentAssertions;

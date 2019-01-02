@@ -1,25 +1,26 @@
-﻿using System.Diagnostics;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
 
 namespace EShopWorld.Tools.Commands.AzScan
 {
+    /// <inheritdoc />
+    /// <summary>
+    /// azscan prefix definition command
+    /// </summary>
     [Command("azscan", Description = "azure resource configuration management scan"), HelpOption]
-    [Subcommand(typeof(AzSBScanCommand))]
+    [Subcommand(typeof(AzServiceBusScanCommand))]
+    [Subcommand(typeof(AzCosmosDbScanCommand))]
+    [Subcommand(typeof(AzRedisScanCommand))]
+    [Subcommand(typeof(AzScanSqlCommand))]
+    [Subcommand(typeof(AzScanAllCommand))]
     public class AzScanCommand : CommandBase
     {
-        protected override async Task<int> InternalExecuteAsync(CommandLineApplication app, IConsole console)
+        protected internal override Task<int> InternalExecuteAsync(CommandLineApplication app, IConsole console)
         {
-            console.Error.WriteLine("You must specify a subcommand");
+            console.Error.WriteLine("You must specify a sub-command");
             app.ShowHelp();
 
-#if DEBUG
-            if (Debugger.IsAttached)
-            {
-                Debugger.Break();
-            }
-#endif
-            return 1;
+            return Task.FromResult(1);
         }
     }
 }

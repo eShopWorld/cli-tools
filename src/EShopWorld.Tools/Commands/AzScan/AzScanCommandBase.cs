@@ -46,10 +46,9 @@ namespace EShopWorld.Tools.Commands.AzScan
             ShowInHelpText = true)]
         public string Regex { get; set; }
 
-        protected override async Task<int> InternalExecuteAsync(CommandLineApplication app, IConsole console)
+        protected internal override async Task<int> InternalExecuteAsync(CommandLineApplication app, IConsole console)
         {
             //run internal scan implementation over all detected subscriptions
-            var client = ServiceProvider.GetService<RestClient>();
             var defaultSubClient = ServiceProvider.GetService<Azure.IAuthenticated>().WithDefaultSubscription();
 
             var subs = await defaultSubClient.Subscriptions.ListAsync();
@@ -57,7 +56,7 @@ namespace EShopWorld.Tools.Commands.AzScan
             {
                 var subClient = ServiceProvider.GetService<Azure.IAuthenticated>().WithSubscription(sub.SubscriptionId);
 
-                await RunScanAsync(subClient, sub);
+                await RunScanAsync(subClient);
             }
 
             return 1;
@@ -66,7 +65,8 @@ namespace EShopWorld.Tools.Commands.AzScan
         protected internal override void ConfigureDI(IConsole console)
         {
             base.ConfigureDI(console);
-            var token = new AzureServiceTokenProvider().GetAccessTokenAsync("https://management.core.windows.net/", string.Empty).Result;
+            var atp = new AzureServiceTokenProvider();
+            var token = atp.GetAccessTokenAsync("https://management.core.windows.net/", string.Empty).Result;
             var tokenCredentials = new TokenCredentials(token);
 
             var client = RestClient.Configure()
@@ -77,12 +77,15 @@ namespace EShopWorld.Tools.Commands.AzScan
 
             ServiceCollection.AddSingleton(client);
             ServiceCollection.AddSingleton(Azure.Authenticate(client, null)); 
-            ServiceCollection.AddSingleton(new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(new AzureServiceTokenProvider().KeyVaultTokenCallback))); //cannot use token from above - different resource
+            ServiceCollection.AddSingleton(new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(atp.KeyVaultTokenCallback))); //cannot use token from above - different resource
         }
 
-        protected abstract Task<int> RunScanAsync([NotNull] IAzure client, [NotNull] ISubscription sub);
+        protected virtual Task<int> RunScanAsync([NotNull] IAzure client)
+        {
+            return Task.FromResult(1);
+        }
 
-        protected static bool StringMatchRegexp(string value, string regexpStr)
+        private static bool StringMatchRegexp(string value, string regexpStr)
         {
             if (string.IsNullOrWhiteSpace(regexpStr))
                 return true;
@@ -91,10 +94,17 @@ namespace EShopWorld.Tools.Commands.AzScan
             return regexp.IsMatch(value);
         }
 
-        protected async Task UpsertSecretToKV(string name, string value)
+        protected async Task SetKeyVaultSecretAsync(string name, string value)
         {
             var client = ServiceProvider.GetService<KeyVaultClient>();
             await client.SetSecretWithHttpMessagesAsync($"https://{KeyVaultName}.vault.azure.net/", name, value);
+        }
+
+        protected bool CheckBasicFilters(string key)
+        {
+            return string.IsNullOrWhiteSpace(key) ||
+                   ((string.IsNullOrWhiteSpace(Environment) || key.EndsWith(Environment)) &&
+                    StringMatchRegexp(key, Regex));
         }
     }
 }

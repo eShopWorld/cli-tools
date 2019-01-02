@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,19 +17,12 @@ namespace EShopWorld.Tools.Commands.Transform
         /// <summary>
         /// Runs this command.
         /// </summary>
-        protected override async Task<int> InternalExecuteAsync(CommandLineApplication app, IConsole console)
+        protected internal override Task<int> InternalExecuteAsync(CommandLineApplication app, IConsole console)
         {
-            console.WriteLine("Please specify a subcommand");
+            console.WriteLine("Please specify a sub-command");
             app.ShowHelp();
 
-#if DEBUG
-            if (Debugger.IsAttached)
-            {
-                Debugger.Break();
-            }
-#endif
-
-            return 1;
+            return Task.FromResult(1);
         }
         
         /// <summary>
@@ -61,7 +53,7 @@ namespace EShopWorld.Tools.Commands.Transform
             [Required]
             public string JsonProject { get; set; }
 
-            protected override async Task<int> InternalExecuteAsync(CommandLineApplication app, IConsole console)
+            protected internal override Task<int> InternalExecuteAsync(CommandLineApplication app, IConsole console)
             {
                 var sourceFolder = Path.GetFullPath(ResxProject);
                 var outputFolder = Path.GetFullPath(JsonProject);
@@ -85,7 +77,7 @@ namespace EShopWorld.Tools.Commands.Transform
 
                 BigBrother?.Publish(new ResxTransformedEvent{ResxProject = ResxProject});
 
-                return 0;
+                return Task.FromResult(0);
             }
         }
     }

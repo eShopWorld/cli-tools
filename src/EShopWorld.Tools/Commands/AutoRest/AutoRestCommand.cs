@@ -2,7 +2,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,18 +16,12 @@ namespace EShopWorld.Tools.Commands.AutoRest
     [Subcommand(typeof(GenerateProjectFileCommand))]
     public class AutoRestCommand : CommandBase
     {
-        protected override async Task<int> InternalExecuteAsync(CommandLineApplication app, IConsole console)
+        protected internal override Task<int> InternalExecuteAsync(CommandLineApplication app, IConsole console)
         {
-            console.Error.WriteLine("You must specify a subcommand");
+            console.Error.WriteLine("You must specify a sub-command");
             app.ShowHelp();
 
-#if DEBUG
-            if (Debugger.IsAttached)
-            {
-                Debugger.Break();
-            }
-#endif
-            return 1;
+            return Task.FromResult(1);
         }
 
         [Command("generateProjectFile", Description = "Generates project file for the Autorest generated code")]
@@ -63,7 +56,7 @@ namespace EShopWorld.Tools.Commands.AutoRest
                 ServiceCollection.AddSingleton<RenderProjectFileInternalCommand>();
             }
 
-            protected override async Task<int> InternalExecuteAsync(CommandLineApplication app, IConsole console)
+            protected internal override Task<int> InternalExecuteAsync(CommandLineApplication app, IConsole console)
             {             
                 Directory.CreateDirectory(Output);
                 
@@ -76,7 +69,7 @@ namespace EShopWorld.Tools.Commands.AutoRest
 
                 BigBrother?.Publish(new AutorestProjectFileGenerated{SwaggerFile = SwaggerFile});
 
-                return 0;
+                return Task.FromResult(1);
             }
         }
     }
