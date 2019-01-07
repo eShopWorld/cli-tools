@@ -66,18 +66,18 @@ namespace EShopWorld.Tools.Unit.Tests
                 var resxPath = AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf(@"\bin", StringComparison.Ordinal)) + @"\data\test.resx";
                 var resx = File.ReadAllText(resxPath);
 
-                //var json = new TransformCommand.Resx2JsonCommand()
-                //{
-                //    ResxProject = string.Empty,
-                //    JsonProject = string.Empty
-                //}.ConvertResx2Json(resx);
+                var json = new TransformCommand.Resx2JsonCommand(Mock.Of<IBigBrother>())
+                {
+                    ResxProject = string.Empty,
+                    JsonProject = string.Empty
+                }.ConvertResx2Json(resx);
 
-                //var jsonDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
-                //foreach (var key in jsonDict.Keys)
-                //{
-                //    var resourceValue = typeof(test).GetMethod($"get_{key}", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, null);
-                //    Assert.Equal(resourceValue, jsonDict[key]);
-                //}
+                var jsonDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
+                foreach (var key in jsonDict.Keys)
+                {
+                    var resourceValue = typeof(test).GetMethod($"get_{key}", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, null);
+                    Assert.Equal(resourceValue, jsonDict[key]);
+                }
             }
         }
 
