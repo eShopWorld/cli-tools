@@ -16,7 +16,7 @@ namespace EshopWorld.Tools.Unit.Tests
         [Trait("SubCommand ", "generateClient")]
         public void RenderView_GeneratesExpectedContent()
         {
-            var sp = Program.SetupAutofac();
+            var sp = Program.ServiceProvider;
 
             var sut = sp.GetRequiredService<RenderProjectFileInternalCommand>();
 

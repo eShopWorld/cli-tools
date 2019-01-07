@@ -58,7 +58,7 @@ namespace EshopWorld.Tools.Unit.Tests
             });
             //act
 
-            var provider = Program.SetupAutofac();
+            var provider = Program.ServiceProvider;
             var pocoCommand = provider.GetRequiredService<GeneratePocoClassInternalCommand>();
             var content = pocoCommand.RenderViewToString(new GeneratePocoClassViewModel
             {
@@ -76,7 +76,7 @@ namespace EshopWorld.Tools.Unit.Tests
         [Trait("SubCommand ", "generatePOCOs")]
         public void GeneratePocoProject_Success()
         {
-            var provider = Program.SetupAutofac();
+            var provider = Program.ServiceProvider;
 
             var projectCommand = provider.GetRequiredService<GeneratePocoProjectInternalCommand>();
             var content = projectCommand.RenderViewToString(new GeneratePocoProjectViewModel { AppName = "appName", Version = "1.1.1" });

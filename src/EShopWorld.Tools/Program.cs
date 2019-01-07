@@ -79,6 +79,21 @@ namespace EShopWorld.Tools
             
         }
 
+        private static IServiceProvider _serviceProvider;
+
+        /// <summary>
+        /// service provider offered by the CLI
+        /// </summary>
+        public static IServiceProvider ServiceProvider
+        {
+            get
+            {
+                if (_serviceProvider == null)
+                    _serviceProvider = SetupAutofac();
+
+                return _serviceProvider;
+            }
+        }
         internal static IServiceProvider SetupAutofac()
         {           
             var f = new AutofacServiceProviderFactory();

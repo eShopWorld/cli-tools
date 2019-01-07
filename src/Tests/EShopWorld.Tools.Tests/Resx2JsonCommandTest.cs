@@ -236,7 +236,7 @@ namespace EShopWorld.Tools.Unit.Tests
   </data>
 </root>
 ";
-                var sp = Program.SetupAutofac();
+                var sp = Program.ServiceProvider;
 
                 var result = new TransformCommand.Resx2JsonCommand(sp.GetRequiredService<IBigBrother>())
                 {
@@ -323,7 +323,7 @@ namespace EShopWorld.Tools.Unit.Tests
   </data>
 </root>
 ";
-                var sp = Program.SetupAutofac();
+                var sp = Program.ServiceProvider;
 
                 var result = new TransformCommand.Resx2JsonCommand(sp.GetRequiredService<IBigBrother>())
                 {
