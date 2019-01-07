@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Eshopworld.Core;
 using EShopWorld.Tools.Helpers;
 using EShopWorld.Tools.Telemetry;
 using McMaster.Extensions.CommandLineUtils;
@@ -13,12 +14,12 @@ namespace EShopWorld.Tools.Commands.Transform
     /// </summary>
     [Command("transform", Description = "data transformation tool set"), HelpOption]
     [Subcommand(typeof(Resx2JsonCommand))] 
-    public class TransformCommand : CommandBase
+    public class TransformCommand 
     {                            
         /// <summary>
         /// Runs this command.
         /// </summary>
-        protected internal override Task<int> InternalExecuteAsync(CommandLineApplication app, IConsole console)
+        public Task<int> OnExecuteAsync(CommandLineApplication app, IConsole console)
         {
             console.WriteLine("Please specify a sub-command");
             app.ShowHelp();
@@ -32,6 +33,13 @@ namespace EShopWorld.Tools.Commands.Transform
         [Command("resx2json", Description = "Resx 2 json transform")]
         protected internal class Resx2JsonCommand : TransformBase
         {
+            private readonly IBigBrother _bigBrother;
+
+            public Resx2JsonCommand(IBigBrother bigBrother)
+            {
+                _bigBrother = bigBrother;
+            }
+
             /// <summary>
             /// The path to the folder that contains the RESX files. Can be absolute or relative.
             /// </summary>
@@ -54,7 +62,7 @@ namespace EShopWorld.Tools.Commands.Transform
             [Required]
             public string JsonProject { get; set; }
 
-            protected internal override Task<int> InternalExecuteAsync(CommandLineApplication app, IConsole console)
+            public Task<int> OnExecuteAsync(CommandLineApplication app, IConsole console)
             {
                 var sourceFolder = Path.GetFullPath(ResxProject);
                 var outputFolder = Path.GetFullPath(JsonProject);
@@ -76,7 +84,7 @@ namespace EShopWorld.Tools.Commands.Transform
                     File.WriteAllText(jsonFilePath, json);
                 }
 
-                BigBrother?.Publish(new ResxTransformedEvent{ResxProject = ResxProject});
+                _bigBrother.Publish(new ResxTransformedEvent{ResxProject = ResxProject});
 
                 return Task.FromResult(0);
             }

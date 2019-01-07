@@ -2,17 +2,13 @@
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
+using Eshopworld.Core;
 using EShopWorld.Tools.Commands.KeyVault.Models;
 using EShopWorld.Tools.Helpers;
 using EShopWorld.Tools.Telemetry;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Azure.KeyVault;
-using Microsoft.Azure.Services.AppAuthentication;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
-using Microsoft.Rest;
 
 namespace EShopWorld.Tools.Commands.KeyVault
 {
@@ -21,9 +17,9 @@ namespace EShopWorld.Tools.Commands.KeyVault
     /// </summary>
     [Command("keyvault", Description = "keyvault associated functionality"), HelpOption]
     [Subcommand(typeof(GeneratePOCOsCommand))]
-    public class KeyVaultCommand : CommandBase
+    public class KeyVaultCommand
     {
-        protected internal override Task<int> InternalExecuteAsync(CommandLineApplication app, IConsole console)
+        public Task<int> OnExecuteAsync(CommandLineApplication app, IConsole console)
         {
             console.Error.WriteLine("You must specify a sub-command");
             app.ShowHelp();
@@ -33,32 +29,8 @@ namespace EShopWorld.Tools.Commands.KeyVault
 
         [Command("generatePOCOs", Description = "Generates the POCOs and the project file")]
         // ReSharper disable once InconsistentNaming
-        internal class GeneratePOCOsCommand :RazorCommandBase
+        internal class GeneratePOCOsCommand
         {
-            [Option(
-                Description = "application id - credential to access the vault",
-                ShortName = "a",
-                LongName = "appId",
-                ShowInHelpText = true)]         
-            // ReSharper disable once MemberCanBePrivate.Global
-            public string AppId { get; set; }
-
-            [Option(
-                Description = "application secret given to the application id - credential to access the vault",
-                ShortName = "s",
-                LongName = "appSecret",
-                ShowInHelpText = true)]     
-            // ReSharper disable once MemberCanBePrivate.Global
-            public string AppSecret { get; set; }
-
-            [Option(
-                Description = "tenant identifier hosting the vault",
-                ShortName = "t",
-                LongName = "tenantId",
-                ShowInHelpText = true)]        
-            // ReSharper disable once MemberCanBePrivate.Global
-            public string TenantId { get; set; }
-
             [Option(
                 Description = "name of the vault to open",
                 ShortName = "k",
@@ -128,48 +100,29 @@ namespace EShopWorld.Tools.Commands.KeyVault
             // ReSharper disable once MemberCanBePrivate.Global
             public string Version { get; set; }
 
-            protected internal override void ConfigureDI(IConsole console)
-            {
-                
-                base.ConfigureDI(console);
-                ServiceCollection.AddSingleton<GeneratePocoClassInternalCommand>();
-                ServiceCollection.AddSingleton<GeneratePocoProjectInternalCommand>();
-                //MSI default but if manual args are provided, switch to oauth
-                if (string.IsNullOrWhiteSpace(AppId) || string.IsNullOrWhiteSpace(TenantId) ||
-                    string.IsNullOrWhiteSpace(AppSecret))
-                {
-                    console?.Out.WriteLine("using MSI authentication mode");
-                    ServiceCollection.AddTransient(provider => new KeyVaultClient(
-                        new KeyVaultClient.AuthenticationCallback(new AzureServiceTokenProvider()
-                            .KeyVaultTokenCallback)));
-                }
-                else
-                {        
-                    console?.Out.WriteLine("using ADAL authentication mode");
-                    ServiceCollection.AddTransient((provider =>
-                    {
-                        //authenticate using the  application id and secrets
-                        var authContext = new AuthenticationContext($"https://login.windows.net/{TenantId}");
-                        var credential = new ClientCredential(AppId, AppSecret);
-                        var token = authContext.AcquireTokenAsync("https://vault.azure.net", credential).GetAwaiter().GetResult();
+            private readonly KeyVaultClient _kvClient;
+            private readonly GeneratePocoProjectInternalCommand _projectFileCommand;
+            private readonly IBigBrother _bigBrother;
+            private readonly GeneratePocoClassInternalCommand _pocoClassCommand;
 
-                        //open the vault
-                        return new KeyVaultClient(new TokenCredentials(token.AccessToken), new HttpClientHandler());
-                    }));
-                }
+            public GeneratePOCOsCommand(KeyVaultClient kvClient, GeneratePocoProjectInternalCommand projectFileCommand, GeneratePocoClassInternalCommand pocoClassCommand, IBigBrother bigBrother)
+            {
+                _kvClient = kvClient;
+                _projectFileCommand = projectFileCommand;
+                _bigBrother = bigBrother;
+                _pocoClassCommand = pocoClassCommand;
             }
 
-            protected internal override async Task<int> InternalExecuteAsync(CommandLineApplication app, IConsole console)
+            public async Task<int> OnExecuteAsync(CommandLineApplication app, IConsole console)
             {
-                var client = ServiceProvider.GetRequiredService<KeyVaultClient>();
                 //collect all secrets
-                var secrets = await client.GetAllSecrets(KeyVaultName, TypeTagName, NameTagName, AppName);
+                var secrets = await _kvClient.GetAllSecrets(KeyVaultName, TypeTagName, NameTagName, AppName);
 
                 Directory.CreateDirectory(OutputFolder);             
                                       
                 //generate POCOs
-                var pocoCommand = ServiceProvider.GetRequiredService<GeneratePocoClassInternalCommand>();
-                pocoCommand.Render(new GeneratePocoClassViewModel
+               
+                _pocoClassCommand.Render(new GeneratePocoClassViewModel
                 {
                     Namespace = Namespace,
                     Fields = secrets.Select(i => new Tuple<string, bool>(
@@ -178,11 +131,10 @@ namespace EShopWorld.Tools.Commands.KeyVault
                 }, Path.Combine(OutputFolder, Path.Combine(OutputFolder, "ConfigurationSecrets.cs")));
                 
                 //generate project file
-                var projectCommand = ServiceProvider.GetRequiredService<GeneratePocoProjectInternalCommand>();
-                projectCommand.Render(new GeneratePocoProjectViewModel {AppName = AppName, Version = Version},
+                _projectFileCommand.Render(new GeneratePocoProjectViewModel {AppName = AppName, Version = Version},
                     Path.Combine(OutputFolder, $"{AppName}.csproj"));
       
-                BigBrother?.Publish(new KeyVaultPOCOGeneratedEvent{AppName = AppName, Version = Version, Namespace = Namespace, KeyVaultName = KeyVaultName});
+                _bigBrother.Publish(new KeyVaultPOCOGeneratedEvent{AppName = AppName, Version = Version, Namespace = Namespace, KeyVaultName = KeyVaultName});
 
                 return 0;
             }

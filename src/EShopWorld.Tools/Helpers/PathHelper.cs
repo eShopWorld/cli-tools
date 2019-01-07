@@ -9,7 +9,7 @@ namespace EShopWorld.Tools.Helpers
     /// <summary>
     /// Contains extensions to the <see cref="Path"/> class in System.IO as a helper class to improve mocking.
     /// </summary>
-    public class PathHelper : IPathHelper
+    public class PathHelper
     {
         /// <summary>
         /// Creates a relative path from one file or folder to another.

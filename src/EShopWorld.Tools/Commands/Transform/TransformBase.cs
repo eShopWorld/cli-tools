@@ -11,7 +11,7 @@ namespace EShopWorld.Tools.Commands.Transform
     /// <summary>
     /// Base class for any transform work
     /// </summary>
-    public abstract class TransformBase: CommandBase
+    public abstract class TransformBase
 
     {
     internal const string JsonDefaultCulture = "en";

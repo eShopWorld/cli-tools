@@ -1,5 +1,7 @@
 ﻿using System.Threading.Tasks;
+using Eshopworld.Core;
 using McMaster.Extensions.CommandLineUtils;
+using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.Management.Fluent;
 
 namespace EShopWorld.Tools.Commands.AzScan
@@ -7,6 +9,10 @@ namespace EShopWorld.Tools.Commands.AzScan
     [Command("redis", Description = "scans and projects redis level configuration into KV")]
     public class AzRedisScanCommand : AzScanCommandBase
     {
+        public AzRedisScanCommand(Azure.IAuthenticated authenticated, KeyVaultClient keyVaultClient, IBigBrother bigBrother) : base(authenticated, keyVaultClient, bigBrother)
+        {
+        }
+
         protected override async Task<int> RunScanAsync(IAzure client)
         {
             var redises = !string.IsNullOrWhiteSpace(ResourceGroup)
