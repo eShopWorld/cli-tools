@@ -64,7 +64,7 @@ namespace EShopWorld.Tools.Commands.AutoRest
         {
             var pattern = new Regex("\\d+(\\.\\d+)*");
             var m = pattern.Match(unsanitised);
-            return m?.Value ?? throw new ApplicationException($"Unrecognized version number {unsanitised}");
+            return m.Value;
         }
 
         public class SwaggerFragment

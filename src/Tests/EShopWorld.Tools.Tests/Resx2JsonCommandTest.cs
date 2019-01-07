@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Xml.Linq;
+using Eshopworld.Core;
 using Eshopworld.Tests.Core;
 using EshopWorld.Tools.Unit.Tests.Data;
 using EShopWorld.Tools.Commands.Transform;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Newtonsoft.Json;
 using Xunit;
@@ -15,7 +17,7 @@ using Xunit;
 namespace EShopWorld.Tools.Unit.Tests
 {
     public class Resx2JsonCommandTest
-    {      
+    {
         public class GetJsonPath
         {
             [Fact]
@@ -28,7 +30,7 @@ namespace EShopWorld.Tools.Unit.Tests
                 const string outputPath = @"C:\OutFolder\";
                 const string expectedJsonFile = "AResource." + TransformBase.JsonDefaultCulture + ".json";
 
-                var cmdMock = new Mock<TransformCommand.Resx2JsonCommand> { CallBase = true };
+                var cmdMock = new Mock<TransformCommand.Resx2JsonCommand>(Mock.Of<IBigBrother>()) { CallBase = true };
 
                 var result = cmdMock.Object.GetJsonPath(outputPath, path);
 
@@ -45,7 +47,7 @@ namespace EShopWorld.Tools.Unit.Tests
                 const string outputPath = @"C:\OutFolder\";
                 var expectedJsonFile = Path.GetFileNameWithoutExtension(path) + ".json";
 
-                var cmdMock = new Mock<TransformCommand.Resx2JsonCommand> { CallBase = true };
+                var cmdMock = new Mock<TransformCommand.Resx2JsonCommand> (Mock.Of<IBigBrother>()){ CallBase = true };
 
                 var result = cmdMock.Object.GetJsonPath(outputPath, path);
 
@@ -60,11 +62,11 @@ namespace EShopWorld.Tools.Unit.Tests
             [Trait("Command", "Transform")]
             [Trait("SubCommand ", "resx2json")]
             public void Test_WithEmbeddedResxResource()
-            {               
+            {
                 var resxPath = AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf(@"\bin", StringComparison.Ordinal)) + @"\data\test.resx";
                 var resx = File.ReadAllText(resxPath);
 
-                var json = new TransformCommand.Resx2JsonCommand()
+                var json = new TransformCommand.Resx2JsonCommand(Mock.Of<IBigBrother>())
                 {
                     ResxProject = string.Empty,
                     JsonProject = string.Empty
@@ -90,7 +92,7 @@ namespace EShopWorld.Tools.Unit.Tests
                 const string fileContent = "some file content!";
                 const string filePath = @"C:\AFolder\AFile.resx";
 
-                var cmdMock = new Mock<TransformCommand.Resx2JsonCommand> { CallBase = true };
+                var cmdMock = new Mock<TransformCommand.Resx2JsonCommand>(Mock.Of<IBigBrother>()){ CallBase = true };
                 cmdMock.Setup(x => x.ReadText(filePath)).Returns(fileContent);
 
                 var result = cmdMock.Object.GetMergedResource(filePath);
@@ -109,7 +111,7 @@ namespace EShopWorld.Tools.Unit.Tests
                 const string wrongfileContent = "wrong file content!";
                 const string wrongfilePath = @"C:\WrongFolder\AFile.resx";
 
-                var cmdMock = new Mock<TransformCommand.Resx2JsonCommand> { CallBase = true };
+                var cmdMock = new Mock<TransformCommand.Resx2JsonCommand>(Mock.Of<IBigBrother>()){ CallBase = true };
                 cmdMock.Object.ResourceDictionary = new Dictionary<string, List<string>>
                 {
                     { Path.GetFileName(wrongfilePath), new List<string> { wrongfilePath } }
@@ -134,7 +136,7 @@ namespace EShopWorld.Tools.Unit.Tests
                 const string mergefileContent = "merged file content!";
                 const string mergefilePath = @"C:\AFolder\AFile.resx";
 
-                var cmdMock = new Mock<TransformCommand.Resx2JsonCommand> { CallBase = true };
+                var cmdMock = new Mock<TransformCommand.Resx2JsonCommand>(Mock.Of<IBigBrother>()){ CallBase = true };
                 cmdMock.Object.ResourceDictionary = new Dictionary<string, List<string>>
                 {
                     { Path.GetFileName(mergefilePath), new List<string> { mergefilePath } }
@@ -163,7 +165,7 @@ namespace EShopWorld.Tools.Unit.Tests
                 const string mergefileContent = "merged file content!";
                 const string mergefilePath = @"C:\AFolder\AnotherFolder\AFile.resx";
 
-                var cmdMock = new Mock<TransformCommand.Resx2JsonCommand> { CallBase = true };
+                var cmdMock = new Mock<TransformCommand.Resx2JsonCommand>(Mock.Of<IBigBrother>()){ CallBase = true };
                 cmdMock.Object.ResourceDictionary = new Dictionary<string, List<string>>
                 {
                     { Path.GetFileName(mergefilePath), new List<string> { mergefilePath } }
@@ -234,8 +236,9 @@ namespace EShopWorld.Tools.Unit.Tests
   </data>
 </root>
 ";
+                var sp = Program.ServiceProvider;
 
-                var result = new TransformCommand.Resx2JsonCommand()
+                var result = new TransformCommand.Resx2JsonCommand(sp.GetRequiredService<IBigBrother>())
                 {
                     JsonProject = string.Empty,
                     ResxProject = string.Empty
@@ -320,8 +323,9 @@ namespace EShopWorld.Tools.Unit.Tests
   </data>
 </root>
 ";
+                var sp = Program.ServiceProvider;
 
-                var result = new TransformCommand.Resx2JsonCommand()
+                var result = new TransformCommand.Resx2JsonCommand(sp.GetRequiredService<IBigBrother>())
                 {
                     JsonProject = string.Empty,
                     ResxProject = string.Empty

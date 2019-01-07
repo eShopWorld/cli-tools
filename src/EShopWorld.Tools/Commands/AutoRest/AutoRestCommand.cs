@@ -1,10 +1,10 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
-using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Eshopworld.Core;
 using EShopWorld.Tools.Commands.AutoRest.Models;
 
 namespace EShopWorld.Tools.Commands.AutoRest
@@ -14,9 +14,9 @@ namespace EShopWorld.Tools.Commands.AutoRest
     /// </summary>
     [Command("autorest", Description = "AutoRest associated functionality"), HelpOption]
     [Subcommand(typeof(GenerateProjectFileCommand))]
-    public class AutoRestCommand : CommandBase
+    public class AutoRestCommand
     {
-        protected internal override Task<int> InternalExecuteAsync(CommandLineApplication app, IConsole console)
+        public Task<int> OnExecuteAsync(CommandLineApplication app, IConsole console)
         {
             console.Error.WriteLine("You must specify a sub-command");
             app.ShowHelp();
@@ -25,8 +25,17 @@ namespace EShopWorld.Tools.Commands.AutoRest
         }
 
         [Command("generateProjectFile", Description = "Generates project file for the Autorest generated code")]
-        internal class GenerateProjectFileCommand : RazorCommandBase
+        internal class GenerateProjectFileCommand 
         {
+            private readonly RenderProjectFileInternalCommand _intCommand;
+            private readonly IBigBrother _bigBrother;
+
+            public GenerateProjectFileCommand(RenderProjectFileInternalCommand intCommand, IBigBrother bigBrother)
+            {
+                _intCommand = intCommand;
+                _bigBrother = bigBrother;
+            }
+
             [Option(
                 Description = "url to the swagger JSON file",
                 ShortName = "s",
@@ -50,13 +59,7 @@ namespace EShopWorld.Tools.Commands.AutoRest
                 ShowInHelpText = true)]
             public List<string> TFMs { get; set; } = new[] {"net462", "netstandard2.0"}.ToList();
 
-            protected internal override void ConfigureDI(IConsole console)
-            {
-                base.ConfigureDI(console);
-                ServiceCollection.AddSingleton<RenderProjectFileInternalCommand>();
-            }
-
-            protected internal override Task<int> InternalExecuteAsync(CommandLineApplication app, IConsole console)
+            public Task<int> OnExecuteAsync(CommandLineApplication app, IConsole console)
             {             
                 Directory.CreateDirectory(Output);
                 
@@ -64,10 +67,9 @@ namespace EShopWorld.Tools.Commands.AutoRest
                 var projectFileName = swaggerInfo.Item1 + ".csproj";
 
                 //generate project file
-                var projectFileCommand = ServiceProvider.GetRequiredService<RenderProjectFileInternalCommand>();
-                projectFileCommand.Render(new ProjectFileViewModel { TFMs = TFMs.ToArray(), ProjectName = swaggerInfo.Item1, Version = swaggerInfo.Item2 }, Path.Combine(Output, projectFileName));
+                _intCommand.Render(new ProjectFileViewModel { TFMs = TFMs.ToArray(), ProjectName = swaggerInfo.Item1, Version = swaggerInfo.Item2 }, Path.Combine(Output, projectFileName));
 
-                BigBrother?.Publish(new AutorestProjectFileGenerated{SwaggerFile = SwaggerFile});
+                _bigBrother?.Publish(new AutorestProjectFileGenerated{SwaggerFile = SwaggerFile});
 
                 return Task.FromResult(1);
             }

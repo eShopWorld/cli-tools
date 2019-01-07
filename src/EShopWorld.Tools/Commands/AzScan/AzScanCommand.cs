@@ -3,7 +3,6 @@ using McMaster.Extensions.CommandLineUtils;
 
 namespace EShopWorld.Tools.Commands.AzScan
 {
-    /// <inheritdoc />
     /// <summary>
     /// azscan prefix definition command
     /// </summary>
@@ -13,9 +12,9 @@ namespace EShopWorld.Tools.Commands.AzScan
     [Subcommand(typeof(AzRedisScanCommand))]
     [Subcommand(typeof(AzScanSqlCommand))]
     [Subcommand(typeof(AzScanAllCommand))]
-    public class AzScanCommand : CommandBase
+    public class AzScanCommand
     {
-        protected internal override Task<int> InternalExecuteAsync(CommandLineApplication app, IConsole console)
+        public Task<int> OnExecuteAsync(CommandLineApplication app, IConsole console)
         {
             console.Error.WriteLine("You must specify a sub-command");
             app.ShowHelp();
