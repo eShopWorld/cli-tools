@@ -34,7 +34,7 @@ namespace EShopWorld.Tools.Commands.AzScan
 
                     var connStr =
                         $"Server=tcp:{sql.FullyQualifiedDomainName}; Database={db.Name};Trusted_Connection=False; Encrypt=True; MultipleActiveResultSets=True;";
-                    await SetKeyVaultSecretAsync("SQL", $"{sql.Name}-{db.Name}", connStr);
+                    await SetKeyVaultSecretAsync("SQL", $"{sql.Name}_{db.Name}", "ConnectionString", connStr);
                 }
             }
 

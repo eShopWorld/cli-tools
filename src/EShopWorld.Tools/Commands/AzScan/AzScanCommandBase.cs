@@ -95,10 +95,10 @@ namespace EShopWorld.Tools.Commands.AzScan
             return regexp.IsMatch(value);
         }
 
-        protected async Task SetKeyVaultSecretAsync(string prefix, string name, string value)
+        protected async Task SetKeyVaultSecretAsync(string prefix, string name, string suffix, string value)
         {      
             
-            await KeyVaultClient.SetSecretWithHttpMessagesAsync($"https://{KeyVaultName}.vault.azure.net/", $"{prefix}-{name.StripRecognizedSuffix(SuffixesToRemove).ToCamelCase()}", value);
+            await KeyVaultClient.SetSecretWithHttpMessagesAsync($"https://{KeyVaultName}.vault.azure.net/", $"{prefix}-{name.StripRecognizedSuffix(SuffixesToRemove).ToCamelCase()}-{suffix}", value);
         }
 
         protected bool CheckBasicFilters(string key)

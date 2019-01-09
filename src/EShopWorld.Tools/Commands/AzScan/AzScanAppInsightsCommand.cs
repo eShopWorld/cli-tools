@@ -42,7 +42,7 @@ namespace EShopWorld.Tools.Commands.AzScan
                     if (!CheckBasicFilters(ai.Name))
                         continue;
 
-                    await SetKeyVaultSecretAsync("AI", ai.Name, ai.InstrumentationKey);
+                    await SetKeyVaultSecretAsync("AI", ai.Name, "InstrumentationKey", ai.InstrumentationKey);
                 }
             } while (nextPageLink != null);
 
