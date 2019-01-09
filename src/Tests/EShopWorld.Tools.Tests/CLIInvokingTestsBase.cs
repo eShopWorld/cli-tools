@@ -5,7 +5,7 @@ using System.Text;
 using FluentAssertions;
 using JetBrains.Annotations;
 
-namespace EshopWorld.Tools.Unit.Tests
+namespace EshopWorld.Tools.Tests
 {
     /// <summary>
     /// base class for all CLI invoking - as a process - tests

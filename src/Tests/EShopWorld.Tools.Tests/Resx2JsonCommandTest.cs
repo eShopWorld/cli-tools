@@ -14,7 +14,7 @@ using Newtonsoft.Json;
 using Xunit;
 
 // ReSharper disable once CheckNamespace
-namespace EShopWorld.Tools.Unit.Tests
+namespace EShopWorld.Tools.Tests
 {
     public class Resx2JsonCommandTest
     {

@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>    
-    <TargetFramework>netcoreapp2.1</TargetFramework>    
-    <RootNamespace>EshopWorld.Tools.Unit.Tests</RootNamespace>    
-    <AssemblyName>EshopWorld.Tools.Unit.Tests</AssemblyName>
+    <TargetFramework>netcoreapp2.2</TargetFramework>    
+    <RootNamespace>EshopWorld.Tools.Tests</RootNamespace>    
+    <AssemblyName>EshopWorld.Tools.Tests</AssemblyName>
     <PreserveCompilationContext>true</PreserveCompilationContext>
   </PropertyGroup>
 

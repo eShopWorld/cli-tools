@@ -1,7 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Eshopworld.Core;
+using EShopWorld.Tools.Helpers;
 using JetBrains.Annotations;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Azure.KeyVault;
@@ -14,6 +17,16 @@ namespace EShopWorld.Tools.Commands.AzScan
         protected readonly Azure.IAuthenticated Authenticated;
         protected readonly KeyVaultClient KeyVaultClient;
         protected readonly IBigBrother BigBrother;
+
+        internal static string[] ApplicableSubscriptions =
+            {"evo-ci", "evo-test", "evo-sand", "evo-preprod", "evo-prod"};
+
+        internal static string[] SuffixesToRemove = {"-ci", "-test", "-sand", "-preprod", "-prod"};
+
+        protected AzScanCommandBase()
+        {
+            
+        }
 
         public AzScanCommandBase(Azure.IAuthenticated authenticated, KeyVaultClient keyVaultClient, IBigBrother bigBrother)
         {
@@ -58,8 +71,8 @@ namespace EShopWorld.Tools.Commands.AzScan
             var defaultSubClient = Authenticated.WithDefaultSubscription();
 
             var subs = await defaultSubClient.Subscriptions.ListAsync();
-            foreach (var sub in subs)
-            {
+            foreach (var sub in subs.Where(sub=> ApplicableSubscriptions.Contains(sub.DisplayName, StringComparer.OrdinalIgnoreCase)))
+            {                
                 var subClient = Authenticated.WithSubscription(sub.SubscriptionId);
 
                 await RunScanAsync(subClient);
@@ -82,9 +95,10 @@ namespace EShopWorld.Tools.Commands.AzScan
             return regexp.IsMatch(value);
         }
 
-        protected async Task SetKeyVaultSecretAsync(string name, string value)
-        {
-            await KeyVaultClient.SetSecretWithHttpMessagesAsync($"https://{KeyVaultName}.vault.azure.net/", name, value);
+        protected async Task SetKeyVaultSecretAsync(string prefix, string name, string value)
+        {      
+            
+            await KeyVaultClient.SetSecretWithHttpMessagesAsync($"https://{KeyVaultName}.vault.azure.net/", $"{prefix}-{name.StripRecognizedSuffix(SuffixesToRemove).ToCamelCase()}", value);
         }
 
         protected bool CheckBasicFilters(string key)

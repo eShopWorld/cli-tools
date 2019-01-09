@@ -29,10 +29,12 @@ namespace EShopWorld.Tools.Commands.AzScan
                 foreach (var db in sql.Databases.List()
                     .Where(db => !db.Name.Equals("master", StringComparison.OrdinalIgnoreCase)))
                 {
+                    if (!CheckBasicFilters(db.Name))
+                        continue;
+
                     var connStr =
-                        $"Server=tcp:{sql.FullyQualifiedDomainName}; Database={db.Name}; User ID=TBA; Password=TBA; Trusted_Connection=False; Encrypt=True; MultipleActiveResultSets=True;";
-                    //TODO: decide key name here since most characters are not allowed (e.g. .)
-                    //await UpsertSecretToKVAsync($"{sql.FullyQualifiedDomainName}.{db.Name}", connStr); //TODO: naming here not consistent with devopsflex script ('SQLConnectionString' there)
+                        $"Server=tcp:{sql.FullyQualifiedDomainName}; Database={db.Name};Trusted_Connection=False; Encrypt=True; MultipleActiveResultSets=True;";
+                    await SetKeyVaultSecretAsync("SQL", $"{sql.Name}-{db.Name}", connStr);
                 }
             }
 

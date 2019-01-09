@@ -6,7 +6,7 @@ using FluentAssertions;
 using Moq;
 using Xunit;
 
-namespace EshopWorld.Tools.Unit.Tests
+namespace EshopWorld.Tools.Tests
 {
     public class PathHelperTest
     {

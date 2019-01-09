@@ -32,7 +32,7 @@ namespace EShopWorld.Tools.Commands.AzScan
                 var name = @namespace.Name.Contains('-')
                     ? @namespace.Name.Remove(@namespace.Name.LastIndexOf('-')) : @namespace.Name;
 
-                await SetKeyVaultSecretAsync(name,keys.PrimaryConnectionString);
+                await SetKeyVaultSecretAsync("SB",name,keys.PrimaryConnectionString);
             }
 
             return 1;

@@ -1,20 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Eshopworld.Tests.Core;
 using EShopWorld.Tools;
 using EShopWorld.Tools.Commands.KeyVault;
 using EShopWorld.Tools.Commands.KeyVault.Models;
 using FluentAssertions;
-using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Azure.KeyVault.Models;
 using Microsoft.Extensions.DependencyInjection;
-using Moq;
 using Xunit;
 
-namespace EshopWorld.Tools.Unit.Tests
-{    
+namespace EshopWorld.Tools.Tests
+{
     public class KeyVaultCommandTests
     {
         [Fact, IsIntegration]

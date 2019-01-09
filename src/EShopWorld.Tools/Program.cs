@@ -36,6 +36,7 @@ namespace EShopWorld.Tools
     public class Program 
     {
         private static  IBigBrother _bigBrother;
+        private static IConsole _console;
 
         /// <summary>
         /// Gets the version of the assembly of the class calling this
@@ -63,6 +64,7 @@ namespace EShopWorld.Tools
             try
             {
                 _bigBrother = app.GetService<IBigBrother>();
+                _console = app.GetService<IConsole>();
                 app.Execute(args);
             }
             catch (Exception e)
@@ -72,6 +74,8 @@ namespace EShopWorld.Tools
                 var @event = e.ToExceptionEvent<CLIExceptionEvent>();
                 @event.CommandType = commandParsed;
                 @event.Arguments = string.Join(',', app.Options.Select(t => $"{t.LongName}-'{t.Value()}'"));
+
+                _console.Error.WriteLine($"Command {commandParsed} produced an error {e.Message}");
 
                 _bigBrother?.Publish(@event);
                 _bigBrother?.Flush();

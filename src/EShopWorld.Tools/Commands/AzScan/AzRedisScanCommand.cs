@@ -27,7 +27,7 @@ namespace EShopWorld.Tools.Commands.AzScan
                 var name = redis.Name.Contains('-')
                     ? redis.Name.Remove(redis.Name.LastIndexOf('-')) : redis.Name;
 
-                await SetKeyVaultSecretAsync(name, redis.Keys.PrimaryKey);
+                await SetKeyVaultSecretAsync("Redis",name, redis.Keys.PrimaryKey);
             }
             return 1;
         }

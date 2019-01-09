@@ -3,7 +3,7 @@ using EShopWorld.Tools.Commands.AutoRest;
 using FluentAssertions;
 using Xunit;
 
-namespace EshopWorld.Tools.Unit.Tests
+namespace EshopWorld.Tools.Tests
 {
     // ReSharper disable once InconsistentNaming
     public class SwaggerJSONParserTests

@@ -28,7 +28,7 @@ namespace EShopWorld.Tools.Commands.AzScan
                 var name = cosmos.Name.Contains('-')
                     ? cosmos.Name.Remove(cosmos.Name.LastIndexOf('-')) : cosmos.Name;
 
-                await SetKeyVaultSecretAsync(name, keys.PrimaryMasterKey);
+                await SetKeyVaultSecretAsync("CosmosDB",name, keys.PrimaryMasterKey);
             }
 
             return 1;

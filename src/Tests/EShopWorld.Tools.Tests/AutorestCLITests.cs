@@ -3,7 +3,7 @@ using Eshopworld.Tests.Core;
 using FluentAssertions;
 using Xunit;
 
-namespace EshopWorld.Tools.Unit.Tests
+namespace EshopWorld.Tools.Tests
 {
     // ReSharper disable once InconsistentNaming
     public class AutorestCLITests : CLIInvokingTestsBase
