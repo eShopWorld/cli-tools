@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Xml.Linq;
 using Eshopworld.Core;
 using Eshopworld.Tests.Core;
-using EshopWorld.Tools.Unit.Tests.Data;
+using EshopWorld.Tools.Tests.data;
 using EShopWorld.Tools.Commands.Transform;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
