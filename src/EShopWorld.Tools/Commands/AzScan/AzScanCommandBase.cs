@@ -17,9 +17,6 @@ namespace EShopWorld.Tools.Commands.AzScan
         protected readonly KeyVaultClient KeyVaultClient;
         protected readonly IBigBrother BigBrother;
 
-        internal static string[] ApplicableSubscriptions =
-            {"evo-ci", "evo-test", "evo-sandbox", "evo-preprod", "evo-prod"};
-
         internal static string[] SuffixesToRemove = {"-ci", "-test", "-sand", "-preprod", "-prod"};
 
         protected AzScanCommandBase()
