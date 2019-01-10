@@ -19,8 +19,8 @@ namespace EShopWorld.Tools.Helpers
             if (string.IsNullOrWhiteSpace(input))
                 return input;
 
-            var pascal = System.Text.RegularExpressions.Regex.Replace(input.ToLowerInvariant(), "(?:^|-|_)(.)", match => match.Groups[1].Value.ToUpper());
-            return pascal.Length > 0 ? pascal.Substring(0, 1).ToLower() + pascal.Substring(1) : pascal;
+            var pascal = System.Text.RegularExpressions.Regex.Replace(input.ToLowerInvariant(), "(?:^|-|_)(.)", match => match.Groups[1].Value.ToUpperInvariant());
+            return pascal.Length > 0 ? pascal.Substring(0, 1).ToLowerInvariant() + pascal.Substring(1) : pascal;
         }
 
         /// <summary>

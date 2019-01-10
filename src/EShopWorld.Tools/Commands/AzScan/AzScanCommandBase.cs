@@ -27,7 +27,7 @@ namespace EShopWorld.Tools.Commands.AzScan
             
         }
 
-        public AzScanCommandBase(Azure.IAuthenticated authenticated, KeyVaultClient keyVaultClient, IBigBrother bigBrother)
+        protected AzScanCommandBase(Azure.IAuthenticated authenticated, KeyVaultClient keyVaultClient, IBigBrother bigBrother)
         {
             Authenticated = authenticated;
             KeyVaultClient = keyVaultClient;

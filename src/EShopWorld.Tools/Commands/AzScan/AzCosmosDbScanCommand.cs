@@ -25,7 +25,7 @@ namespace EShopWorld.Tools.Commands.AzScan
 
                 var keys = await cosmos.ListKeysAsync();
                 var name = cosmos.Name.Contains('-')
-                    ? cosmos.Name.Remove(cosmos.Name.LastIndexOf('-')) : cosmos.Name;       
+                    ? cosmos.Name.Remove(cosmos.Name.LastIndexOf('-')) : cosmos.Name;
 
                 await SetKeyVaultSecretAsync("CosmosDB", name, "PrimaryConnectionString", $"AccountEndpoint={cosmos.DocumentEndpoint};AccountKey={keys.PrimaryMasterKey}");
                 await SetKeyVaultSecretAsync("CosmosDB", name, "PrimaryMasterKey", keys.PrimaryMasterKey);

@@ -24,7 +24,7 @@ namespace EShopWorld.Tools.Commands.AzScan
         {
             _azClient.SubscriptionId = client.SubscriptionId;
 
-            string nextPageLink = string.Empty;
+            string nextPageLink = null;
             do
             {
                 var ais = string.IsNullOrEmpty(ResourceGroup)
