@@ -29,7 +29,7 @@ namespace EShopWorld.Tools.Commands.AzScan
                 foreach (var db in sql.Databases.List()
                     .Where(db => !db.Name.Equals("master", StringComparison.OrdinalIgnoreCase)))
                 {
-                    if (!CheckBasicFilters(db.Name))
+                    if (!CheckRegion(db.RegionName))
                         continue;
 
                     var connStr =

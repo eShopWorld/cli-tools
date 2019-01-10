@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Eshopworld.Core;
 using McMaster.Extensions.CommandLineUtils;
-using Microsoft.Azure.KeyVault;
-using Microsoft.Azure.Management.Fluent;
 
 namespace EShopWorld.Tools.Commands.AzScan
 {
@@ -37,8 +34,7 @@ namespace EShopWorld.Tools.Commands.AzScan
             var instance = (T) _serviceProvider.GetService(typeof(T));
 
             instance.KeyVaultName = KeyVaultName;
-            instance.Environment = Environment;
-            instance.Regex = Regex; //todo: decide whether to pass this for scan all... how transferable is this really?
+            instance.Subscription = Subscription;
             instance.ResourceGroup = ResourceGroup;
 
             return instance;

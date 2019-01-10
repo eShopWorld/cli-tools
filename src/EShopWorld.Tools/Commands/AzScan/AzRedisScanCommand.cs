@@ -21,12 +21,13 @@ namespace EShopWorld.Tools.Commands.AzScan
 
             foreach (var redis in redises)
             {
-                if (!CheckBasicFilters(redis.Name))
+                if (!CheckRegion(redis.RegionName))
                     continue;
 
                 var name = redis.Name.Contains('-')
                     ? redis.Name.Remove(redis.Name.LastIndexOf('-')) : redis.Name;
 
+                await SetKeyVaultSecretAsync("Redis", name, "PrimaryConnectionString", $"{redis.HostName},password={redis.Keys.PrimaryKey},ssl=True,abortConnect=False");
                 await SetKeyVaultSecretAsync("Redis", name, "PrimaryKey", redis.Keys.PrimaryKey);
             }
             return 1;

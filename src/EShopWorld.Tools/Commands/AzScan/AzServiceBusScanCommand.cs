@@ -15,7 +15,6 @@ namespace EShopWorld.Tools.Commands.AzScan
 
         protected override async Task<int> RunScanAsync(IAzure client)
         {
-
             //list sb namespaces
             var namespaces = await (!string.IsNullOrWhiteSpace(ResourceGroup)
                 ? client.ServiceBusNamespaces.ListByResourceGroupAsync(ResourceGroup)
@@ -23,7 +22,7 @@ namespace EShopWorld.Tools.Commands.AzScan
 
             foreach (var @namespace in namespaces)
             {
-                if (!CheckBasicFilters(@namespace.Name))
+                if (!CheckRegion(@namespace.RegionName))
                     continue;
 
                 var rule = await @namespace.AuthorizationRules.GetByNameAsync("RootManageSharedAccessKey");

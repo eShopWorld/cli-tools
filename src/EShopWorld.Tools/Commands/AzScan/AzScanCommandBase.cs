@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Eshopworld.Core;
 using EShopWorld.Tools.Helpers;
@@ -19,7 +18,7 @@ namespace EShopWorld.Tools.Commands.AzScan
         protected readonly IBigBrother BigBrother;
 
         internal static string[] ApplicableSubscriptions =
-            {"evo-ci", "evo-test", "evo-sand", "evo-preprod", "evo-prod"};
+            {"evo-ci", "evo-test", "evo-sandbox", "evo-preprod", "evo-prod"};
 
         internal static string[] SuffixesToRemove = {"-ci", "-test", "-sand", "-preprod", "-prod"};
 
@@ -52,32 +51,34 @@ namespace EShopWorld.Tools.Commands.AzScan
         public string ResourceGroup { get; set; }
 
         [Option(
-            Description = "optional environment filter",
-            ShortName = "e",
-            LongName = "environment",
+            Description = "name of the subscription to scan ",
+            ShortName = "s",
+            LongName = "subscription",
             ShowInHelpText = true)]
-        public string Environment { get; set; }
+        [Required]
+        public string Subscription { get; set; }
 
         [Option(
-            Description = "optional regex filter",
+            Description = "optional region filter",
             ShortName = "r",
-            LongName = "regex",
+            LongName = "region",
             ShowInHelpText = true)]
-        public string Regex { get; set; }
+        public string Region { get; set; }
 
         public virtual async Task<int> OnExecuteAsync(CommandLineApplication app, IConsole console)
         {
-            //run internal scan implementation over all detected subscriptions
+            //look up subscription id for the given name
             var defaultSubClient = Authenticated.WithDefaultSubscription();
 
             var subs = await defaultSubClient.Subscriptions.ListAsync();
-            foreach (var sub in subs.Where(sub=> ApplicableSubscriptions.Contains(sub.DisplayName, StringComparer.OrdinalIgnoreCase)))
-            {                
-                var subClient = Authenticated.WithSubscription(sub.SubscriptionId);
+            var sub = subs.FirstOrDefault(s => Subscription.Equals(s.DisplayName, StringComparison.OrdinalIgnoreCase));
+            if (sub == null)
+                throw new ApplicationException($"Subscription {Subscription} not found. Check the account role setup.");
 
-                await RunScanAsync(subClient);
-            }
+            var subClient = Authenticated.WithSubscription(sub.SubscriptionId);
 
+            await RunScanAsync(subClient);
+         
             return 1;
         }
 
@@ -86,26 +87,15 @@ namespace EShopWorld.Tools.Commands.AzScan
             return Task.FromResult(1);
         }
 
-        private static bool StringMatchRegexp(string value, string regexpStr)
-        {
-            if (string.IsNullOrWhiteSpace(regexpStr))
-                return true;
-
-            var regexp = new Regex(regexpStr);
-            return regexp.IsMatch(value);
-        }
-
         protected async Task SetKeyVaultSecretAsync(string prefix, string name, string suffix, string value)
         {      
             
             await KeyVaultClient.SetSecretWithHttpMessagesAsync($"https://{KeyVaultName}.vault.azure.net/", $"{prefix}-{name.StripRecognizedSuffix(SuffixesToRemove).ToCamelCase()}-{suffix}", value);
         }
 
-        protected bool CheckBasicFilters(string key)
+        protected bool CheckRegion(string region)
         {
-            return string.IsNullOrWhiteSpace(key) ||
-                   ((string.IsNullOrWhiteSpace(Environment) || key.EndsWith(Environment)) &&
-                    StringMatchRegexp(key, Regex));
+            return string.IsNullOrWhiteSpace(region) || string.IsNullOrWhiteSpace(Region) || region.Equals(Region, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

@@ -38,8 +38,8 @@ namespace EShopWorld.Tools.Commands.AzScan
                 nextPageLink = ais.NextPageLink;
 
                 foreach (var ai in ais)
-                {
-                    if (!CheckBasicFilters(ai.Name))
+                {                    
+                    if (!CheckRegion(ai.Location))
                         continue;
 
                     await SetKeyVaultSecretAsync("AI", ai.Name, "InstrumentationKey", ai.InstrumentationKey);
