@@ -39,7 +39,7 @@ namespace EShopWorld.Tools.Commands.AzScan
 
                 foreach (var ai in ais)
                 {                    
-                    if (!CheckRegion(ai.Location))
+                    if (!CheckRegion(ai.Location)) //TODO: this has different value set compared to other resources and effectively invalidates region filter
                         continue;
 
                     await SetKeyVaultSecretAsync("AI", ai.Name, "InstrumentationKey", ai.InstrumentationKey);
