@@ -60,7 +60,7 @@ namespace EShopWorld.Tools.Commands.AzScan
             ShortName = "r",
             LongName = "region",
             ShowInHelpText = true)]
-        public string Region { get; set; }
+        public string Region { get; set; } //TODO: should this be required?
 
         public virtual async Task<int> OnExecuteAsync(CommandLineApplication app, IConsole console)
         {

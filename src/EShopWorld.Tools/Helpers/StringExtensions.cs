@@ -1,4 +1,7 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Eshopworld.DevOps;
 
 namespace EShopWorld.Tools.Helpers
 {
@@ -41,6 +44,55 @@ namespace EShopWorld.Tools.Helpers
             }
 
             return input;
+        }
+
+        /// <summary>
+        /// check region against recognized regions using code
+        /// </summary>
+        /// <param name="name">resource name</param>
+        /// <param name="region">target region</param>
+        /// <returns>true if region matches</returns>
+        public static bool ShortRegionCheck(this string name, string region)
+        {
+            var codeLìst = ConvertDeploymentRegions((i) => i.ToRegionCode());
+
+            var enumerable = codeLìst as string[] ?? codeLìst.ToArray();
+            if (!enumerable.Contains(region, StringComparer.OrdinalIgnoreCase))
+                throw new ArgumentException(
+                    $"region {region} not recognized, check whether correctly targeting name vs. code", nameof(region));
+
+            return name.RegionCheck(region, enumerable);
+        }
+
+        private static IEnumerable<string> ConvertDeploymentRegions(Func<DeploymentRegion, string> conversionLogic)
+        {
+            var list = new List<string>();
+
+            foreach (var item in Enum.GetValues(typeof(DeploymentRegion)))
+            {
+                list.Add(conversionLogic((DeploymentRegion) item));
+            }
+
+            return list;
+        }
+
+        /// <summary>
+        /// check region
+        ///
+        /// if not suffixed with region (at any level e.g. LB), consider valid
+        /// otherwise check required suffix
+        /// </summary>
+        /// <param name="name">name to check</param>
+        /// <param name="regionList">list of regions to recognize</param>
+        /// <param name="region">region to check against</param>
+        /// <returns>true if checks pass</returns>
+        public static bool RegionCheck(this string name, string region, IEnumerable<string> regionList)
+        {
+            if (string.IsNullOrWhiteSpace(name) ||
+                !regionList.Any(r => name.EndsWith(r, StringComparison.OrdinalIgnoreCase) || name.EndsWith($"{r}-lb", StringComparison.OrdinalIgnoreCase))) //not suffixed with region
+                return true;
+
+            return name.EndsWith(region, StringComparison.OrdinalIgnoreCase) || name.EndsWith($"{region}-lb", StringComparison.OrdinalIgnoreCase);
         }
     }
 }

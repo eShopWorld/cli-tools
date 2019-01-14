@@ -7,9 +7,9 @@ using Microsoft.Azure.Management.Fluent;
 namespace EShopWorld.Tools.Commands.AzScan
 {
     [Command("redis", Description = "scans and projects redis level configuration into KV")]
-    public class AzRedisScanCommand : AzScanCommandBase
+    public class AzScanRedisCommand : AzScanCommandBase
     {
-        public AzRedisScanCommand(Azure.IAuthenticated authenticated, KeyVaultClient keyVaultClient, IBigBrother bigBrother) : base(authenticated, keyVaultClient, bigBrother)
+        public AzScanRedisCommand(Azure.IAuthenticated authenticated, KeyVaultClient keyVaultClient, IBigBrother bigBrother) : base(authenticated, keyVaultClient, bigBrother)
         {
         }
 

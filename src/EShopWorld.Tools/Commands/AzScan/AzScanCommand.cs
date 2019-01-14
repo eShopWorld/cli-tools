@@ -9,10 +9,11 @@ namespace EShopWorld.Tools.Commands.AzScan
     [Command("azscan", Description = "azure resource configuration management scan"), HelpOption]
     [Subcommand(typeof(AzServiceBusScanCommand))]
     [Subcommand(typeof(AzCosmosDbScanCommand))]
-    [Subcommand(typeof(AzRedisScanCommand))]
+    [Subcommand(typeof(AzScanRedisCommand))]
     [Subcommand(typeof(AzScanSqlCommand))]
     [Subcommand(typeof(AzScanAllCommand))]
     [Subcommand(typeof(AzScanAppInsightsCommand))]
+    [Subcommand(typeof(AzScanDNSCommand))]
     public class AzScanCommand
     {
         public Task<int> OnExecuteAsync(CommandLineApplication app, IConsole console)
