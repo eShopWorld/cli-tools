@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Eshopworld.Core;
+using EShopWorld.Tools.Helpers;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.Management.Fluent;
@@ -31,7 +32,7 @@ namespace EShopWorld.Tools.Commands.AzScan
                 var name = @namespace.Name.Contains('-')
                     ? @namespace.Name.Remove(@namespace.Name.LastIndexOf('-')) : @namespace.Name;
 
-                await SetKeyVaultSecretAsync("SB", name, "PrimaryConnectionString", keys.PrimaryConnectionString);
+                await KeyVaultClient.SetKeyVaultSecretAsync(KeyVaultName, "SB", name, "PrimaryConnectionString", keys.PrimaryConnectionString);
             }
 
             return 1;

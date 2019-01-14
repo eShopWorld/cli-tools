@@ -27,7 +27,7 @@ namespace EshopWorld.Tools.Tests
         [InlineData("esw-payment-blah", "esw-payment-blah")]
         public void StripRecognizedSuffix_Success(string input, string expectedOutput)
         {
-            input.StripRecognizedSuffix(AzScanCommandBase.SuffixesToRemove).Should().Be(expectedOutput);
+            input.StripRecognizedSuffix("-ci", "-test", "-sand", "-preprod", "-prod").Should().Be(expectedOutput);
         }
     }
 }

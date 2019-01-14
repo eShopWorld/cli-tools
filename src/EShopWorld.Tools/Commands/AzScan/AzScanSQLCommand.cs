@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Eshopworld.Core;
+using EShopWorld.Tools.Helpers;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.Management.Fluent;
@@ -34,7 +35,7 @@ namespace EShopWorld.Tools.Commands.AzScan
 
                     var connStr =
                         $"Server=tcp:{sql.FullyQualifiedDomainName}; Database={db.Name};Trusted_Connection=False; Encrypt=True; MultipleActiveResultSets=True;";
-                    await SetKeyVaultSecretAsync("SQL", $"{sql.Name}_{db.Name}", "ConnectionString", connStr);
+                    await KeyVaultClient.SetKeyVaultSecretAsync(KeyVaultName, "SQL", $"{sql.Name}_{db.Name}", "ConnectionString", connStr);
                 }
             }
 
