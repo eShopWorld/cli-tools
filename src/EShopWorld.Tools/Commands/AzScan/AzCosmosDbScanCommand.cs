@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Eshopworld.Core;
+using EShopWorld.Tools.Helpers;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.Management.Fluent;
@@ -21,14 +22,13 @@ namespace EShopWorld.Tools.Commands.AzScan
 
             foreach (var cosmos in cosmoses)
             {
-                if (!CheckBasicFilters(cosmos.Name))
-                    continue;
+                //no region filter for cosmos
 
                 var keys = await cosmos.ListKeysAsync();
                 var name = cosmos.Name.Contains('-')
                     ? cosmos.Name.Remove(cosmos.Name.LastIndexOf('-')) : cosmos.Name;
 
-                await SetKeyVaultSecretAsync(name, keys.PrimaryMasterKey);
+                await KeyVaultClient.SetKeyVaultSecretAsync(KeyVaultName, "CosmosDB", name, "PrimaryConnectionString", $"AccountEndpoint={cosmos.DocumentEndpoint};AccountKey={keys.PrimaryMasterKey}");
             }
 
             return 1;

@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace EshopWorld.Tools.Unit.Tests.Data {
+namespace EshopWorld.Tools.Tests.data {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace EshopWorld.Tools.Unit.Tests.Data {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("EshopWorld.Tools.Unit.Tests.Data.test", typeof(test).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("EshopWorld.Tools.Tests.data.test", typeof(test).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

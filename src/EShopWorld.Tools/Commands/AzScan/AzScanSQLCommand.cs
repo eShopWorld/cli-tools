@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Eshopworld.Core;
+using EShopWorld.Tools.Helpers;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.Management.Fluent;
@@ -29,10 +30,12 @@ namespace EShopWorld.Tools.Commands.AzScan
                 foreach (var db in sql.Databases.List()
                     .Where(db => !db.Name.Equals("master", StringComparison.OrdinalIgnoreCase)))
                 {
+                    if (!CheckRegion(db.RegionName))
+                        continue;
+
                     var connStr =
-                        $"Server=tcp:{sql.FullyQualifiedDomainName}; Database={db.Name}; User ID=TBA; Password=TBA; Trusted_Connection=False; Encrypt=True; MultipleActiveResultSets=True;";
-                    //TODO: decide key name here since most characters are not allowed (e.g. .)
-                    //await UpsertSecretToKVAsync($"{sql.FullyQualifiedDomainName}.{db.Name}", connStr); //TODO: naming here not consistent with devopsflex script ('SQLConnectionString' there)
+                        $"Server=tcp:{sql.FullyQualifiedDomainName}; Database={db.Name};Trusted_Connection=False; Encrypt=True; MultipleActiveResultSets=True;";
+                    await KeyVaultClient.SetKeyVaultSecretAsync(KeyVaultName, "SQL", $"{sql.Name}_{db.Name}", "ConnectionString", connStr);
                 }
             }
 

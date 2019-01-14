@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Eshopworld.Core;
+using EShopWorld.Tools.Helpers;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.Management.Fluent;
@@ -21,13 +22,13 @@ namespace EShopWorld.Tools.Commands.AzScan
 
             foreach (var redis in redises)
             {
-                if (!CheckBasicFilters(redis.Name))
+                if (!CheckRegion(redis.RegionName))
                     continue;
 
                 var name = redis.Name.Contains('-')
                     ? redis.Name.Remove(redis.Name.LastIndexOf('-')) : redis.Name;
 
-                await SetKeyVaultSecretAsync(name, redis.Keys.PrimaryKey);
+                await KeyVaultClient.SetKeyVaultSecretAsync(KeyVaultName, "Redis", name, "PrimaryConnectionString", $"{redis.HostName},password={redis.Keys.PrimaryKey},ssl=True,abortConnect=False");
             }
             return 1;
         }

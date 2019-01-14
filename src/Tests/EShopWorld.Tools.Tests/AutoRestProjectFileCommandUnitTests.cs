@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Moq;
 using Xunit;
 
-namespace EshopWorld.Tools.Unit.Tests
+namespace EshopWorld.Tools.Tests
 {
     public class AutoRestProjectFileCommandUnitTests
     {

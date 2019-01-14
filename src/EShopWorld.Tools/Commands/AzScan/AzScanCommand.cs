@@ -12,6 +12,7 @@ namespace EShopWorld.Tools.Commands.AzScan
     [Subcommand(typeof(AzRedisScanCommand))]
     [Subcommand(typeof(AzScanSqlCommand))]
     [Subcommand(typeof(AzScanAllCommand))]
+    [Subcommand(typeof(AzScanAppInsightsCommand))]
     public class AzScanCommand
     {
         public Task<int> OnExecuteAsync(CommandLineApplication app, IConsole console)

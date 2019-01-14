@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Eshopworld.Core;
+using EShopWorld.Tools.Helpers;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.Management.Fluent;
@@ -15,7 +16,6 @@ namespace EShopWorld.Tools.Commands.AzScan
 
         protected override async Task<int> RunScanAsync(IAzure client)
         {
-
             //list sb namespaces
             var namespaces = await (!string.IsNullOrWhiteSpace(ResourceGroup)
                 ? client.ServiceBusNamespaces.ListByResourceGroupAsync(ResourceGroup)
@@ -23,7 +23,7 @@ namespace EShopWorld.Tools.Commands.AzScan
 
             foreach (var @namespace in namespaces)
             {
-                if (!CheckBasicFilters(@namespace.Name))
+                if (!CheckRegion(@namespace.RegionName))
                     continue;
 
                 var rule = await @namespace.AuthorizationRules.GetByNameAsync("RootManageSharedAccessKey");
@@ -32,7 +32,7 @@ namespace EShopWorld.Tools.Commands.AzScan
                 var name = @namespace.Name.Contains('-')
                     ? @namespace.Name.Remove(@namespace.Name.LastIndexOf('-')) : @namespace.Name;
 
-                await SetKeyVaultSecretAsync(name,keys.PrimaryConnectionString);
+                await KeyVaultClient.SetKeyVaultSecretAsync(KeyVaultName, "SB", name, "PrimaryConnectionString", keys.PrimaryConnectionString);
             }
 
             return 1;

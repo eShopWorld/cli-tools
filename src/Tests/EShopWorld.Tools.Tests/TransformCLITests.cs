@@ -4,7 +4,7 @@ using Eshopworld.Tests.Core;
 using FluentAssertions;
 using Xunit;
 
-namespace EshopWorld.Tools.Unit.Tests
+namespace EshopWorld.Tools.Tests
 {
     public class TransformCLITests : CLIInvokingTestsBase
     {
