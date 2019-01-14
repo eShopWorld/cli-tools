@@ -17,8 +17,6 @@ namespace EShopWorld.Tools.Commands.AzScan
         protected readonly KeyVaultClient KeyVaultClient;
         protected readonly IBigBrother BigBrother;
 
-        internal static string[] SuffixesToRemove = {"-ci", "-test", "-sand", "-preprod", "-prod"};
-
         protected AzScanCommandBase()
         {
             
@@ -82,12 +80,6 @@ namespace EShopWorld.Tools.Commands.AzScan
         protected virtual Task<int> RunScanAsync([NotNull] IAzure client)
         {
             return Task.FromResult(1);
-        }
-
-        protected async Task SetKeyVaultSecretAsync(string prefix, string name, string suffix, string value)
-        {      
-            
-            await KeyVaultClient.SetSecretWithHttpMessagesAsync($"https://{KeyVaultName}.vault.azure.net/", $"{prefix}-{name.StripRecognizedSuffix(SuffixesToRemove).ToCamelCase()}-{suffix}", value);
         }
 
         protected bool CheckRegion(string region)

@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Eshopworld.Core;
+using EShopWorld.Tools.Helpers;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.Management.ApplicationInsights.Management;
@@ -42,7 +43,7 @@ namespace EShopWorld.Tools.Commands.AzScan
                     if (!CheckRegion(ai.Location)) //TODO: this has different value set compared to other resources and effectively invalidates region filter
                         continue;
 
-                    await SetKeyVaultSecretAsync("AI", ai.Name, "InstrumentationKey", ai.InstrumentationKey);
+                    await KeyVaultClient.SetKeyVaultSecretAsync(KeyVaultName, "AI", ai.Name, "InstrumentationKey", ai.InstrumentationKey);
                 }
             } while (nextPageLink != null);
 
