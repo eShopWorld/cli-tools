@@ -53,7 +53,7 @@ namespace EShopWorld.Tools.Commands.AzScan
         public string Subscription { get; set; }
 
         [Option(
-            Description = "optional region filter, values expected are codes recognized by Eshopworld.DevOps.DeploymentRegion",
+            Description = "region filter, values expected are codes recognized by Eshopworld.DevOps.DeploymentRegion",
             ShortName = "r",
             LongName = "region",
             ShowInHelpText = true)]
