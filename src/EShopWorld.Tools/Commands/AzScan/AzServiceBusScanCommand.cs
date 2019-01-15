@@ -23,7 +23,7 @@ namespace EShopWorld.Tools.Commands.AzScan
 
             foreach (var @namespace in namespaces)
             {
-                if (!CheckRegion(@namespace.RegionName))
+                if (!@namespace.RegionName.RegionNameCheck(Region))
                     continue;
 
                 var rule = await @namespace.AuthorizationRules.GetByNameAsync("RootManageSharedAccessKey");

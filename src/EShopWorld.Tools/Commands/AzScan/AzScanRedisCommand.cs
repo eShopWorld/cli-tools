@@ -22,7 +22,7 @@ namespace EShopWorld.Tools.Commands.AzScan
 
             foreach (var redis in redises)
             {
-                if (!CheckRegion(redis.RegionName))
+                if (!redis.RegionName.RegionNameCheck(Region))
                     continue;
 
                 var name = redis.Name.Contains('-')

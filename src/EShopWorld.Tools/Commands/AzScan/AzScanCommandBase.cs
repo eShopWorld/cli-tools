@@ -81,10 +81,5 @@ namespace EShopWorld.Tools.Commands.AzScan
         {
             return Task.FromResult(1);
         }
-
-        protected bool CheckRegion(string region)
-        {
-            return string.IsNullOrWhiteSpace(region) || string.IsNullOrWhiteSpace(Region) || region.Equals(Region, StringComparison.OrdinalIgnoreCase);
-        }
     }
 }
