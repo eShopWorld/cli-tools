@@ -22,7 +22,7 @@ namespace EShopWorld.Tools.Helpers
             if (string.IsNullOrWhiteSpace(input))
                 return input;
 
-            var pascal = System.Text.RegularExpressions.Regex.Replace(input.ToLowerInvariant(), "(?:^|-|_)(.)", match => match.Groups[1].Value.ToUpperInvariant());
+            var pascal = System.Text.RegularExpressions.Regex.Replace(input.ToLowerInvariant(), "(?:^|-|_|\\s)(.)", match => match.Groups[1].Value.ToUpperInvariant());
             return pascal.Length > 0 ? pascal.Substring(0, 1).ToLowerInvariant() + pascal.Substring(1) : pascal;
         }
 
@@ -47,52 +47,69 @@ namespace EShopWorld.Tools.Helpers
         }
 
         /// <summary>
+        /// check region against recognized regions using abbreviated name (e.g. 'eastus')
+        /// </summary>
+        /// <param name="name">resource name</param>
+        /// <param name="region">target region</param>
+        /// <returns>true if region matches</returns>
+        public static bool RegionAbbreviatedNameCheck(this string name, string region)
+        {
+            return name.RegionCheck(region, (i) => i.ToRegionName().ToCamelCase().ToLowerInvariant());
+        }
+
+        /// <summary>
+        /// check region against recognized regions using name
+        /// </summary>
+        /// <param name="name">resource name</param>
+        /// <param name="region">target region</param>
+        /// <returns>true if region matches</returns>
+        public static bool RegionNameCheck(this string name, string region)
+        {           
+            return name.RegionCheck(region, (i) => i.ToRegionName());
+        }
+
+        /// <summary>
         /// check region against recognized regions using code
         /// </summary>
         /// <param name="name">resource name</param>
         /// <param name="region">target region</param>
         /// <returns>true if region matches</returns>
-        public static bool ShortRegionCheck(this string name, string region)
+        public static bool RegionCodeCheck(this string name, string region)
         {
-            var codeLìst = ConvertDeploymentRegions((i) => i.ToRegionCode());
-
-            var enumerable = codeLìst as string[] ?? codeLìst.ToArray();
-            if (!enumerable.Contains(region, StringComparer.OrdinalIgnoreCase))
-                throw new ArgumentException(
-                    $"region {region} not recognized, check whether correctly targeting name vs. code", nameof(region));
-
-            return name.RegionCheck(region, enumerable);
+            return name.RegionCheck(region, (i) => i.ToRegionCode(),"-");
         }
 
-        private static IEnumerable<string> ConvertDeploymentRegions(Func<DeploymentRegion, string> conversionLogic)
+        private static IList<DeploymentRegion> DeploymentRegionsToList()
         {
-            var list = new List<string>();
+            var list = new List<DeploymentRegion>();
 
             foreach (var item in Enum.GetValues(typeof(DeploymentRegion)))
             {
-                list.Add(conversionLogic((DeploymentRegion) item));
+                list.Add((DeploymentRegion) item);
             }
 
             return list;
         }
 
-        /// <summary>
-        /// check region
-        ///
-        /// if not suffixed with region (at any level e.g. LB), consider valid
-        /// otherwise check required suffix
-        /// </summary>
-        /// <param name="name">name to check</param>
-        /// <param name="regionList">list of regions to recognize</param>
-        /// <param name="region">region to check against</param>
-        /// <returns>true if checks pass</returns>
-        public static bool RegionCheck(this string name, string region, IEnumerable<string> regionList)
+        private static bool RegionCheck(this string name, string region, Func<DeploymentRegion, string> conversionLogic, string regionPrefix="")
         {
+            var regionList = DeploymentRegionsToList();
+
+            var matched = false;
+
+            var targetRegion =
+                regionList.FirstOrDefault(r => (matched=region.Equals(r.ToRegionCode(), StringComparison.OrdinalIgnoreCase)));
+
+            if (!matched)
+                return false; //unrecognized region, no match
+
+            var regionValueToCheck = conversionLogic(targetRegion);
+
             if (string.IsNullOrWhiteSpace(name) ||
-                !regionList.Any(r => name.EndsWith(r, StringComparison.OrdinalIgnoreCase) || name.EndsWith($"{r}-lb", StringComparison.OrdinalIgnoreCase))) //not suffixed with region
+                !regionList.Any(r => name.EndsWith($"{regionPrefix}{conversionLogic(r)}", StringComparison.OrdinalIgnoreCase) || name.EndsWith($"{regionPrefix}{conversionLogic(r)}-lb", StringComparison.OrdinalIgnoreCase))) //not suffixed with known region, "global resource"
                 return true;
 
-            return name.EndsWith(region, StringComparison.OrdinalIgnoreCase) || name.EndsWith($"{region}-lb", StringComparison.OrdinalIgnoreCase);
+            return name.EndsWith($"{regionPrefix}{regionValueToCheck}", StringComparison.OrdinalIgnoreCase) || name.EndsWith($"{regionPrefix}{regionValueToCheck}-lb", StringComparison.OrdinalIgnoreCase);
         }
     }
 }

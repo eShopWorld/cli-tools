@@ -30,12 +30,12 @@ namespace EShopWorld.Tools.Commands.AzScan
                 foreach (var db in sql.Databases.List()
                     .Where(db => !db.Name.Equals("master", StringComparison.OrdinalIgnoreCase)))
                 {
-                    if (!CheckRegion(db.RegionName))
+                    if (!db.RegionName.RegionNameCheck(Region))
                         continue;
 
-                    var connStr =
-                        $"Server=tcp:{sql.FullyQualifiedDomainName}; Database={db.Name};Trusted_Connection=False; Encrypt=True; MultipleActiveResultSets=True;";
-                    await KeyVaultClient.SetKeyVaultSecretAsync(KeyVaultName, "SQL", $"{sql.Name}_{db.Name}", "ConnectionString", connStr);
+                    await KeyVaultClient.SetKeyVaultSecretAsync(KeyVaultName, "SQL", $"{sql.Name}{db.Name}",
+                        "ConnectionString",
+                        $"Server=tcp:{sql.FullyQualifiedDomainName}; Database={db.Name};Trusted_Connection=False; Encrypt=True; MultipleActiveResultSets=True;");
                 }
             }
 

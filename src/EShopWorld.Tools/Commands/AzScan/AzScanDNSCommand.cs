@@ -22,7 +22,7 @@ namespace EShopWorld.Tools.Commands.AzScan
             _console = console;
         }
 
-        protected async override Task<int> RunScanAsync(IAzure client)
+        protected override async Task<int> RunScanAsync(IAzure client)
         {
             var zones = await client.DnsZones.ListAsync();
             foreach (var zone in zones)
@@ -38,28 +38,28 @@ namespace EShopWorld.Tools.Commands.AzScan
                  */
 
                 //scan CNAMEs
-                foreach (var cname in await zone.CNameRecordSets.ListAsync())
+                foreach (var cName in await zone.CNameRecordSets.ListAsync())
                 {
-                    if (!cname.Name.ShortRegionCheck(Region))
+                    if (!cName.Name.RegionCodeCheck(Region))
                         continue;
 
-                    await SetKeyVaultSecretAsync("Platform", cname.Name, "Global", $"https://{cname.Fqdn.TrimEnd('.')}");
+                    await KeyVaultClient.SetKeyVaultSecretAsync(KeyVaultName, "Platform", cName.Name, "Global", $"https://{cName.Fqdn.TrimEnd('.')}");
                 }
                 //scan A(Name)s
-                foreach (var aname in await zone.ARecordSets.ListAsync())
+                foreach (var aName in await zone.ARecordSets.ListAsync())
                 {
-                    var isLb = aname.Name.EndsWith("-lb");
-                    if (!aname.IPv4Addresses.Any())
+                    var isLb = aName.Name.EndsWith("-lb");
+                    if (!aName.IPv4Addresses.Any())
                     {
-                        _console.WriteLine($"DNS entry {aname.Name} does not have any target IP address");
+                        _console.WriteLine($"DNS entry {aName.Name} does not have any target IP address");
                         continue;
                     }
 
-                    if (!aname.Name.ShortRegionCheck(Region))
+                    if (!aName.Name.RegionCodeCheck(Region))
                         continue;
 
-                    await SetKeyVaultSecretAsync("Platform", aname.Name, isLb ? "LB" : "Gateway",
-                        $"{(isLb? "http":"https")}://{aname.IPv4Addresses.First()}");
+                    await KeyVaultClient.SetKeyVaultSecretAsync(KeyVaultName, "Platform", aName.Name, isLb ? "LB" : "Gateway",
+                        $"{(isLb? "http":"https")}://{aName.IPv4Addresses.First()}");
                 }
             }
 

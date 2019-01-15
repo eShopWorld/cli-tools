@@ -6,6 +6,9 @@ using Xunit;
 
 namespace EshopWorld.Tools.Tests
 {
+    /// <summary>
+    /// L3 CLI tests for transform command
+    /// </summary>
     public class TransformCLITests : CLIInvokingTestsBase
     {
         [Fact, IsLayer1]

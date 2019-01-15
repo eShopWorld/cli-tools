@@ -68,7 +68,6 @@ namespace EShopWorld.Tools.Helpers
             return absoluteFolder;
         }
 
-        /// <inheritdoc />
         /// <summary>
         /// Creates all directories and subdirectories in the specified path unless they already exist.
         /// </summary>

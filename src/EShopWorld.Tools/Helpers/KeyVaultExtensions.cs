@@ -65,9 +65,7 @@ namespace EShopWorld.Tools.Helpers
 
         internal static async Task SetKeyVaultSecretAsync(this KeyVaultClient client, string keyVaultName, string prefix, string name, string suffix, string value)
         {
-            var SuffixesToRemove = new[] { "-ci", "-test", "-sand", "-preprod", "-prod" };
-
-            await client.SetSecretWithHttpMessagesAsync($"https://{keyVaultName}.vault.azure.net/", $"{prefix}-{name.StripRecognizedSuffix(SuffixesToRemove).ToCamelCase()}-{suffix}", value);
+            await client.SetSecretWithHttpMessagesAsync($"https://{keyVaultName}.vault.azure.net/", $"{prefix}-{name.StripRecognizedSuffix("-ci", "-test", "-sand", "-preprod", "-prod").ToCamelCase()}-{suffix}", value);
         }
     }
 }

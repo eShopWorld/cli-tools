@@ -21,7 +21,6 @@ namespace EShopWorld.Tools.Commands.AzScan
         {
             
         }
-
         protected AzScanCommandBase(Azure.IAuthenticated authenticated, KeyVaultClient keyVaultClient, IBigBrother bigBrother)
         {
             Authenticated = authenticated;
@@ -54,11 +53,12 @@ namespace EShopWorld.Tools.Commands.AzScan
         public string Subscription { get; set; }
 
         [Option(
-            Description = "optional region filter",
+            Description = "optional region filter, values expected are codes recognized by Eshopworld.DevOps.DeploymentRegion",
             ShortName = "r",
             LongName = "region",
             ShowInHelpText = true)]
-        public string Region { get; set; } //TODO: should this be required?
+        [Required]
+        public string Region { get; set; } 
 
         public virtual async Task<int> OnExecuteAsync(CommandLineApplication app, IConsole console)
         {

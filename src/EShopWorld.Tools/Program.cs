@@ -9,7 +9,6 @@ using Autofac.Extensions.DependencyInjection;
 using Eshopworld.Core;
 using EShopWorld.Tools.Commands.AutoRest;
 using McMaster.Extensions.CommandLineUtils;
-using EShopWorld.Tools.Commands;
 using EShopWorld.Tools.Commands.AzScan;
 using EShopWorld.Tools.Commands.KeyVault;
 using EShopWorld.Tools.Commands.Transform;

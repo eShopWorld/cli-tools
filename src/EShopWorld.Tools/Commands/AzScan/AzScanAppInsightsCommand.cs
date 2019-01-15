@@ -40,7 +40,7 @@ namespace EShopWorld.Tools.Commands.AzScan
 
                 foreach (var ai in ais)
                 {                    
-                    if (!CheckRegion(ai.Location)) //TODO: this has different value set compared to other resources and effectively invalidates region filter
+                    if (!ai.Location.RegionAbbreviatedNameCheck(Region))
                         continue;
 
                     await KeyVaultClient.SetKeyVaultSecretAsync(KeyVaultName, "AI", ai.Name, "InstrumentationKey", ai.InstrumentationKey);
