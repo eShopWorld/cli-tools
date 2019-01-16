@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "EShopWorld.Tools": {
+      "commandName": "Project",
+      "commandLineArgs": "azscan serviceBus -k oisin -s evo-ci -r we"
+    }
+  }
+}
