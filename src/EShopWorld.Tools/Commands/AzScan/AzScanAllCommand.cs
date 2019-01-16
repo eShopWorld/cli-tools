@@ -21,9 +21,9 @@ namespace EShopWorld.Tools.Commands.AzScan
         {
             await Task.WhenAll(
                 GetCompositeCommand<AzScanSqlCommand>().OnExecuteAsync(app, console),
-                GetCompositeCommand<AzCosmosDbScanCommand>().OnExecuteAsync(app, console),
+                GetCompositeCommand<AzScanCosmosDbCommand>().OnExecuteAsync(app, console),
                 GetCompositeCommand<AzScanRedisCommand>().OnExecuteAsync(app, console),
-                GetCompositeCommand<AzServiceBusScanCommand>().OnExecuteAsync(app, console),
+                GetCompositeCommand<AzScanServiceBusCommand>().OnExecuteAsync(app, console),
                 GetCompositeCommand<AzScanAppInsightsCommand>().OnExecuteAsync(app, console),
                 GetCompositeCommand<AzScanDNSCommand>().OnExecuteAsync(app, console));
 

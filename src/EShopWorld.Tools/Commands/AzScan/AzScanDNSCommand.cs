@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Eshopworld.Core;
 using EShopWorld.Tools.Helpers;
@@ -45,10 +46,14 @@ namespace EShopWorld.Tools.Commands.AzScan
 
                     await KeyVaultClient.SetKeyVaultSecretAsync(KeyVaultName, "Platform", cName.Name, "Global", $"https://{cName.Fqdn.TrimEnd('.')}");
                 }
+
+                var aNames = await zone.ARecordSets.ListAsync();
+
                 //scan A(Name)s
-                foreach (var aName in await zone.ARecordSets.ListAsync())
+                foreach (var aName in aNames)
                 {
-                    var isLb = aName.Name.EndsWith("-lb");
+                    var isLb = aName.Name.EndsWith("-lb") || !aNames.Any(a => a.Name.Equals($"{aName.Name}-lb", StringComparison.OrdinalIgnoreCase));
+
                     if (!aName.IPv4Addresses.Any())
                     {
                         _console.WriteLine($"DNS entry {aName.Name} does not have any target IP address");
@@ -58,7 +63,7 @@ namespace EShopWorld.Tools.Commands.AzScan
                     if (!aName.Name.RegionCodeCheck(Region))
                         continue;
 
-                    await KeyVaultClient.SetKeyVaultSecretAsync(KeyVaultName, "Platform", aName.Name, isLb ? "LB" : "Gateway",
+                    await KeyVaultClient.SetKeyVaultSecretAsync(KeyVaultName, "Platform", aName.Name, isLb ? "HTTP" : "HTTPS",
                         $"{(isLb? "http":"https")}://{aName.IPv4Addresses.First()}");
                 }
             }
