@@ -7,8 +7,8 @@ namespace EShopWorld.Tools.Commands.AzScan
     /// azscan prefix definition command
     /// </summary>
     [Command("azscan", Description = "azure resource configuration management scan"), HelpOption]
-    [Subcommand(typeof(AzServiceBusScanCommand))]
-    [Subcommand(typeof(AzCosmosDbScanCommand))]
+    [Subcommand(typeof(AzScanServiceBusCommand))]
+    [Subcommand(typeof(AzScanCosmosDbCommand))]
     [Subcommand(typeof(AzScanRedisCommand))]
     [Subcommand(typeof(AzScanSqlCommand))]
     [Subcommand(typeof(AzScanAllCommand))]

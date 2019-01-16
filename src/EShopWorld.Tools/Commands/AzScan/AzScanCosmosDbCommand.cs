@@ -8,9 +8,9 @@ using Microsoft.Azure.Management.Fluent;
 namespace EShopWorld.Tools.Commands.AzScan
 {
     [Command("cosmosDb", Description = "scan and project Cosmos Dbs configuration into KV")]
-    public class AzCosmosDbScanCommand  : AzScanCommandBase
+    public class AzScanCosmosDbCommand  : AzScanCommandBase
     {
-        public AzCosmosDbScanCommand(Azure.IAuthenticated authenticated, KeyVaultClient keyVaultClient, IBigBrother bigBrother) : base(authenticated, keyVaultClient, bigBrother)
+        public AzScanCosmosDbCommand(Azure.IAuthenticated authenticated, KeyVaultClient keyVaultClient, IBigBrother bigBrother) : base(authenticated, keyVaultClient, bigBrother)
         {
         }
 

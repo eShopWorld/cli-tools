@@ -8,9 +8,9 @@ using Microsoft.Azure.Management.Fluent;
 namespace EShopWorld.Tools.Commands.AzScan
 {
     [Command("serviceBus", Description = "scan project service bus configuration into KV")]
-    public class AzServiceBusScanCommand : AzScanCommandBase
+    public class AzScanServiceBusCommand : AzScanCommandBase
     {
-        public AzServiceBusScanCommand(Azure.IAuthenticated authenticated, KeyVaultClient keyVaultClient, IBigBrother bigBrother) : base(authenticated, keyVaultClient, bigBrother)
+        public AzScanServiceBusCommand(Azure.IAuthenticated authenticated, KeyVaultClient keyVaultClient, IBigBrother bigBrother) : base(authenticated, keyVaultClient, bigBrother)
         {
         }
 
