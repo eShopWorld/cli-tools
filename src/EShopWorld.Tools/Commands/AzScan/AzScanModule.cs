@@ -7,10 +7,11 @@ namespace EShopWorld.Tools.Commands.AzScan
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterType<AzScanSqlCommand>();
-            builder.RegisterType<AzCosmosDbScanCommand>();
-            builder.RegisterType<AzRedisScanCommand>();
-            builder.RegisterType<AzServiceBusScanCommand>();
+            builder.RegisterType<AzScanCosmosDbCommand>();
+            builder.RegisterType<AzScanRedisCommand>();
+            builder.RegisterType<AzScanServiceBusCommand>();
             builder.RegisterType<AzScanAppInsightsCommand>();
+            builder.RegisterType<AzScanDNSCommand>();
         }
     }
 }

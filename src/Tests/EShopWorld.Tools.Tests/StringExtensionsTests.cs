@@ -1,6 +1,5 @@
 ﻿using System;
 using Eshopworld.Tests.Core;
-using EShopWorld.Tools.Commands.AzScan;
 using FluentAssertions;
 using EShopWorld.Tools.Helpers;
 using Xunit;
@@ -13,6 +12,7 @@ namespace EshopWorld.Tools.Tests
         [InlineData("esw-payment-redis", "eswPaymentRedis")]
         [InlineData("esw-payment_redis", "eswPaymentRedis")]
         [InlineData("esw-payment-rEdis", "eswPaymentRedis")]
+        [InlineData("esw-payment rEdis", "eswPaymentRedis")]
         public void ToCamelCase_Success(string input, string expectedOutput)
         {
             input.ToCamelCase().Equals(expectedOutput, StringComparison.Ordinal /*do not ignore case*/).Should().BeTrue();
@@ -28,6 +28,40 @@ namespace EshopWorld.Tools.Tests
         public void StripRecognizedSuffix_Success(string input, string expectedOutput)
         {
             input.StripRecognizedSuffix("-ci", "-test", "-sand", "-preprod", "-prod").Should().Be(expectedOutput);
+        }
+
+        [Theory, IsUnit]
+        [InlineData("aaa", "we", true)]
+        [InlineData("aaa-we", "we", true)]
+        [InlineData("aaa-we-lb", "we", true)]
+        [InlineData("aaa-eus", "we", false)]
+        // ReSharper disable once StringLiteralTypo
+        [InlineData("aaawe", "we", true)]
+        [InlineData("aaa-aa", "we", true)]
+        public void RegionCodeCheck(string input, string region, bool expectedResult)
+        {
+            input.RegionCodeCheck(region).Should().Be(expectedResult);
+        }
+
+        [Theory, IsUnit]
+        [InlineData("aaa", "we", true)]
+        [InlineData("West Europe", "we", true)]
+        [InlineData("East US", "we", false)]
+        public void RegionNameCheck(string input, string region, bool expectedResult)
+        {
+            input.RegionNameCheck(region).Should().Be(expectedResult);
+        }
+
+        [Theory, IsUnit]
+        [InlineData("aaa", "we", true)]
+        [InlineData("West Europe", "we", true)] //this would indicate wrong check used in the code
+        // ReSharper disable once StringLiteralTypo
+        [InlineData("westeurope", "we", true)]
+        // ReSharper disable once StringLiteralTypo
+        [InlineData("eastus", "we", false)]
+        public void RegionAbbreviatedNameCheck(string input, string region, bool expectedResult)
+        {
+            input.RegionAbbreviatedNameCheck(region).Should().Be(expectedResult);
         }
     }
 }

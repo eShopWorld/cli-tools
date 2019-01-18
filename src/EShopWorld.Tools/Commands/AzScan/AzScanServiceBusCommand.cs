@@ -8,9 +8,9 @@ using Microsoft.Azure.Management.Fluent;
 namespace EShopWorld.Tools.Commands.AzScan
 {
     [Command("serviceBus", Description = "scan project service bus configuration into KV")]
-    public class AzServiceBusScanCommand : AzScanCommandBase
+    public class AzScanServiceBusCommand : AzScanCommandBase
     {
-        public AzServiceBusScanCommand(Azure.IAuthenticated authenticated, KeyVaultClient keyVaultClient, IBigBrother bigBrother) : base(authenticated, keyVaultClient, bigBrother)
+        public AzScanServiceBusCommand(Azure.IAuthenticated authenticated, KeyVaultClient keyVaultClient, IBigBrother bigBrother) : base(authenticated, keyVaultClient, bigBrother)
         {
         }
 
@@ -23,7 +23,7 @@ namespace EShopWorld.Tools.Commands.AzScan
 
             foreach (var @namespace in namespaces)
             {
-                if (!CheckRegion(@namespace.RegionName))
+                if (!@namespace.RegionName.RegionNameCheck(Region))
                     continue;
 
                 var rule = await @namespace.AuthorizationRules.GetByNameAsync("RootManageSharedAccessKey");

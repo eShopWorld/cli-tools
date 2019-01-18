@@ -11,7 +11,7 @@
     <ToolCommandName>dotnet-esw</ToolCommandName>
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>1.1.7</Version>
+    <Version>1.1.8</Version>
     <Authors>David Rodrigues, David Guerin, Oisin Haken</Authors>
     <PackageLicenseUrl>https://github.com/eShopWorld/cli-tools/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/eShopWorld/cli-tools</PackageProjectUrl>
@@ -75,7 +75,6 @@
     <PackageReference Include="Microsoft.Azure.Management.ResourceManager.Fluent" Version="1.18.0" />
     <PackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.2.0-preview" />
     <PackageReference Include="Microsoft.Extensions.PlatformAbstractions" Version="1.1.0" />
-    <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="4.4.2" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
   </ItemGroup>
 </Project>

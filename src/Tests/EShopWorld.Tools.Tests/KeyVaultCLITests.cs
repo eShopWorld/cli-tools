@@ -6,6 +6,9 @@ using Xunit;
 
 namespace EshopWorld.Tools.Tests
 {
+    /// <summary>
+    /// tests for keyvault client extensions
+    /// </summary>
     public class KeyVaultCLITests : CLIInvokingTestsBase
     {
         [Fact, IsLayer1]
