@@ -25,6 +25,8 @@ namespace EShopWorld.Tools.Commands.AzScan
         {
             _azClient.SubscriptionId = client.SubscriptionId;
 
+            //FYI - https://github.com/Azure/azure-sdk-for-net/issues/5123
+
             string nextPageLink = null;
             do
             {

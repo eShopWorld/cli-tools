@@ -2,7 +2,7 @@
   "profiles": {
     "EShopWorld.Tools": {
       "commandName": "Project",
-      "commandLineArgs": "azscan serviceBus -k oisin -s evo-ci -r we"
+      "commandLineArgs": "azscan ai -k clitoolsazscantestoutput -s sierra-integration -r we"
     }
   }
 }

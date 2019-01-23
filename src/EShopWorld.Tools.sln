@@ -17,8 +17,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EShopWorld.Tools", "EShopWo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EShopWorld.Tools.Tests", "Tests\EShopWorld.Tools.Tests\EShopWorld.Tools.Tests.csproj", "{0618362C-DA6B-4DA6-851C-6DDD9B9B6415}"
 EndProject
-Project("{151D2E53-A2C4-4D7D-83FE-D05416EBD58E}") = "EShopWorld.Tools.TestResourceGroup", "EShopWorld.Tools.TestResourceGroup\EShopWorld.Tools.TestResourceGroup.deployproj", "{BF300D3F-891C-4384-A7AD-0C68FC597F7A}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,10 +31,6 @@ Global
 		{0618362C-DA6B-4DA6-851C-6DDD9B9B6415}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0618362C-DA6B-4DA6-851C-6DDD9B9B6415}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0618362C-DA6B-4DA6-851C-6DDD9B9B6415}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BF300D3F-891C-4384-A7AD-0C68FC597F7A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BF300D3F-891C-4384-A7AD-0C68FC597F7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BF300D3F-891C-4384-A7AD-0C68FC597F7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BF300D3F-891C-4384-A7AD-0C68FC597F7A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

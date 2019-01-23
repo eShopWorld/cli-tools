@@ -21,7 +21,7 @@ namespace EShopWorld.Tools.Commands
         protected override void Load(ContainerBuilder builder)
         {
             var atp = new AzureServiceTokenProvider();
-            var token = atp.GetAccessTokenAsync("https://management.core.windows.net/", string.Empty).Result;
+            var token = atp.GetAccessTokenAsync("https://management.core.windows.net/", "3e14278f-8366-4dfd-bcc8-7e4e9d57f2c1").Result;
             var tokenCredentials = new TokenCredentials(token);
 
             var client = RestClient.Configure()
@@ -31,7 +31,7 @@ namespace EShopWorld.Tools.Commands
                 .Build();
 
             builder.RegisterInstance(client);
-            builder.Register(c=> Azure.Authenticate(client, null));       
+            builder.Register(c=> Azure.Authenticate(client, "3e14278f-8366-4dfd-bcc8-7e4e9d57f2c1"));       
             builder.Register(c=> new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(atp.KeyVaultTokenCallback))); //cannot use token from above - different resource     
 
             builder.RegisterInstance(new ApplicationInsightsManagementClient(new TokenCredentials(token)));
