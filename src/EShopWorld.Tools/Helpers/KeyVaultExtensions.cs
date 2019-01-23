@@ -30,7 +30,7 @@ namespace EShopWorld.Tools.Helpers
 
         internal static async Task SetKeyVaultSecretAsync(this KeyVaultClient client, string keyVaultName, string prefix, string name, string suffix, string value)
         {
-            await client.SetSecretWithHttpMessagesAsync($"https://{keyVaultName}.vault.azure.net/", $"{prefix}-{name.StripRecognizedSuffix("-ci", "-test", "-sand", "-preprod", "-prod").ToCamelCase()}-{suffix}", value);
+            await client.SetSecretWithHttpMessagesAsync($"https://{keyVaultName}.vault.azure.net/", $"{prefix}--{name.StripRecognizedSuffix("-ci", "-test", "-sand", "-preprod", "-prod").ToCamelCase()}--{suffix}", value);
         }
     }
 }
