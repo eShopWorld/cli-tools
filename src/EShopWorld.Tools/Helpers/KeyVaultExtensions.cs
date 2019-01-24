@@ -12,16 +12,18 @@ namespace EShopWorld.Tools.Helpers
     public static class KeyVaultExtensions
     {       
         /// TODO: consider moving to package
-        internal static async Task<IList<SecretItem>> GetAllSecrets(this KeyVaultClient client, string keyVaultName)
+        internal static async Task<IList<SecretBundle>> GetAllSecrets(this KeyVaultClient client, string keyVaultName)
         {        
             //iterate via secret pages
-            var allSecrets = new List<SecretItem>();
+            var allSecrets = new List<SecretBundle>();
             IPage<SecretItem> secrets = null;
             do
             {
                 secrets = await client.GetSecretsAsync(!string.IsNullOrWhiteSpace(secrets?.NextPageLink) ? secrets.NextPageLink : $"https://{keyVaultName}.vault.azure.net/");
-                allSecrets                    
-                    .AddRange(secrets);
+                foreach (var secretItem in secrets)
+                {
+                    allSecrets.Add(await client.GetSecretAsync(secretItem.Identifier.Identifier));
+                }
 
             } while (!string.IsNullOrWhiteSpace(secrets.NextPageLink));
 
@@ -30,7 +32,7 @@ namespace EShopWorld.Tools.Helpers
 
         internal static async Task SetKeyVaultSecretAsync(this KeyVaultClient client, string keyVaultName, string prefix, string name, string suffix, string value)
         {
-            await client.SetSecretWithHttpMessagesAsync($"https://{keyVaultName}.vault.azure.net/", $"{prefix}--{name.StripRecognizedSuffix("-ci", "-test", "-sand", "-preprod", "-prod").ToCamelCase()}--{suffix}", value);
+            await client.SetSecretWithHttpMessagesAsync($"https://{keyVaultName}.vault.azure.net/", $"{prefix}--{name.StripRecognizedSuffix("-ci", "-test", "-sand", "-preprod", "-prod", "-lb").ToCamelCase()}--{suffix}", value);
         }
     }
 }

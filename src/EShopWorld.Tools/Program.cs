@@ -68,8 +68,6 @@ namespace EShopWorld.Tools
             }
             catch (Exception e)
             {
-                //console?.Error.WriteLine($"Error detected - {e.Message}");
-
                 var @event = e.ToExceptionEvent<CLIExceptionEvent>();
                 @event.CommandType = commandParsed;
                 @event.Arguments = string.Join(',', app.Options.Select(t => $"{t.LongName}-'{t.Value()}'"));

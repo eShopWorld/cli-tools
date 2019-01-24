@@ -8,7 +8,7 @@ namespace EshopWorld.Tools.Tests
     // ReSharper disable once InconsistentNaming
     public class SwaggerJSONParserTests
     {
-        [Theory, IsUnit]
+        [Theory, IsLayer0]
         [InlineData("v1", "1")]
         [InlineData("v1.3", "1.3")]
         [InlineData("1", "1")]
@@ -22,7 +22,7 @@ namespace EshopWorld.Tools.Tests
             SwaggerJsonParser.SanitizeVersion(input).Should().Be(expected);
         }
 
-        [Theory, IsUnit]
+        [Theory, IsLayer0]
         [InlineData("lorem ipsum", "loremipsum")]
         [InlineData("a/", "a")]
         [InlineData("a?", "a")]
@@ -35,8 +35,6 @@ namespace EshopWorld.Tools.Tests
         [InlineData("a>", "a")]
         [InlineData("a#", "a")]
         [InlineData("a%", "a")]
-
-
         public void SanitizeTitle_Passes(string input, string expected)
         {
             SwaggerJsonParser.SanitizeTitle(input).Should().Be(expected);

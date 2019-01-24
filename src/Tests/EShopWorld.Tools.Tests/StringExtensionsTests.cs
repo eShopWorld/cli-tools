@@ -8,17 +8,19 @@ namespace EshopWorld.Tools.Tests
 {
     public class StringExtensionTests
     {
-        [Theory, IsUnit]
+        [Theory, IsLayer0]
         [InlineData("esw-payment-redis", "eswPaymentRedis")]
         [InlineData("esw-payment_redis", "eswPaymentRedis")]
         [InlineData("esw-payment-rEdis", "eswPaymentRedis")]
         [InlineData("esw-payment rEdis", "eswPaymentRedis")]
+        [InlineData("esw-payment rEdis.com", "eswPaymentRedisCom")]
+
         public void ToCamelCase_Success(string input, string expectedOutput)
         {
             input.ToCamelCase().Equals(expectedOutput, StringComparison.Ordinal /*do not ignore case*/).Should().BeTrue();
         }
 
-        [Theory, IsUnit]
+        [Theory, IsLayer0]
         [InlineData("esw-payment-ci", "esw-payment")]
         [InlineData("esw-payment-test", "esw-payment")]
         [InlineData("esw-payment-sand", "esw-payment")]
@@ -30,7 +32,7 @@ namespace EshopWorld.Tools.Tests
             input.StripRecognizedSuffix("-ci", "-test", "-sand", "-preprod", "-prod").Should().Be(expectedOutput);
         }
 
-        [Theory, IsUnit]
+        [Theory, IsLayer0]
         [InlineData("aaa", "we", true)]
         [InlineData("aaa-we", "we", true)]
         [InlineData("aaa-we-lb", "we", true)]
@@ -43,7 +45,7 @@ namespace EshopWorld.Tools.Tests
             input.RegionCodeCheck(region).Should().Be(expectedResult);
         }
 
-        [Theory, IsUnit]
+        [Theory, IsLayer0]
         [InlineData("aaa", "we", true)]
         [InlineData("West Europe", "we", true)]
         [InlineData("East US", "we", false)]
@@ -52,7 +54,7 @@ namespace EshopWorld.Tools.Tests
             input.RegionNameCheck(region).Should().Be(expectedResult);
         }
 
-        [Theory, IsUnit]
+        [Theory, IsLayer0]
         [InlineData("aaa", "we", true)]
         [InlineData("West Europe", "we", true)] //this would indicate wrong check used in the code
         // ReSharper disable once StringLiteralTypo

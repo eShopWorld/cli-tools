@@ -13,7 +13,7 @@ namespace EShopWorld.Tools.Helpers
         /// <summary>
         /// camel case given input
         ///
-        /// remove - and _
+        /// remove - and _ and spaces and '.'
         /// </summary>
         /// <param name="input">string to pascal case</param>
         /// <returns>output</returns>
@@ -22,7 +22,7 @@ namespace EShopWorld.Tools.Helpers
             if (string.IsNullOrWhiteSpace(input))
                 return input;
 
-            var pascal = System.Text.RegularExpressions.Regex.Replace(input.ToLowerInvariant(), "(?:^|-|_|\\s)(.)", match => match.Groups[1].Value.ToUpperInvariant());
+            var pascal = System.Text.RegularExpressions.Regex.Replace(input.ToLowerInvariant(), "(?:^|-|_|\\s|\\.)(.)", match => match.Groups[1].Value.ToUpperInvariant());
             return pascal.Length > 0 ? pascal.Substring(0, 1).ToLowerInvariant() + pascal.Substring(1) : pascal;
         }
 

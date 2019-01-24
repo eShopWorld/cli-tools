@@ -32,7 +32,7 @@ namespace EShopWorld.Tools.Commands
                 .Build();
 
             builder.RegisterInstance(client);
-            builder.Register(c=> Azure.Authenticate(client, null));       
+            builder.Register(c=> Azure.Authenticate(client, "3e14278f-8366-4dfd-bcc8-7e4e9d57f2c1"));       
             builder.Register(c=> new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(atp.KeyVaultTokenCallback))); //cannot use token from above - different resource     
 
             builder.RegisterInstance(new ApplicationInsightsManagementClient(new TokenCredentials(token)));

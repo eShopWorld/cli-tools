@@ -11,7 +11,7 @@ namespace EshopWorld.Tools.Tests
     public class AutoRestProjectFileCommandIntTests
     {        
 
-        [Fact, IsIntegration]
+        [Fact, IsLayer0]
         [Trait("Command", "autorest")]
         [Trait("SubCommand ", "generateClient")]
         public void RenderView_GeneratesExpectedContent()

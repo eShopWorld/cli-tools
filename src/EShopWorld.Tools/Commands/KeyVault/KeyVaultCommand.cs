@@ -92,7 +92,7 @@ namespace EShopWorld.Tools.Commands.KeyVault
             public async Task<int> OnExecuteAsync(CommandLineApplication app, IConsole console)
             {
                 //collect all secrets
-                var secrets = await _kvClient.GetAllSecrets(KeyVaultName);
+                var secrets =  await _kvClient.GetAllSecrets(KeyVaultName);
 
                 Directory.CreateDirectory(OutputFolder);             
                                       
@@ -102,7 +102,7 @@ namespace EShopWorld.Tools.Commands.KeyVault
                 {
                     Namespace = Namespace,
                     Fields = secrets.Select(i => new Tuple<string, bool>(
-                        i.Identifier.Name,
+                        i.SecretIdentifier.Name,
                         false))
                 }, Path.Combine(OutputFolder, Path.Combine(OutputFolder, "ConfigurationSecrets.cs")));
                 

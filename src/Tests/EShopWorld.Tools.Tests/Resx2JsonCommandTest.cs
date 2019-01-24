@@ -20,8 +20,7 @@ namespace EShopWorld.Tools.Tests
     {
         public class GetJsonPath
         {
-            [Fact]
-            [IsUnit]
+            [Fact, IsLayer0]
             [Trait("Command", "Transform")]
             [Trait("SubCommand ", "resx2json")]
             public void Test_WithDefaultCulture()
@@ -37,8 +36,7 @@ namespace EShopWorld.Tools.Tests
                 result.Should().Be(Path.Combine(Path.GetDirectoryName(outputPath), expectedJsonFile));
             }
 
-            [Fact]
-            [IsUnit]
+            [Fact, IsLayer0]
             [Trait("Command", "Transform")]
             [Trait("SubCommand ", "resx2json")]
             public void Test_WithSpecificCulture()
@@ -57,8 +55,7 @@ namespace EShopWorld.Tools.Tests
 
         public class ConvertResx2Json
         {
-            [Fact]
-            [IsIntegration]
+            [Fact, IsLayer0]
             [Trait("Command", "Transform")]
             [Trait("SubCommand ", "resx2json")]
             public void Test_WithEmbeddedResxResource()
@@ -83,8 +80,7 @@ namespace EShopWorld.Tools.Tests
 
         public class GetMergedResource
         {
-            [Fact]
-            [IsUnit]
+            [Fact, IsLayer0]
             [Trait("Command", "Transform")]
             [Trait("SubCommand ", "resx2json")]
             public void Test_BaseResxDoesNotMerge()
@@ -100,8 +96,7 @@ namespace EShopWorld.Tools.Tests
                 result.Should().Be(fileContent);
             }
 
-            [Fact]
-            [IsUnit]
+            [Fact, IsLayer0]
             [Trait("Command", "Transform")]
             [Trait("SubCommand ", "resx2json")]
             public void Test_MergeWithWrongPath()
@@ -125,8 +120,7 @@ namespace EShopWorld.Tools.Tests
                 result.Should().Be(basefileContent);
             }
 
-            [Fact]
-            [IsUnit]
+            [Fact, IsLayer0]
             [Trait("Command", "Transform")]
             [Trait("SubCommand ", "resx2json")]
             public void Test_MergeSingleLevel()
@@ -152,8 +146,7 @@ namespace EShopWorld.Tools.Tests
                 result.Should().Be(mergefileContent);
             }
 
-            [Fact]
-            [IsUnit]
+            [Fact, IsLayer0]
             [Trait("Command", "Transform")]
             [Trait("SubCommand ", "resx2json")]
             public void Test_MergeMultipleSources()
@@ -185,8 +178,7 @@ namespace EShopWorld.Tools.Tests
 
         public class MergeResx
         {
-            [Fact]
-            [IsUnit]
+            [Fact, IsLayer0]
             [Trait("Command", "Transform")]
             [Trait("SubCommand ", "resx2json")]
             public void Test_SourceWithMore_ThanTarget()
@@ -272,8 +264,7 @@ namespace EShopWorld.Tools.Tests
                 );
             }
 
-            [Fact]
-            [IsUnit]
+            [Fact, IsLayer0]
             [Trait("Command", "Transform")]
             [Trait("SubCommand ", "resx2json")]
             public void Test_SourceWithLess_ThanTarget()
@@ -364,8 +355,7 @@ namespace EShopWorld.Tools.Tests
         {
             public class EqualsImp
             {
-                [Fact]
-                [IsUnit]
+                [Fact, IsLayer0]
                 [Trait("Command", "Transform")]
                 [Trait("SubCommand ", "resx2json")]
                 public void Test_WithDifferentNames()
@@ -377,8 +367,7 @@ namespace EShopWorld.Tools.Tests
                     result.Should().BeFalse();
                 }
 
-                [Fact]
-                [IsUnit]
+                [Fact, IsLayer0]
                 [Trait("Command", "Transform")]
                 [Trait("SubCommand ", "resx2json")]
                 public void Test_WithSameNames()
@@ -391,8 +380,7 @@ namespace EShopWorld.Tools.Tests
                     result.Should().BeTrue();
                 }
 
-                [Fact]
-                [IsUnit]
+                [Fact, IsLayer0]
                 [Trait("Command", "Transform")]
                 [Trait("SubCommand ", "resx2json")]
                 public void Test_WithTwoNulls()
@@ -402,8 +390,7 @@ namespace EShopWorld.Tools.Tests
                     result.Should().BeTrue();
                 }
 
-                [Fact]
-                [IsUnit]
+                [Fact, IsLayer0]
                 [Trait("Command", "Transform")]
                 [Trait("SubCommand ", "resx2json")]
                 public void Test_WithFirstNull()
@@ -413,8 +400,7 @@ namespace EShopWorld.Tools.Tests
                     result.Should().BeFalse();
                 }
 
-                [Fact]
-                [IsUnit]
+                [Fact, IsLayer0]
                 [Trait("Command", "Transform")]
                 [Trait("SubCommand ", "resx2json")]
                 public void Test_WithSecondNull()
@@ -427,8 +413,7 @@ namespace EShopWorld.Tools.Tests
 
             public class GetHashCodeImp
             {
-                [Fact]
-                [IsUnit]
+                [Fact, IsLayer0]
                 [Trait("Command", "Transform")]
                 [Trait("SubCommand ", "resx2json")]
                 public void Test_WithProperXElement()
@@ -441,8 +426,7 @@ namespace EShopWorld.Tools.Tests
                     result.Should().Be(nameValue.GetHashCode());
                 }
 
-                [Fact]
-                [IsUnit]
+                [Fact, IsLayer0]
                 [Trait("Command", "Transform")]
                 [Trait("SubCommand ", "resx2json")]
                 public void Test_WithNull()
@@ -452,8 +436,7 @@ namespace EShopWorld.Tools.Tests
                     result.Should().Be(0);
                 }
 
-                [Fact]
-                [IsUnit]
+                [Fact, IsLayer0]
                 [Trait("Command", "Transform")]
                 [Trait("SubCommand ", "resx2json")]
                 public void Test_WithElementWithoutName()

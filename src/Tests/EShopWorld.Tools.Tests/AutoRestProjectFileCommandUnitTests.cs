@@ -26,7 +26,7 @@ namespace EshopWorld.Tools.Tests
             sut = new RenderProjectFileInternalCommand(mockViewEngine.Object, mockTempDataProvider.Object, mockServiceProvider.Object);
         }
 
-        [Fact, IsUnit]
+        [Fact, IsLayer0]
         [Trait("Command", "autorest")]
         [Trait("SubCommand ", "generateClient")]
         public void RenderViewToString_FindsView_Success()
@@ -44,7 +44,7 @@ namespace EshopWorld.Tools.Tests
             mockViewEngine.Verify();
         }
 
-        [Fact, IsUnit]
+        [Fact, IsLayer0]
         [Trait("Command", "autorest")]
         [Trait("SubCommand ", "generateClient")]
         public void RenderViewToString_NonexistentView_ThrowsException()
@@ -57,7 +57,7 @@ namespace EshopWorld.Tools.Tests
             Assert.Throws<InvalidOperationException>(() => sut.RenderViewToString(new ProjectFileViewModel()));
         }
 
-        [Fact, IsUnit]
+        [Fact, IsLayer0]
         [Trait("Command", "autorest")]
         [Trait("SubCommand ", "generateClient")]
         public void RenderViewToString_CallsViewRender_Success()
