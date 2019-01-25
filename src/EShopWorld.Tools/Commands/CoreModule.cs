@@ -17,6 +17,7 @@ namespace EShopWorld.Tools.Commands
     /// <summary>
     /// azure level component registration into DI
     /// </summary>
+    // ReSharper disable once UnusedMember.Global
     public class CoreModule : Module
     {
         protected override void Load(ContainerBuilder builder)

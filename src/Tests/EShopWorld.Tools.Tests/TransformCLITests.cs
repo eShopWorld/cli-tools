@@ -11,14 +11,14 @@ namespace EshopWorld.Tools.Tests
     /// </summary>
     public class TransformCLITests : CLIInvokingTestsBase
     {
-        [Fact, IsLayer1]
+        [Fact, IsLayer2]
         public void CheckOptions()
         {
             var content = GetStandardOutput("transform", "resx2json", "-h");
             content.Should().ContainAll("-r", "--resx-project", "-j", "--json-project");
         }
 
-        [Fact, IsLayer1]
+        [Fact, IsLayer2]
         public void Resx2JsonFlow_LongNames()
         {
             var output = Path.GetTempPath();
@@ -28,7 +28,7 @@ namespace EshopWorld.Tools.Tests
             File.Exists(Path.Combine(output, "test.en.json")).Should().BeTrue();
         }
 
-        [Fact, IsLayer1]
+        [Fact, IsLayer2]
         public void Resx2JsonFlow_ShortNames()
         {
             var output = Path.GetTempPath();

@@ -38,7 +38,7 @@ namespace EShopWorld.Tools.Helpers
                 return input;
 
             string suffixDetected;
-            if ((suffixDetected = suffixes.FirstOrDefault(input.EndsWith)) != null)
+            if ((suffixDetected = suffixes.FirstOrDefault(s=> input.EndsWith(s, StringComparison.OrdinalIgnoreCase))) != null)
             {
                 return input.Remove(input.Length-suffixDetected.Length);
             }
@@ -85,7 +85,7 @@ namespace EShopWorld.Tools.Helpers
 
             foreach (var item in Enum.GetValues(typeof(DeploymentRegion)))
             {
-                list.Add((DeploymentRegion) item);
+                list.Add((DeploymentRegion)item);
             }
 
             return list;

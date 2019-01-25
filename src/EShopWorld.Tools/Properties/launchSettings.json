@@ -2,7 +2,7 @@
   "profiles": {
     "EShopWorld.Tools": {
       "commandName": "Project",
-      "commandLineArgs": "azscan dns -k clitoolsazscantestoutput -s sierra-integration -r we -g CLITestDomainAResourceGroup"
+      "commandLineArgs": "azscan all -k clitoolsazscantestoutput -s sierra-integration -r we -g CLITestDomainAResourceGroup"
     }
   }
 }

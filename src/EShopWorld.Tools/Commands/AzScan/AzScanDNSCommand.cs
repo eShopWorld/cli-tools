@@ -16,11 +16,8 @@ namespace EShopWorld.Tools.Commands.AzScan
     // ReSharper disable once InconsistentNaming
     public class AzScanDNSCommand : AzScanCommandBase
     {
-        private readonly IConsole _console;
-
-        public AzScanDNSCommand(Azure.IAuthenticated authenticated, KeyVaultClient keyVaultClient, IBigBrother bigBrother, IConsole console) : base(authenticated, keyVaultClient, bigBrother)
-        {
-            _console = console;
+        public AzScanDNSCommand(Azure.IAuthenticated authenticated, KeyVaultClient keyVaultClient, IBigBrother bigBrother) : base(authenticated, keyVaultClient, bigBrother)
+        {          
         }
 
         protected override async Task<int> RunScanAsync(IAzure client)
@@ -56,15 +53,14 @@ namespace EShopWorld.Tools.Commands.AzScan
 
                     if (!aName.IPv4Addresses.Any())
                     {
-                        _console.WriteLine($"DNS entry {aName.Name} does not have any target IP address");
-                        continue;
+                        continue; //TODO: output something
                     }
 
                     if (!aName.Name.RegionCodeCheck(Region))
                         continue;
 
                     await KeyVaultClient.SetKeyVaultSecretAsync(KeyVaultName, "Platform", aName.Name, isLb ? "HTTP" : "HTTPS",
-                        $"{(isLb? "http":"https")}://{aName.IPv4Addresses.First()}");
+                        $"{(isLb? "http":"https")}://{aName.IPv4Addresses.First()}", additionalSuffixes: new [] {$"-{Region}", $"-{Region}-lb"});
                 }
             }
 

@@ -23,12 +23,9 @@ namespace EShopWorld.Tools.Commands.AzScan
             foreach (var cosmos in cosmoses)
             {
                 //no region filter for cosmos
-
                 var keys = await cosmos.ListKeysAsync();
-                var name = cosmos.Name.Contains('-')
-                    ? cosmos.Name.Remove(cosmos.Name.LastIndexOf('-')) : cosmos.Name;
-
-                await KeyVaultClient.SetKeyVaultSecretAsync(KeyVaultName, "CosmosDB", name, "PrimaryConnectionString", $"AccountEndpoint={cosmos.DocumentEndpoint};AccountKey={keys.PrimaryMasterKey}");
+           
+                await KeyVaultClient.SetKeyVaultSecretAsync(KeyVaultName, "CosmosDB", cosmos.Name, "PrimaryConnectionString", $"AccountEndpoint={cosmos.DocumentEndpoint};AccountKey={keys.PrimaryMasterKey}");
             }
 
             return 1;

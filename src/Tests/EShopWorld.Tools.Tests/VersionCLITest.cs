@@ -8,7 +8,7 @@ namespace EshopWorld.Tools.Tests
     // ReSharper disable once InconsistentNaming
     public class VersionCLITest : CLIInvokingTestsBase
     {
-        [Fact, IsLayer1]
+        [Fact, IsLayer2]
         public void CheckVersionMatch()
         {
             var console = GetStandardOutput("--version");

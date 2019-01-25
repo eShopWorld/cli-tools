@@ -37,6 +37,7 @@ namespace EShopWorld.Tools.Commands.AzScan
             instance.KeyVaultName = KeyVaultName;
             instance.Subscription = Subscription;
             instance.ResourceGroup = ResourceGroup;
+            instance.Region = Region;
 
             return instance;
         }

@@ -19,7 +19,7 @@ namespace EshopWorld.Tools.Tests
 {
     // ReSharper disable once ClassNeverInstantiated.Global
     // ReSharper disable once InconsistentNaming
-    public class AzScanCLITestsL1Fixture : IDisposable
+    public class AzScanCLITestsL2Fixture : IDisposable
     {
         private IContainer _container;
         private KeyVaultClient _keyVaultClient;
@@ -34,7 +34,7 @@ namespace EshopWorld.Tools.Tests
         private static readonly Region Region = Region.EuropeWest;
         public const string TargetRegionName = "we";
 
-        public AzScanCLITestsL1Fixture()
+        public AzScanCLITestsL2Fixture()
         {
             SetupFixture();
             
@@ -81,10 +81,8 @@ namespace EshopWorld.Tools.Tests
                 .Define(OutputKeyVaultName)
                     .WithRegion(rg.RegionName)
                 .WithExistingResourceGroup(rg)
-                .WithEmptyAccessPolicy()
                 .DefineAccessPolicy()
-                //.("DevOpsApp")
-                    .ForObjectId(_testConfig.TargetIdentityObjectId) //so that CLI can write
+                    .ForObjectId(_testConfig.TargetIdentityObjectId) //so that CLI can write and test
                     .AllowSecretPermissions(SecretPermissions.Get, SecretPermissions.List, SecretPermissions.Set)
                 .Attach()
                 .CreateAsync();         
@@ -94,18 +92,18 @@ namespace EshopWorld.Tools.Tests
         {
             var aiClient = _container.Resolve<ApplicationInsightsManagementClient>();
             aiClient.SubscriptionId = _azClient.SubscriptionId;
-            await aiClient.Components.CreateAIInstanceIfNotExists($"{rg.Name}-AI", rg.Name);
+            await aiClient.Components.CreateAIInstanceIfNotExists($"{rg.Name}-ci", rg.Name);
         }
 
         private async Task SetupServiceBusNamespace(IResourceGroup rg)
         {
-            await _azClient.ServiceBusNamespaces.Define($"{rg.Name}-SBNamespace").WithRegion(Region).WithExistingResourceGroup(rg).CreateAsync();
+            await _azClient.ServiceBusNamespaces.Define($"{rg.Name}-ci").WithRegion(Region).WithExistingResourceGroup(rg).CreateAsync();
         }
 
         // ReSharper disable once InconsistentNaming
         private async Task SetupCosmosDBInstance(IResourceGroup rg)
         {
-            await _azClient.CosmosDBAccounts.Define($"{rg.Name}-Cosmos".ToLowerInvariant()).WithRegion(Region)
+            await _azClient.CosmosDBAccounts.Define($"{rg.Name}-ci".ToLowerInvariant()).WithRegion(Region)
                 .WithExistingResourceGroup(rg).WithDataModelSql().WithEventualConsistency().WithWriteReplication(Region)
                 .CreateAsync();
         }
@@ -120,8 +118,8 @@ namespace EshopWorld.Tools.Tests
                 .DefineARecordSet("TestAPI1-eus-lb").WithIPv4Address("2.2.2.2").Attach() //test api 1 LB - EUS
                 .DefineARecordSet("TestAPI1-we").WithIPv4Address("3.3.3.3").Attach() //test api 1 AG - WE
                 .DefineARecordSet("TestAPI1-eus").WithIPv4Address("4.4.4.4").Attach() //test api 1 AG - EUS
-                .DefineARecordSet("TestAPI2-we").WithIPv4Address("5.5.5.5").Attach() //test api 2 - internal API - LB only
-                .DefineARecordSet("TestAPI2-eus").WithIPv4Address("6.6.6.6").Attach() //test api 2 - internal API - LB only
+                .DefineARecordSet("TestAPI2-we").WithIPv4Address("5.5.5.5").Attach() //test api 2 - internal API - LB only - WE
+                .DefineARecordSet("TestAPI2-eus").WithIPv4Address("6.6.6.6").Attach() //test api 2 - internal API - LB only - EUS
                 .CreateAsync();
         }
 
@@ -148,8 +146,8 @@ namespace EshopWorld.Tools.Tests
         }
     }
 
-    [CollectionDefinition(nameof(AzScansCLITestsL1Collection))]
+    [CollectionDefinition(nameof(AzScanCLITestsL2Collection))]
     // ReSharper disable once InconsistentNaming
-    public class AzScansCLITestsL1Collection : ICollectionFixture<AzScanCLITestsL1Fixture>
+    public class AzScanCLITestsL2Collection : ICollectionFixture<AzScanCLITestsL2Fixture>
     { }
 }
