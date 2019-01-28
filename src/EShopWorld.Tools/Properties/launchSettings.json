@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "EShopWorld.Tools": {
-      "commandName": "Project",
-      "commandLineArgs": "azscan all -k clitoolsazscantestoutput -s sierra-integration -r we -g CLITestDomainAResourceGroup"
-    }
-  }
-}

@@ -28,9 +28,9 @@ namespace EshopWorld.Tools.Tests
         }
 
         [Fact, IsLayer2]
-        public async Task AIResourcesProjectedPerResourceGroup_ShortNames()
+        public async Task CheckAIResourcesProjectedPerResourceGroup_ShortNames()
         {
-            //run the CLI
+            await _fixture.DeleteAllSecrets();
             // ReSharper disable once StringLiteralTypo
             GetStandardOutput("azscan", "ai", "-k", AzScanCLITestsL2Fixture.OutputKeyVaultName, "-s",
                 AzScanCLITestsL2Fixture.SierraIntegrationSubscription, "-r", AzScanCLITestsL2Fixture.TargetRegionName, "-g", AzScanCLITestsL2Fixture.DomainAResourceGroupName);
@@ -50,9 +50,9 @@ namespace EshopWorld.Tools.Tests
         }
 
         [Fact, IsLayer2]
-        public async Task AIResourcesProjectedPerResourceGroup_LongNames()
+        public async Task CheckAIResourcesProjectedPerResourceGroup_LongNames()
         {
-            //run the CLI
+            await _fixture.DeleteAllSecrets();
             // ReSharper disable once StringLiteralTypo
             GetStandardOutput("azscan", "ai", "--keyVault", AzScanCLITestsL2Fixture.OutputKeyVaultName, "--subscription",
                 AzScanCLITestsL2Fixture.SierraIntegrationSubscription, "--region", AzScanCLITestsL2Fixture.TargetRegionName, "--resourceGroup", AzScanCLITestsL2Fixture.DomainAResourceGroupName);

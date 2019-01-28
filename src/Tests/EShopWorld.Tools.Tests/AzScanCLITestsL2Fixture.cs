@@ -83,7 +83,7 @@ namespace EshopWorld.Tools.Tests
                 .WithExistingResourceGroup(rg)
                 .DefineAccessPolicy()
                     .ForObjectId(_testConfig.TargetIdentityObjectId) //so that CLI can write and test
-                    .AllowSecretPermissions(SecretPermissions.Get, SecretPermissions.List, SecretPermissions.Set)
+                    .AllowSecretPermissions(SecretPermissions.Get, SecretPermissions.List, SecretPermissions.Set, SecretPermissions.Delete)
                 .Attach()
                 .CreateAsync();         
         }
@@ -128,6 +128,10 @@ namespace EshopWorld.Tools.Tests
             return _keyVaultClient.GetAllSecrets(OutputKeyVaultName);
         }
 
+        internal async Task DeleteAllSecrets()
+        {
+            await _keyVaultClient.DeleteAllSecrets(OutputKeyVaultName);
+        }
         public void Dispose()
         {
             DeleteResources().GetAwaiter().GetResult();
@@ -138,10 +142,9 @@ namespace EshopWorld.Tools.Tests
         {
             if (_azClient != null)
             {
-                //TODO: uncomment
-                //await Task.WhenAll(
-                //    _azClient.ResourceGroups.DeleteRGIfExists(DomainAResourceGroupName),
-                //    _azClient.ResourceGroups.DeleteRGIfExists(DomainBResourceGroupName));
+                await Task.WhenAll(
+                    _azClient.ResourceGroups.DeleteRGIfExists(DomainAResourceGroupName),
+                    _azClient.ResourceGroups.DeleteRGIfExists(DomainBResourceGroupName));
             }
         }
     }

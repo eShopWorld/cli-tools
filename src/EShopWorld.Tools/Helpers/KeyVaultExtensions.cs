@@ -10,9 +10,8 @@ namespace EShopWorld.Tools.Helpers
     /// <summary>
     /// this class encapsulates operations against the key vault
     /// </summary>
-    public static class KeyVaultExtensions
+    internal static class KeyVaultExtensions
     {       
-        /// TODO: consider moving to package
         internal static async Task<IList<SecretBundle>> GetAllSecrets(this KeyVaultClient client, string keyVaultName)
         {        
             //iterate via secret pages
@@ -29,6 +28,15 @@ namespace EShopWorld.Tools.Helpers
             } while (!string.IsNullOrWhiteSpace(secrets.NextPageLink));
 
             return allSecrets;
+        }
+
+        internal static async Task DeleteAllSecrets(this KeyVaultClient client, string keyVaultName)
+        {
+            var list = await client.GetAllSecrets(keyVaultName);
+            foreach (var s in list)
+            {
+                await client.DeleteSecretAsync($"https://{keyVaultName}.vault.azure.net/", s.SecretIdentifier.Name);
+            }
         }
 
         internal static async Task SetKeyVaultSecretAsync(this KeyVaultClient client, string keyVaultName,

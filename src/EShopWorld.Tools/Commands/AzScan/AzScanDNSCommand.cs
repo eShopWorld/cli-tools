@@ -20,7 +20,7 @@ namespace EShopWorld.Tools.Commands.AzScan
         {          
         }
 
-        protected override async Task<int> RunScanAsync(IAzure client)
+        protected override async Task<int> RunScanAsync(IAzure client, IConsole console)
         {
             var zones = await client.DnsZones.ListAsync();
             foreach (var zone in zones)
@@ -53,7 +53,8 @@ namespace EShopWorld.Tools.Commands.AzScan
 
                     if (!aName.IPv4Addresses.Any())
                     {
-                        continue; //TODO: output something
+                        console.WriteLine($"DNS entry {aName.Name} does not have any target IP address");
+                        continue;
                     }
 
                     if (!aName.Name.RegionCodeCheck(Region))

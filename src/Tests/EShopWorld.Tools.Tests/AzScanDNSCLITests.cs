@@ -31,8 +31,9 @@ namespace EshopWorld.Tools.Tests
         }
 
         [Fact, IsLayer2]
-        public async Task TestDNSProjected_ShortNames()
+        public async Task CheckDNSResourcesProjected_ShortNames()
         {
+            await _fixture.DeleteAllSecrets();
             GetStandardOutput("azscan", "dns", "-k", AzScanCLITestsL2Fixture.OutputKeyVaultName, "-s",
                 AzScanCLITestsL2Fixture.SierraIntegrationSubscription, "-r", AzScanCLITestsL2Fixture.TargetRegionName);
 
@@ -73,8 +74,9 @@ namespace EshopWorld.Tools.Tests
         }
 
         [Fact, IsLayer1]
-        public async Task TestDNSProjected_LongNames()
+        public async Task CheckDNSResourcesProjected_LongNames()
         {
+            await _fixture.DeleteAllSecrets();
             GetStandardOutput("azscan", "dns", "--keyVault", AzScanCLITestsL2Fixture.OutputKeyVaultName, "--subscription",
                 AzScanCLITestsL2Fixture.SierraIntegrationSubscription, "--region", AzScanCLITestsL2Fixture.TargetRegionName);
 
