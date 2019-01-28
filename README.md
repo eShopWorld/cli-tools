@@ -2,7 +2,7 @@
 
 Includes both dotnet CLI and azure CLI tool chains.
 
-**MASTER CI build :** [](https://eshopworld.visualstudio.com/Github%20build/_apis/build/status/cli-tools?branchName=master)
+**MASTER CI build :** ![](https://eshopworld.visualstudio.com/Github%20build/_apis/build/status/cli-tools?branchName=master)
 
 ## dotnet CLI tools
 
@@ -29,7 +29,7 @@ This tool contains the dotnet cli commands/subcommands produced by the eShopWorl
 
 see command with --help option to get full option list
 
-#### AutoRest Generate Client Command
+### AutoRest Generate Client Command
 
 Usage
 
@@ -38,7 +38,7 @@ dotnet esw autorest generateClient -s <JSON target> -o <output>
 
 ```
 
-#### Transform Resx to JSON Command
+### Transform Resx to JSON Command
 
 Usage 
 
@@ -46,7 +46,7 @@ Usage
 dotnet esw transform  resx2json -s <source project> -o <output>
 ```
 
-#### KeyVault Generate POCOs Command
+### KeyVault Generate POCOs Command
 
 Usage 
 
@@ -54,7 +54,7 @@ Usage
 dotnet esw keyvault generatePOCOs -aid 123 -as secret -t esw -k maxmara -an maxmara -n Esw.MaxMara -v 1.2.3 -o .
 ```
 
-#### Scanning Azure resources - AzScan commands
+### Scanning Azure resources - AzScan commands
 
 The typical flow envisions tool to be invoked from the release pipeline against a combination of environment/domain/region where the build is being pushed to. Key vault known to the application will be supplied as the tool target. 
 
@@ -73,7 +73,7 @@ An example of tool invoked to scan App Insights instances for West Europe region
 dotnet esw azscan ai -s evo-ci -r we -g checkoutApi -k evo-checkout-api-we-kv
 ```
 
-##### AzScan parameters
+#### AzScan parameters
 
 Following table captures recognized required and optional parameters for the *azscan* command family
 
@@ -95,7 +95,7 @@ It is possible to either invoke individual commands e.g. dns or scan **all** sup
 dotnet esw azscan all ....
 ```
 
-###### Secret naming strategy
+##### Secret naming strategy
 
 Secrets will be naming using following formula - {resource prefix}--{resource name}--{configuration item suffix}. This is inline with the EswDevopsSdk configuration items separator used to designate individual levels of configuration. 
 
@@ -103,7 +103,7 @@ Each resource type has its reserved prefix for all secrets generated. The name o
 
 As an example, __esw-checkout-prep__ resource will be named __eswCheckout__.
 
-###### App insights scan - AI prefix
+##### App insights scan - AI prefix
 
 Scans applicable App Insights resources and projects following keyvault secrets
 
@@ -111,7 +111,7 @@ Scans applicable App Insights resources and projects following keyvault secrets
 AI--name--InstrumentationKey
 ```
 
-###### CosmosDB scan - CosmosDb prefix
+##### CosmosDB scan - CosmosDb prefix
 
 Scans Cosmos DB and projects following secrets
 
@@ -119,7 +119,7 @@ Scans Cosmos DB and projects following secrets
 CosmosDB--name--PrimaryConnectionString
 ```
 
-###### DNS scan - Platform prefix
+##### DNS scan - Platform prefix
 
 Scans A and CNAME records in dns definition(s) and projects them using following rules
 
@@ -137,7 +137,7 @@ Platform--name--HTTP
 
 Please note that this will be reviewed when Azure FrontDoor will be adopted.
 
-###### Redis scanning - Redis prefix
+##### Redis scanning - Redis prefix
 
 Scans Redis instances and projects following secrets
 
@@ -145,7 +145,7 @@ Scans Redis instances and projects following secrets
 Redis--name--PrimaryConnectionString
 ```
 
-###### SQL scan - SQL prefix
+##### SQL scan - SQL prefix
 
 Scans MS SQL databases (except master) and projects following secrets
 
@@ -153,7 +153,7 @@ Scans MS SQL databases (except master) and projects following secrets
 SQL--name--ConnectionString
 ```
 
-###### Service bus namespaces scan - SB prefix
+##### Service bus namespaces scan - SB prefix
 
 Scans Service bus namespaces and projects following secrets
 
