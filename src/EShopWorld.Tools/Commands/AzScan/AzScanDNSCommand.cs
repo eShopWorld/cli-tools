@@ -16,14 +16,11 @@ namespace EShopWorld.Tools.Commands.AzScan
     // ReSharper disable once InconsistentNaming
     public class AzScanDNSCommand : AzScanCommandBase
     {
-        private readonly IConsole _console;
-
-        public AzScanDNSCommand(Azure.IAuthenticated authenticated, KeyVaultClient keyVaultClient, IBigBrother bigBrother, IConsole console) : base(authenticated, keyVaultClient, bigBrother)
-        {
-            _console = console;
+        public AzScanDNSCommand(Azure.IAuthenticated authenticated, KeyVaultClient keyVaultClient, IBigBrother bigBrother) : base(authenticated, keyVaultClient, bigBrother)
+        {          
         }
 
-        protected override async Task<int> RunScanAsync(IAzure client)
+        protected override async Task<int> RunScanAsync(IAzure client, IConsole console)
         {
             var zones = await client.DnsZones.ListAsync();
             foreach (var zone in zones)
@@ -56,7 +53,7 @@ namespace EShopWorld.Tools.Commands.AzScan
 
                     if (!aName.IPv4Addresses.Any())
                     {
-                        _console.WriteLine($"DNS entry {aName.Name} does not have any target IP address");
+                        console.WriteLine($"DNS entry {aName.Name} does not have any target IP address");
                         continue;
                     }
 
@@ -64,7 +61,7 @@ namespace EShopWorld.Tools.Commands.AzScan
                         continue;
 
                     await KeyVaultClient.SetKeyVaultSecretAsync(KeyVaultName, "Platform", aName.Name, isLb ? "HTTP" : "HTTPS",
-                        $"{(isLb? "http":"https")}://{aName.IPv4Addresses.First()}");
+                        $"{(isLb? "http":"https")}://{aName.IPv4Addresses.First()}", additionalSuffixes: new [] {$"-{Region}", $"-{Region}-lb"});
                 }
             }
 

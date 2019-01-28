@@ -13,7 +13,7 @@ namespace EShopWorld.Tools.Helpers
         /// <summary>
         /// camel case given input
         ///
-        /// remove - and _
+        /// remove - and _ and spaces and '.'
         /// </summary>
         /// <param name="input">string to pascal case</param>
         /// <returns>output</returns>
@@ -22,7 +22,7 @@ namespace EShopWorld.Tools.Helpers
             if (string.IsNullOrWhiteSpace(input))
                 return input;
 
-            var pascal = System.Text.RegularExpressions.Regex.Replace(input.ToLowerInvariant(), "(?:^|-|_|\\s)(.)", match => match.Groups[1].Value.ToUpperInvariant());
+            var pascal = System.Text.RegularExpressions.Regex.Replace(input.ToLowerInvariant(), "(?:^|-|_|\\s|\\.)(.)", match => match.Groups[1].Value.ToUpperInvariant());
             return pascal.Length > 0 ? pascal.Substring(0, 1).ToLowerInvariant() + pascal.Substring(1) : pascal;
         }
 
@@ -38,7 +38,7 @@ namespace EShopWorld.Tools.Helpers
                 return input;
 
             string suffixDetected;
-            if ((suffixDetected = suffixes.FirstOrDefault(input.EndsWith)) != null)
+            if ((suffixDetected = suffixes.FirstOrDefault(s=> input.EndsWith(s, StringComparison.OrdinalIgnoreCase))) != null)
             {
                 return input.Remove(input.Length-suffixDetected.Length);
             }
@@ -85,7 +85,7 @@ namespace EShopWorld.Tools.Helpers
 
             foreach (var item in Enum.GetValues(typeof(DeploymentRegion)))
             {
-                list.Add((DeploymentRegion) item);
+                list.Add((DeploymentRegion)item);
             }
 
             return list;

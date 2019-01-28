@@ -14,7 +14,7 @@ namespace EShopWorld.Tools.Commands.AzScan
         {
         }
 
-        protected override async Task<int> RunScanAsync(IAzure client)
+        protected override async Task<int> RunScanAsync(IAzure client, IConsole console)
         {
             var redises = !string.IsNullOrWhiteSpace(ResourceGroup)
                 ? await client.RedisCaches.ListByResourceGroupAsync(ResourceGroup)

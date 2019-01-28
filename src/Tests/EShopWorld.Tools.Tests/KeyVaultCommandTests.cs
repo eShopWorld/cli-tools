@@ -14,7 +14,7 @@ namespace EshopWorld.Tools.Tests
 {
     public class KeyVaultCommandTests
     {
-        [Fact, IsIntegration]
+        [Fact, IsLayer0]
         [Trait("Command", "keyvault")]
         [Trait("SubCommand ", "generatePOCOs")]
         public void GeneratePocoClass_Success()
@@ -68,7 +68,7 @@ namespace EshopWorld.Tools.Tests
                 "using System;\r\n\r\nnamespace eShopWorld.NS\r\n{\r\n    public class ConfigurationSecrets\r\n    {\r\n\t\tpublic string Field1 {get; set;}\n\t\tpublic string Field2 {get; set;}\n\t\t[Obsolete]\n\t\tpublic string Field3 {get; set;}\n    }\r\n}");        
         }
 
-        [Fact, IsIntegration]
+        [Fact, IsLayer0]
         [Trait("Command", "keyvault")]
         [Trait("SubCommand ", "generatePOCOs")]
         public void GeneratePocoProject_Success()

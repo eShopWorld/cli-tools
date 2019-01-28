@@ -7,20 +7,19 @@ using Xunit;
 namespace EshopWorld.Tools.Tests
 {
     /// <summary>
-    /// tests for keyvault client extensions
+    /// tests for keyvault CLI command
     /// </summary>
     public class KeyVaultCLITests : CLIInvokingTestsBase
     {
-        [Fact, IsLayer1]
+        [Fact, IsLayer2]
         public void CheckOptions()
         {
             var content = GetStandardOutput("keyvault", "generatePOCOs", "-h");
             content.Should().ContainAll("--keyVault", "-k",
-                "--appName", "-m", "--namespace", "-n", "--obsoleteTag", "-b", "--typeTag", "-g", "--nameTag", "-f",
-                "--output", "-o", "--version", "-v");
+                "--appName", "-m", "--namespace", "-n", "--output", "-o", "--version", "-v");
         }
 
-        [Fact, IsLayer1]
+        [Fact, IsLayer2]
         public void GeneratePOCOsFlow_MSI_LongNames()
         {
             //config load
@@ -35,7 +34,7 @@ namespace EshopWorld.Tools.Tests
             File.Exists(Path.Combine(output, "KeyVaultCLITest.csproj")).Should().BeTrue();
         }
 
-        [Fact, IsLayer1]
+        [Fact, IsLayer2]
         public void GeneratePOCOsFlow_MSI_ShortNames()
         {
             //config load

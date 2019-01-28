@@ -8,7 +8,7 @@ namespace EshopWorld.Tools.Tests
     // ReSharper disable once InconsistentNaming
     public class AutorestCLITests : CLIInvokingTestsBase
     {
-        [Fact, IsLayer1]
+        [Fact, IsLayer2]
         public void CheckOptionsForGenerateProjectFile()
         {
             var console = GetStandardOutput("autorest", "generateProjectFile", "--help");
@@ -17,7 +17,7 @@ namespace EshopWorld.Tools.Tests
             console.Should().ContainAll("-s", "--swagger", "-o", "--output", "-t", "--tfm");
         }
 
-        [Fact, IsLayer1]
+        [Fact, IsLayer2]
         public void GenerateProjectFileFlow_LongNames()
         {
             var output = Path.GetTempPath();
@@ -29,7 +29,7 @@ namespace EshopWorld.Tools.Tests
             File.Exists(Path.Combine(output, "SwaggerPetStore.csproj")).Should().BeTrue();
         }
 
-        [Fact, IsLayer1]
+        [Fact, IsLayer2]
         public void GenerateProjectFileFlow_ShortNames()
         {
             var output = Path.GetTempPath();

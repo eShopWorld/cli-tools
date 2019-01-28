@@ -60,30 +60,6 @@ namespace EShopWorld.Tools.Commands.KeyVault
             public string Namespace { get; set; }
 
             [Option(
-                Description = "name of the tag to denote obsolete status (defaults to 'Obsolete')",
-                ShortName = "b",
-                LongName = "obsoleteTag",
-                ShowInHelpText = true)]
-            // ReSharper disable once MemberCanBePrivate.Global
-            public string ObsoleteTagName { get; set; } = "Obsolete";
-
-            [Option(
-                Description = "name of the tag denoting type name assignation (class) (defaults to 'Type')",
-                ShortName = "g",
-                LongName = "typeTag",
-                ShowInHelpText = true)]
-            // ReSharper disable once MemberCanBePrivate.Global
-            public string TypeTagName { get; set; } = "Type";
-
-            [Option(
-                Description = "name of the tag denoting name of the field (defaults to 'Name')",
-                ShortName = "f",
-                LongName = "nameTag",
-                ShowInHelpText = true)]
-            // ReSharper disable once MemberCanBePrivate.Global
-            public string NameTagName { get; set; } = "Name";
-
-            [Option(
                 Description = "folder to output generated files into (defaults to '.')",
                 ShortName = "o",
                 LongName = "output",
@@ -116,7 +92,7 @@ namespace EShopWorld.Tools.Commands.KeyVault
             public async Task<int> OnExecuteAsync(CommandLineApplication app, IConsole console)
             {
                 //collect all secrets
-                var secrets = await _kvClient.GetAllSecrets(KeyVaultName, TypeTagName, NameTagName, AppName);
+                var secrets =  await _kvClient.GetAllSecrets(KeyVaultName);
 
                 Directory.CreateDirectory(OutputFolder);             
                                       
@@ -126,8 +102,8 @@ namespace EShopWorld.Tools.Commands.KeyVault
                 {
                     Namespace = Namespace,
                     Fields = secrets.Select(i => new Tuple<string, bool>(
-                        i.Tags != null && i.Tags.ContainsKey(NameTagName) ? i.Tags[NameTagName] : i.Identifier.Name,
-                        i.Tags != null && i.Tags.ContainsKey(ObsoleteTagName) && Convert.ToBoolean(i.Tags[ObsoleteTagName])))
+                        i.SecretIdentifier.Name,
+                        false))
                 }, Path.Combine(OutputFolder, Path.Combine(OutputFolder, "ConfigurationSecrets.cs")));
                 
                 //generate project file

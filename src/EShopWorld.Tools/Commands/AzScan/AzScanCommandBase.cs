@@ -3,8 +3,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Eshopworld.Core;
-using EShopWorld.Tools.Helpers;
-using JetBrains.Annotations;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.Management.Fluent;
@@ -72,12 +70,12 @@ namespace EShopWorld.Tools.Commands.AzScan
 
             var subClient = Authenticated.WithSubscription(sub.SubscriptionId);
 
-            await RunScanAsync(subClient);
+            await RunScanAsync(subClient, console);
          
             return 1;
         }
 
-        protected virtual Task<int> RunScanAsync([NotNull] IAzure client)
+        protected virtual Task<int> RunScanAsync(IAzure client, IConsole console)
         {
             return Task.FromResult(1);
         }
