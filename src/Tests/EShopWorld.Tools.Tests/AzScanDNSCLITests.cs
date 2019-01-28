@@ -40,7 +40,7 @@ namespace EshopWorld.Tools.Tests
             CheckSecrets(await _fixture.LoadAllKeyVaultSecretsAsync());
         }
 
-        [Fact, IsLayer1]
+        [Fact, IsLayer2]
         public async Task CheckDNSResourcesProjected_LongNames()
         {
             await _fixture.DeleteAllSecrets();
