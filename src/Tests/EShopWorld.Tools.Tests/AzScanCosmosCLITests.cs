@@ -42,7 +42,7 @@ namespace EshopWorld.Tools.Tests
         public async Task CheckCosmosResourcesProjectedPerResourceGroup_LongNames()
         {
             await _fixture.DeleteAllSecrets();
-            GetStandardOutput("azscan", "ai", "--keyVault", AzScanCLITestsL2Fixture.OutputKeyVaultName,
+            GetStandardOutput("azscan", "cosmosDb", "--keyVault", AzScanCLITestsL2Fixture.OutputKeyVaultName,
                 "--subscription",
                 AzScanCLITestsL2Fixture.SierraIntegrationSubscription, "--region",
                 AzScanCLITestsL2Fixture.TargetRegionName, "--resourceGroup",

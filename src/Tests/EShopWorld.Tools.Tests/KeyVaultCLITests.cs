@@ -16,8 +16,7 @@ namespace EshopWorld.Tools.Tests
         {
             var content = GetStandardOutput("keyvault", "generatePOCOs", "-h");
             content.Should().ContainAll("--keyVault", "-k",
-                "--appName", "-m", "--namespace", "-n", "--obsoleteTag", "-b", "--typeTag", "-g", "--nameTag", "-f",
-                "--output", "-o", "--version", "-v");
+                "--appName", "-m", "--namespace", "-n", "--output", "-o", "--version", "-v");
         }
 
         [Fact, IsLayer2]
