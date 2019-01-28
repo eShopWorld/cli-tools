@@ -14,7 +14,7 @@ namespace EshopWorld.Tools.Tests
     /// TODO: consider moving to relevant package for reuse (note this is not fluent package)
     /// </summary>
     // ReSharper disable once InconsistentNaming
-    internal static class IComponentsOperationExtensions
+    internal static class ApplicationInsightsManagementClientExtensions
     {
         // ReSharper disable once InconsistentNaming
         internal static async Task<ApplicationInsightsComponent> CreateAIInstanceIfNotExists(this IComponentsOperations client, string name,

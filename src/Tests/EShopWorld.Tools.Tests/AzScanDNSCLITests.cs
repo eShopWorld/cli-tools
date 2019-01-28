@@ -40,6 +40,16 @@ namespace EshopWorld.Tools.Tests
             CheckSecrets(await _fixture.LoadAllKeyVaultSecretsAsync());
         }
 
+        [Fact, IsLayer1]
+        public async Task CheckDNSResourcesProjected_LongNames()
+        {
+            await _fixture.DeleteAllSecrets();
+            GetStandardOutput("azscan", "dns", "--keyVault", AzScanCLITestsL2Fixture.OutputKeyVaultName, "--subscription",
+                AzScanCLITestsL2Fixture.SierraIntegrationSubscription, "--region", AzScanCLITestsL2Fixture.TargetRegionName);
+
+            CheckSecrets(await _fixture.LoadAllKeyVaultSecretsAsync());
+        }
+
         internal static void CheckSecrets(IList<SecretBundle> secrets)
         {
             secrets.Where(s => s.SecretIdentifier.Name.StartsWith("Platform", StringComparison.Ordinal)).Should()
@@ -71,16 +81,6 @@ namespace EshopWorld.Tools.Tests
                     StringComparison.Ordinal) &&
                 s.Value.Equals("http://5.5.5.5",
                     StringComparison.OrdinalIgnoreCase));
-        }
-
-        [Fact, IsLayer1]
-        public async Task CheckDNSResourcesProjected_LongNames()
-        {
-            await _fixture.DeleteAllSecrets();
-            GetStandardOutput("azscan", "dns", "--keyVault", AzScanCLITestsL2Fixture.OutputKeyVaultName, "--subscription",
-                AzScanCLITestsL2Fixture.SierraIntegrationSubscription, "--region", AzScanCLITestsL2Fixture.TargetRegionName);
-
-            CheckSecrets(await _fixture.LoadAllKeyVaultSecretsAsync());
         }
     }
 }

@@ -37,6 +37,16 @@ namespace EshopWorld.Tools.Tests
             CheckSecrets(await _fixture.LoadAllKeyVaultSecretsAsync());
         }
 
+        [Fact, IsLayer2]
+        public async Task CheckSBResourcesProjected_LongNames()
+        {
+            await _fixture.DeleteAllSecrets();
+            GetStandardOutput("azscan", "serviceBus", "--keyVault", AzScanCLITestsL2Fixture.OutputKeyVaultName, "--subscription",
+                AzScanCLITestsL2Fixture.SierraIntegrationSubscription, "--region", AzScanCLITestsL2Fixture.TargetRegionName, "--resourceGroup", AzScanCLITestsL2Fixture.DomainAResourceGroupName);
+
+            CheckSecrets(await _fixture.LoadAllKeyVaultSecretsAsync());
+        }
+
         internal static void CheckSecrets(IList<SecretBundle> secrets)
         {
             //check the KV
@@ -48,16 +58,6 @@ namespace EshopWorld.Tools.Tests
                 s.Value.StartsWith(
                     "Endpoint=sb://clitestdomainaresourcegroup-ci.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=",
                     StringComparison.Ordinal));
-        }
-
-        [Fact, IsLayer2]
-        public async Task CheckSBResourcesProjected_LongNames()
-        {
-            await _fixture.DeleteAllSecrets();
-            GetStandardOutput("azscan", "serviceBus", "--keyVault", AzScanCLITestsL2Fixture.OutputKeyVaultName, "--subscription",
-                AzScanCLITestsL2Fixture.SierraIntegrationSubscription, "--region", AzScanCLITestsL2Fixture.TargetRegionName, "--resourceGroup", AzScanCLITestsL2Fixture.DomainAResourceGroupName);
-
-            CheckSecrets(await _fixture.LoadAllKeyVaultSecretsAsync());
         }
     }
 }

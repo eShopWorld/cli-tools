@@ -9,7 +9,7 @@ namespace EshopWorld.Tools.Tests
     /// consider moving this to shared space (e.g. Sierra contains similar/same code)
     /// </summary>
     // ReSharper disable once InconsistentNaming
-    internal static class IAzureExtensions
+    internal static class AzureFluentExtensions
     {
         // ReSharper disable once InconsistentNaming
         internal static async Task<IResourceGroup> CreateRGIfNotExistsAsync(this IResourceGroups client, string name, string region = "west europe")

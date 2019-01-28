@@ -38,18 +38,6 @@ namespace EshopWorld.Tools.Tests
             CheckSecrets(await _fixture.LoadAllKeyVaultSecretsAsync());
         }
 
-        internal static void CheckSecrets(IList<SecretBundle> secrets)
-        {
-            secrets.Should()
-                .ContainSingle(s => s.SecretIdentifier.Name.StartsWith("CosmosDB--", StringComparison.Ordinal));
-            secrets.Should().ContainSingle(s =>
-                s.SecretIdentifier.Name.Equals("CosmosDB--clitestdomainaresourcegroup--PrimaryConnectionString",
-                    StringComparison.Ordinal) &&
-                s.Value.StartsWith(
-                    "AccountEndpoint=https://clitestdomainaresourcegroup-ci.documents.azure.com:443/;AccountKey=",
-                    StringComparison.Ordinal));
-        }
-
         [Fact, IsLayer2]
         public async Task CheckCosmosResourcesProjectedPerResourceGroup_LongNames()
         {
@@ -61,6 +49,18 @@ namespace EshopWorld.Tools.Tests
                 AzScanCLITestsL2Fixture.DomainAResourceGroupName);
 
             CheckSecrets(await _fixture.LoadAllKeyVaultSecretsAsync());
+        }
+
+        internal static void CheckSecrets(IList<SecretBundle> secrets)
+        {
+            secrets.Should()
+                .ContainSingle(s => s.SecretIdentifier.Name.StartsWith("CosmosDB--", StringComparison.Ordinal));
+            secrets.Should().ContainSingle(s =>
+                s.SecretIdentifier.Name.Equals("CosmosDB--clitestdomainaresourcegroup--PrimaryConnectionString",
+                    StringComparison.Ordinal) &&
+                s.Value.StartsWith(
+                    "AccountEndpoint=https://clitestdomainaresourcegroup-ci.documents.azure.com:443/;AccountKey=",
+                    StringComparison.Ordinal));
         }
     }
 }

@@ -38,17 +38,6 @@ namespace EshopWorld.Tools.Tests
             CheckSecrets(await _fixture.LoadAllKeyVaultSecretsAsync());
         }
 
-        internal static void CheckSecrets(IList<SecretBundle> secrets)
-        {
-            //check the KV
-            secrets.Should().ContainSingle(s => s.SecretIdentifier.Name.StartsWith("AI--", StringComparison.Ordinal));
-            secrets.Should().ContainSingle(s =>
-                // ReSharper disable once StringLiteralTypo
-                s.SecretIdentifier.Name.Equals("AI--clitestdomainaresourcegroup--InstrumentationKey",
-                    StringComparison.Ordinal) &&
-                Guid.Parse(s.Value) != default(Guid)); //check key existence and that it is guid (parse succeeds)
-        }
-
         [Fact, IsLayer2]
         public async Task CheckAIResourcesProjectedPerResourceGroup_LongNames()
         {
@@ -58,6 +47,17 @@ namespace EshopWorld.Tools.Tests
                 AzScanCLITestsL2Fixture.SierraIntegrationSubscription, "--region", AzScanCLITestsL2Fixture.TargetRegionName, "--resourceGroup", AzScanCLITestsL2Fixture.DomainAResourceGroupName);
 
             CheckSecrets(await _fixture.LoadAllKeyVaultSecretsAsync());
+        }
+
+        internal static void CheckSecrets(IList<SecretBundle> secrets)
+        {
+            //check the KV
+            secrets.Should().ContainSingle(s => s.SecretIdentifier.Name.StartsWith("AI--", StringComparison.Ordinal));
+            secrets.Should().ContainSingle(s =>
+                // ReSharper disable once StringLiteralTypo
+                s.SecretIdentifier.Name.Equals("AI--clitestdomainaresourcegroup--InstrumentationKey",
+                    StringComparison.Ordinal) &&
+                Guid.Parse(s.Value) != default(Guid)); //check key existence and that it is guid (parse succeeds)
         }
     }
 }
