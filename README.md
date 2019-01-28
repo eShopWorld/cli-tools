@@ -95,11 +95,11 @@ It is possible to either invoke individual commands e.g. dns or scan **all** sup
 dotnet esw azscan all ....
 ```
 
-##### Secret naming strategy
+##### Secrets naming strategy
 
-Secrets will be naming using following formula - {resource prefix}--{resource name}--{configuration item suffix}. This is inline with the EswDevopsSdk configuration items separator used to designate individual levels of configuration. 
+Secrets will be naming using following formula - {resource prefix}--{resource name}--{configuration item suffix}. This is in line with the EswDevopsSdk configuration items separator(--) used to designate individual levels of configuration. 
 
-Each resource type has its reserved prefix for all secrets generated. The name of the resources is transformed into camel case with special characters removed as to meet key vault secret naming rules (a-z and 0-9 and dash allowed). Environmental and other suffixes (-lb) are removed from the name (as they are represented by keyvault itself).
+Each resource type has its reserved prefix for all secrets generated. The name of the resources is transformed into camel case with special characters removed as to meet key vault secret naming rules (a-z and 0-9 and dash allowed). Environmental (e.g. -prep) and other suffixes (-lb) are removed from the name (as they are represented by keyvault itself).
 
 As an example, __esw-checkout-prep__ resource will be named __eswCheckout__.
 
@@ -124,8 +124,10 @@ CosmosDB--name--PrimaryConnectionString
 Scans A and CNAME records in dns definition(s) and projects them using following rules
 
 * CNAME is considered *global* url (~ Traffic manager)
-* A name when ending in -lb is considered to be a load balancer and interpreted as *HTTP* url
-* A name when not ending in -lb is considered Application gateway entry and interpreted as * HTTPS* url, **however** when there is no pairing -lb suffix, such entry is considered load balancer entry (for *internal* APIs)
+* A name when ending in -lb is considered to be a "load balancer" and interpreted as *HTTP* url
+* A name when not ending in -lb is considered "Application gateway" entry and interpreted as * HTTPS* url, **however** when there is no pairing -lb suffixed entry, such entry is considered load balancer entry (for *internal* APIs)
+
+Please note that these rules are driven by pre-existing devops automation scripting/ARM templates.
 
 Key vault secrets are then 
 
