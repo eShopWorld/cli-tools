@@ -108,7 +108,7 @@ As an example, __esw-checkout-prep__ resource will be named __eswCheckout__.
 Scans applicable App Insights resources and projects following keyvault secrets
 
 ```
-AI--name--InstrumentationKey
+AI--{resourceName}--InstrumentationKey
 ```
 
 ##### CosmosDB scan - CosmosDb prefix
@@ -116,7 +116,7 @@ AI--name--InstrumentationKey
 Scans Cosmos DB and projects following secrets
 
 ```
-CosmosDB--name--PrimaryConnectionString
+CosmosDB--{resourceName}--PrimaryConnectionString
 ```
 
 ##### DNS scan - Platform prefix
@@ -132,9 +132,9 @@ Please note that these rules are driven by pre-existing devops automation script
 Key vault secrets are then 
 
 ```
-Platform--name--Global
-Platform--name--HTTPS
-Platform--name--HTTP
+Platform--{resourceName}--Global
+Platform--{resourceName}--HTTPS
+Platform--{resourceName}--HTTP
 ```
 
 Please note that this will be reviewed when Azure FrontDoor will be adopted.
@@ -144,7 +144,7 @@ Please note that this will be reviewed when Azure FrontDoor will be adopted.
 Scans Redis instances and projects following secrets
 
 ```
-Redis--name--PrimaryConnectionString
+Redis--{resourceName}--PrimaryConnectionString
 ```
 
 ##### SQL scan - SQL prefix
@@ -152,7 +152,7 @@ Redis--name--PrimaryConnectionString
 Scans MS SQL databases (except master) and projects following secrets
 
 ```
-SQL--name--ConnectionString
+SQL--{resourceName}--ConnectionString
 ```
 
 ##### Service bus namespaces scan - SB prefix
@@ -160,5 +160,5 @@ SQL--name--ConnectionString
 Scans Service bus namespaces and projects following secrets
 
 ```
-SB--name--PrimaryConnectionString
+SB--{resourceName}--PrimaryConnectionString
 ```
