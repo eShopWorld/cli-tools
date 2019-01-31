@@ -49,7 +49,7 @@ namespace EShopWorld.Tools.Commands.AzScan
                 }
             } while (nextPageLink != null);
 
-            return 1;
+            return 0;
         }
     }
 }

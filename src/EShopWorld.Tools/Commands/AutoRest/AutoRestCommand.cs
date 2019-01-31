@@ -71,7 +71,7 @@ namespace EShopWorld.Tools.Commands.AutoRest
 
                 _bigBrother?.Publish(new AutorestProjectFileGenerated{SwaggerFile = SwaggerFile});
 
-                return Task.FromResult(1);
+                return Task.FromResult(0);
             }
         }
     }

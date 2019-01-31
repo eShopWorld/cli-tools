@@ -6,8 +6,7 @@ namespace EShopWorld.Tools.Commands.KeyVault
     {
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterType<GeneratePocoClassInternalCommand>();
-            builder.RegisterType<GeneratePocoProjectInternalCommand>();
+           //TODO: review need after the impl is done
         }
     }
 }

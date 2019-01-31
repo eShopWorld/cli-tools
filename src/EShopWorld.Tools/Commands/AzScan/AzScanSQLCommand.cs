@@ -39,7 +39,7 @@ namespace EShopWorld.Tools.Commands.AzScan
                 }
             }
 
-            return 1;
+            return 0;
         }
     }
 }

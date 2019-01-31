@@ -19,11 +19,21 @@ namespace EShopWorld.Tools.Helpers
         /// <returns>output</returns>
         public static string ToCamelCase(this string input)
         {
-            if (string.IsNullOrWhiteSpace(input))
-                return input;
+            var pascal = ToPascalCase(input);
 
-            var pascal = System.Text.RegularExpressions.Regex.Replace(input.ToLowerInvariant(), "(?:^|-|_|\\s|\\.)(.)", match => match.Groups[1].Value.ToUpperInvariant());
-            return pascal.Length > 0 ? pascal.Substring(0, 1).ToLowerInvariant() + pascal.Substring(1) : pascal;
+            return  !string.IsNullOrWhiteSpace(pascal) ? pascal.Substring(0, 1).ToLowerInvariant() + pascal.Substring(1) : pascal;
+        }
+
+        /// <summary>
+        /// pascal case given input
+        ///
+        /// remove - and _ and spaces and '.'
+        /// </summary>
+        /// <param name="input">given input</param>
+        /// <returns>pascal case string</returns>
+        public static string ToPascalCase(this string input)
+        {
+            return string.IsNullOrWhiteSpace(input) ? input : System.Text.RegularExpressions.Regex.Replace(input.ToLowerInvariant(), "(?:^|-|_|\\s|\\.)(.)", match => match.Groups[1].Value.ToUpperInvariant());
         }
 
         /// <summary>

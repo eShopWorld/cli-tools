@@ -35,7 +35,7 @@ namespace EShopWorld.Tools.Commands.AzScan
                 await KeyVaultClient.SetKeyVaultSecretAsync(KeyVaultName, "SB", name, "PrimaryConnectionString", keys.PrimaryConnectionString);
             }
 
-            return 1;
+            return 0;
         }
     }
 }

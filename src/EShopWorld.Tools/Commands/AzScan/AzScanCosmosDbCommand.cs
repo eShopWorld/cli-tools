@@ -28,7 +28,7 @@ namespace EShopWorld.Tools.Commands.AzScan
                 await KeyVaultClient.SetKeyVaultSecretAsync(KeyVaultName, "CosmosDB", cosmos.Name, "PrimaryConnectionString", $"AccountEndpoint={cosmos.DocumentEndpoint};AccountKey={keys.PrimaryMasterKey}");
             }
 
-            return 1;
+            return 0;
         }
     }
 }

@@ -30,7 +30,7 @@ namespace EShopWorld.Tools.Commands.AzScan
 
                 await KeyVaultClient.SetKeyVaultSecretAsync(KeyVaultName, "Redis", name, "PrimaryConnectionString", $"{redis.HostName},password={redis.Keys.PrimaryKey},ssl=True,abortConnect=False");
             }
-            return 1;
+            return 0;
         }
     }
 }

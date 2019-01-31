@@ -19,7 +19,7 @@ namespace EShopWorld.Tools.Helpers
             IPage<SecretItem> secrets = null;
             do
             {
-                secrets = await client.GetSecretsAsync(!string.IsNullOrWhiteSpace(secrets?.NextPageLink) ? secrets.NextPageLink : $"https://{keyVaultName}.vault.azure.net/");
+                secrets = !string.IsNullOrWhiteSpace(secrets?.NextPageLink) ? await client.GetSecretsNextAsync(secrets.NextPageLink) : await client.GetSecretsAsync($"https://{keyVaultName}.vault.azure.net/");
                 foreach (var secretItem in secrets)
                 {
                     allSecrets.Add(await client.GetSecretAsync(secretItem.Identifier.Identifier));
