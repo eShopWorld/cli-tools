@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Eshopworld.DevOps;
 using Eshopworld.Tests.Core;
+using EShopWorld.Tools.Helpers;
 using FluentAssertions;
 using Microsoft.Azure.KeyVault.Models;
 using Xunit;
@@ -17,34 +19,21 @@ namespace EshopWorld.Tools.Tests
         public AzScanSBCLITests(AzScanCLITestsL2Fixture fixture)
         {
             _fixture = fixture;
-        }
+        }    
 
-        [Fact, IsLayer2]
-        public void CheckOptions()
+        [InlineData("-s", "-d")]
+        [InlineData("--subscription", "--domain")]
+        [Theory, IsLayer2]
+        // ReSharper disable once InconsistentNaming
+        public async Task CheckSBResourcesProjected(string subParam, string domainParam)
         {
-            var content = GetStandardOutput("azscan", "serviceBus", "-h");
-            content.Should().ContainAll("-s", "--subscription", "-r", "--region", "-g", "--resourceGroup", "-k",
-                "--keyVault");
-        }
+            await _fixture.DeleteAllSecretsAcrossRegions();
+            GetStandardOutput("azscan", "serviceBus", subParam, AzScanCLITestsL2Fixture.SierraIntegrationSubscription, domainParam, AzScanCLITestsL2Fixture.TestDomain);
 
-        [Fact, IsLayer2]
-        public async Task CheckSBResourcesProjected_ShortNames()
-        {
-            await _fixture.DeleteAllSecrets();
-            GetStandardOutput("azscan", "serviceBus", "-k", AzScanCLITestsL2Fixture.OutputKeyVaultName, "-s",
-                AzScanCLITestsL2Fixture.SierraIntegrationSubscription, "-r", AzScanCLITestsL2Fixture.TargetRegionName, "-g", AzScanCLITestsL2Fixture.DomainAResourceGroupName);
-
-            CheckSecrets(await _fixture.LoadAllKeyVaultSecretsAsync());
-        }
-
-        [Fact, IsLayer2]
-        public async Task CheckSBResourcesProjected_LongNames()
-        {
-            await _fixture.DeleteAllSecrets();
-            GetStandardOutput("azscan", "serviceBus", "--keyVault", AzScanCLITestsL2Fixture.OutputKeyVaultName, "--subscription",
-                AzScanCLITestsL2Fixture.SierraIntegrationSubscription, "--region", AzScanCLITestsL2Fixture.TargetRegionName, "--resourceGroup", AzScanCLITestsL2Fixture.DomainAResourceGroupName);
-
-            CheckSecrets(await _fixture.LoadAllKeyVaultSecretsAsync());
+            foreach (var region in RegionHelper.DeploymentRegionsToList())
+            {
+                CheckSecrets(await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode()));
+            }
         }
 
         internal static void CheckSecrets(IList<SecretBundle> secrets)
@@ -53,10 +42,10 @@ namespace EshopWorld.Tools.Tests
             secrets.Should().ContainSingle(s => s.SecretIdentifier.Name.StartsWith("SB--", StringComparison.Ordinal));
             secrets.Should().ContainSingle(s =>
                 // ReSharper disable once StringLiteralTypo
-                s.SecretIdentifier.Name.Equals("SB--clitestdomainaresourcegroup--PrimaryConnectionString",
+                s.SecretIdentifier.Name.Equals("SB--a--PrimaryConnectionString",
                     StringComparison.Ordinal) &&
                 s.Value.StartsWith(
-                    "Endpoint=sb://clitestdomainaresourcegroup-ci.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=",
+                    "Endpoint=sb://esw-a-integration.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=",
                     StringComparison.Ordinal));
         }
     }

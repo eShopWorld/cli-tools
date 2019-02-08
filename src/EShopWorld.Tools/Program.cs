@@ -48,7 +48,7 @@ namespace EShopWorld.Tools
         /// </summary>
         /// <param name="args">The list of arguments for this extension.</param>
         /// <returns>Executable exit code.</returns>
-        public static void Main(string[] args)
+        public static int Main(string[] args)
         {
             CommandLineApplication app = new CommandLineApplication<Program>();
 
@@ -64,7 +64,7 @@ namespace EShopWorld.Tools
             {
                 _bigBrother = app.GetService<IBigBrother>();
                 _console = app.GetService<IConsole>();
-                app.Execute(args);
+                return app.Execute(args);
             }
             catch (Exception e)
             {
@@ -72,12 +72,15 @@ namespace EShopWorld.Tools
                 @event.CommandType = commandParsed;
                 @event.Arguments = string.Join(',', app.Options.Select(t => $"{t.LongName}-'{t.Value()}'"));
 
+                _console.ForegroundColor = ConsoleColor.Red;
                 _console.Error.WriteLine($"Command {commandParsed} produced an error {e.Message}");
+                _console.ResetColor();
 
                 _bigBrother?.Publish(@event);
                 _bigBrother?.Flush();
+
+                return -1;
             }
-            
         }
 
         private static IServiceProvider _serviceProvider;

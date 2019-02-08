@@ -21,7 +21,7 @@ namespace EShopWorld.Tools.Commands.AzScan
             console.Error.WriteLine("You must specify a sub-command");
             app.ShowHelp();
 
-            return Task.FromResult(1);
+            return Task.FromResult(0);
         }
     }
 }

@@ -27,17 +27,15 @@ namespace EShopWorld.Tools.Commands.AzScan
                 GetCompositeCommand<AzScanAppInsightsCommand>().OnExecuteAsync(app, console),
                 GetCompositeCommand<AzScanDNSCommand>().OnExecuteAsync(app, console));
 
-            return 1;
+            return 0;
         }
 
         private T GetCompositeCommand<T>() where T : AzScanCommandBase
         {
             var instance = (T) _serviceProvider.GetService(typeof(T));
 
-            instance.KeyVaultName = KeyVaultName;
             instance.Subscription = Subscription;
-            instance.ResourceGroup = ResourceGroup;
-            instance.Region = Region;
+            instance.Domain = Domain;
 
             return instance;
         }

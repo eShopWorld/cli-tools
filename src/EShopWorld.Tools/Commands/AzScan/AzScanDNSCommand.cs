@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Eshopworld.Core;
+using Eshopworld.DevOps;
 using EShopWorld.Tools.Helpers;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Azure.KeyVault;
@@ -22,50 +23,66 @@ namespace EShopWorld.Tools.Commands.AzScan
 
         protected override async Task<int> RunScanAsync(IAzure client, IConsole console)
         {
-            var zones = await client.DnsZones.ListAsync();
-            foreach (var zone in zones)
-            {
 
-                /**
-                 * two main paths - API and UI
-                 *
-                 * API routing -> Traffic Manager -> App Gateway -> LB
-                 * UI routing -> CDN -> App Services
-                 *
-                 * this will change with FrontDoor
-                 */
-
-                //scan CNAMEs
-                foreach (var cName in await zone.CNameRecordSets.ListAsync())
+                var zones = await client.DnsZones.ListAsync(); //this is at platform RG level but expectation of single per sub stands
+                foreach (var zone in zones)
                 {
-                    if (!cName.Name.RegionCodeCheck(Region))
-                        continue;
 
-                    await KeyVaultClient.SetKeyVaultSecretAsync(KeyVaultName, "Platform", cName.Name, "Global", $"https://{cName.Fqdn.TrimEnd('.')}");
-                }
+                    /**
+                     * two main paths - API and UI
+                     *
+                     * API routing -> Traffic Manager -> App Gateway -> LB
+                     * UI routing -> CDN -> App Services
+                     *
+                     * this will change with FrontDoor
+                     */
 
-                var aNames = await zone.ARecordSets.ListAsync();
-
-                //scan A(Name)s
-                foreach (var aName in aNames)
-                {
-                    var isLb = aName.Name.EndsWith("-lb") || !aNames.Any(a => a.Name.Equals($"{aName.Name}-lb", StringComparison.OrdinalIgnoreCase));
-
-                    if (!aName.IPv4Addresses.Any())
+                    //scan CNAMEs - all global definitions
+                    foreach (var cName in await zone.CNameRecordSets.ListAsync())
                     {
-                        console.WriteLine($"DNS entry {aName.Name} does not have any target IP address");
-                        continue;
+                        foreach (var keyVaultName in DomainResourceGroup.TargetKeyVaults)
+                        {
+                            await KeyVaultClient.SetKeyVaultSecretAsync(keyVaultName, "Platform", cName.Name, "Global",
+                                $"https://{cName.Fqdn.TrimEnd('.')}");
+                        }
                     }
 
-                    if (!aName.Name.RegionCodeCheck(Region))
-                        continue;
+                    var aNames = await zone.ARecordSets.ListAsync();
 
-                    await KeyVaultClient.SetKeyVaultSecretAsync(KeyVaultName, "Platform", aName.Name, isLb ? "HTTP" : "HTTPS",
-                        $"{(isLb? "http":"https")}://{aName.IPv4Addresses.First()}", additionalSuffixes: new [] {$"-{Region}", $"-{Region}-lb"});
+                    //scan A(Name)s - regional entries
+                    foreach (var aName in aNames)
+                    {
+                        var isLb = aName.Name.EndsWith("-lb") || !aNames.Any(a =>
+                                       a.Name.Equals($"{aName.Name}-lb", StringComparison.OrdinalIgnoreCase));
+
+                        if (!aName.IPv4Addresses.Any())
+                        {
+                            console.ForegroundColor = ConsoleColor.Yellow;
+                            console.WriteLine($"DNS entry {aName.Name} does not have any target IP address");
+                            console.ResetColor();
+                            continue;
+                        }
+
+                        foreach (var regionalDef in RegionalPlatformResourceGroups
+                        ) //match regional KV to the A record region (by name)
+                        {
+                            var regionCode = regionalDef.Region.ToRegionCode();
+
+                            if (!aName.Name.RegionCodeCheck(regionCode))
+                                continue;
+
+                            foreach (var keyVault in regionalDef.TargetKeyVaults)
+                            {
+                                await KeyVaultClient.SetKeyVaultSecretAsync(keyVault,
+                                    "Platform", aName.Name,
+                                    isLb ? "HTTP" : "HTTPS",
+                                    $"{(isLb ? "http" : "https")}://{aName.IPv4Addresses.First()}",  "-lb");
+                            }
+                        }
+                    }
                 }
-            }
 
-            return 1;
+            return 0;
         }
     }
 }

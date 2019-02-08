@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using Eshopworld.DevOps;
 using Eshopworld.Tests.Core;
 using FluentAssertions;
 using Microsoft.Azure.KeyVault.Models;
@@ -20,67 +20,72 @@ namespace EshopWorld.Tools.Tests
             _fixture = fixture;
         }
 
-        [Fact, IsLayer2]
-        public void CheckOptions()
-        {
-            // ReSharper disable once StringLiteralTypo
-            var content = GetStandardOutput("azscan", "dns", "-h");
 
-            content.Should().ContainAll("-s", "--subscription", "-r", "--region", "-g", "--resourceGroup", "-k",
-                "--keyVault");
+        [InlineData("-s", "-d")]
+        [InlineData("--subscription", "--domain")]
+        [Theory, IsLayer2]
+        // ReSharper disable once InconsistentNaming
+        public async Task CheckDNSResourcesProjected(string subParam, string domainParam)
+        {
+            await _fixture.DeleteAllSecretsAcrossRegions();
+           
+            GetStandardOutput("azscan", "dns", subParam, AzScanCLITestsL2Fixture.SierraIntegrationSubscription, domainParam, AzScanCLITestsL2Fixture.TestDomain);
+
+            CheckSecretsWE(await _fixture.LoadAllKeyVaultSecretsAsync(DeploymentRegion.WestEurope.ToRegionCode()));
+            CheckSecretsEUS(await _fixture.LoadAllKeyVaultSecretsAsync(DeploymentRegion.EastUS.ToRegionCode()));
         }
 
-        [Fact, IsLayer2]
-        public async Task CheckDNSResourcesProjected_ShortNames()
-        {
-            await _fixture.DeleteAllSecrets();
-            GetStandardOutput("azscan", "dns", "-k", AzScanCLITestsL2Fixture.OutputKeyVaultName, "-s",
-                AzScanCLITestsL2Fixture.SierraIntegrationSubscription, "-r", AzScanCLITestsL2Fixture.TargetRegionName);
 
-            CheckSecrets(await _fixture.LoadAllKeyVaultSecretsAsync());
+        internal static void CheckSecrets(IList<SecretBundle> secrets, DeploymentRegion region)
+        {
+            switch (region)
+            {
+                case DeploymentRegion.EastUS:
+                    CheckSecretsEUS(secrets);
+                    return;
+                case DeploymentRegion.WestEurope:
+                    CheckSecretsWE(secrets);
+                    return;
+                default:
+                    throw new ApplicationException($"Unsupported test region {region.ToRegionCode()}");
+            }
         }
 
-        [Fact, IsLayer2]
-        public async Task CheckDNSResourcesProjected_LongNames()
-        {
-            await _fixture.DeleteAllSecrets();
-            GetStandardOutput("azscan", "dns", "--keyVault", AzScanCLITestsL2Fixture.OutputKeyVaultName, "--subscription",
-                AzScanCLITestsL2Fixture.SierraIntegrationSubscription, "--region", AzScanCLITestsL2Fixture.TargetRegionName);
+        // ReSharper disable once InconsistentNaming
+        private static void CheckSecretsWE(IList<SecretBundle> secrets)
+        {           
+            secrets.Should().HaveSecretCountWithNameStarting("Platform", 4);
 
-            CheckSecrets(await _fixture.LoadAllKeyVaultSecretsAsync());
-        }
-
-        internal static void CheckSecrets(IList<SecretBundle> secrets)
-        {
-            secrets.Where(s => s.SecretIdentifier.Name.StartsWith("Platform", StringComparison.Ordinal)).Should()
-                .HaveCount(4);
             //CNAME check
-            secrets.Should().Contain(s =>
-                s.SecretIdentifier.Name.Equals("Platform--clitestdomainaresourcegroupApi--Global",
-                    StringComparison.Ordinal) &&
-                s.Value.Equals("https://clitestdomainaresourcegroup-api.clitestdomainaresourcegroup.dns",
-                    StringComparison.OrdinalIgnoreCase));
+            secrets.Should().HaveSecret("Platform--testapi1--Global", "https://testapi1.aintegration.dns");
 
             //API 1 - AG check
-            secrets.Should().Contain(s =>
-                s.SecretIdentifier.Name.Equals("Platform--testapi1--HTTPS",
-                    StringComparison.Ordinal) &&
-                s.Value.Equals("https://3.3.3.3",
-                    StringComparison.OrdinalIgnoreCase));
+            secrets.Should().HaveSecret("Platform--testapi1--HTTPS", "https://3.3.3.3");
 
             //API 1 - LB check
-            secrets.Should().Contain(s =>
-                s.SecretIdentifier.Name.Equals("Platform--testapi1--HTTP",
-                    StringComparison.Ordinal) &&
-                s.Value.Equals("http://1.1.1.1",
-                    StringComparison.OrdinalIgnoreCase));
+            secrets.Should().HaveSecret("Platform--testapi1--HTTP", "http://1.1.1.1");
 
             //API 2 - Internal - LB check
-            secrets.Should().Contain(s =>
-                s.SecretIdentifier.Name.Equals("Platform--testapi2--HTTP",
-                    StringComparison.Ordinal) &&
-                s.Value.Equals("http://5.5.5.5",
-                    StringComparison.OrdinalIgnoreCase));
+            secrets.Should().HaveSecret("Platform--testapi2--HTTP", "http://5.5.5.5");
+
+        }
+
+        // ReSharper disable once InconsistentNaming
+        private static void CheckSecretsEUS(IList<SecretBundle> secrets)
+        {
+            secrets.Should().HaveSecretCountWithNameStarting("Platform", 4);
+
+            //CNAME check
+            secrets.Should().HaveSecret("Platform--testapi1--Global", "https://testapi1.aintegration.dns");
+
+            //API 1 - AG check
+            secrets.Should().HaveSecret("Platform--testapi1--HTTPS", "https://4.4.4.4");
+
+            //API 1 - LB check
+            secrets.Should().HaveSecret("Platform--testapi1--HTTP", "http://2.2.2.2");
+
+            //API 2 - Internal - LB check
+            secrets.Should().HaveSecret("Platform--testapi2--HTTP", "http://6.6.6.6");     
         }
     }
 }

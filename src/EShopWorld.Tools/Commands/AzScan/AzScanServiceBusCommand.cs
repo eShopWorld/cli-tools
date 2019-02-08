@@ -17,25 +17,24 @@ namespace EShopWorld.Tools.Commands.AzScan
         protected override async Task<int> RunScanAsync(IAzure client, IConsole console)
         {
             //list sb namespaces
-            var namespaces = await (!string.IsNullOrWhiteSpace(ResourceGroup)
-                ? client.ServiceBusNamespaces.ListByResourceGroupAsync(ResourceGroup)
-                : client.ServiceBusNamespaces.ListAsync());
-
+            var namespaces = await client.ServiceBusNamespaces.ListByResourceGroupAsync(DomainResourceGroup.Name);
+                
             foreach (var @namespace in namespaces)
-            {
-                if (!@namespace.RegionName.RegionNameCheck(Region))
-                    continue;
-
+            {            
                 var rule = await @namespace.AuthorizationRules.GetByNameAsync("RootManageSharedAccessKey");
                 var keys = await rule.GetKeysAsync();
 
                 var name = @namespace.Name.Contains('-')
                     ? @namespace.Name.Remove(@namespace.Name.LastIndexOf('-')) : @namespace.Name;
 
-                await KeyVaultClient.SetKeyVaultSecretAsync(KeyVaultName, "SB", name, "PrimaryConnectionString", keys.PrimaryConnectionString);
+                foreach (var keyVaultName in DomainResourceGroup.TargetKeyVaults)
+                {
+                    await KeyVaultClient.SetKeyVaultSecretAsync(keyVaultName, "SB", name, "PrimaryConnectionString",
+                        keys.PrimaryConnectionString);
+                }
             }
 
-            return 1;
+            return 0;
         }
     }
 }

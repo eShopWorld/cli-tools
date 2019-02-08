@@ -56,38 +56,42 @@ dotnet esw keyvault generatePOCOs -aid 123 -as secret -t esw -k maxmara -an maxm
 
 ### Scanning Azure resources - AzScan commands
 
-The typical flow envisions tool to be invoked from the release pipeline against a combination of environment/domain/region where the build is being pushed to. Key vault known to the application will be supplied as the tool target. 
+This set of commands serves the purpose of automation of resource oversight and extracting configuration data into secure storage -KeyVaults. The tool is invoked within dedicated release pipeline against a combination of environment/domain. 
+
+The tool runs across all supported resources and regions known within the Evolution platform for the given environment. The tool understands DevOps setup of the Resource groups -both platform and domain level -  and scans them to ingest the configuration data. When populated, a dedicated keyvault per region contains the necessary configurations and connection strings to connect to and use the provisioned Azure resources. This manifests as, West Europe (WE) configurations will reside in the WE KeyVault. Conversely, the East US (EUS) configurations will reside in the EUS KeyVault. Examples of configurations include ServiceBus Connection strings and Subscription Ids, or Cosmos DB Connection Strings.
+
+Key vaults are already supported in ESW DevOps SDK configuration builder so the developer's experience is of very minimal code and this feature has been used by several in-house projects in several generations. The other advantage of Key Vaults is that they support tailored access policies and store versions of the secrets for auditing purposes.
 
 The environment is represented through the subscription link.
 
-The domain - resource group - scopes the set of resources that will be scanned so that proper segration of applications to each other can be achieved.
+The domain scopes the set of resources that will be scanned so that proper segration of applications to each other can be achieved.
 
-With higher environments - where multiple regions are utilised - region is passed so that each regional deployment) considers its instances of the resources. However the region is not considered for resources which implement their own regional resolution e.g. Cosmos DB.
+The targeted Key Vault must exist prior to the CLI tool attempting to populate it. Additionally the appropriate access identity and rights must be allocated. Typically this will be the MSI Identity for the Build Rig. There is a cmdlet in devopsflex-automation module present that ensures these policies are in place.
 
-Key vault must exist prior to the tool invoked and must have corresponding access policy (to read/list/write) for the scope that the tool is invoked under (typically the MSI identity configured for the build rig).
-
-An example of tool invoked to scan App Insights instances for West Europe region of evo-ci subscription for "checkout api" domain (ResourceGroup). The relevant configuration secrets will be written to evo-checkout-api-we-kv key vault.
+An example of tool invoked to scan App Insights instances of evo-ci subscription for "checkout" domain. The relevant configuration secrets will be written to evo-checkout-we and evo-checkout-eus Key vaults.
 
 ```console
 
-dotnet esw azscan ai -s evo-ci -r we -g checkoutApi -k evo-checkout-api-we-kv
+dotnet esw azscan ai -s evo-ci -d checkout
 ```
+
+##### Configuration strongly typed objects - POCOs
+
+It is envisioned - WIP - that the tooling will also support generating strongly typed C# objects representing the Key Vault content. This will simplify configuration ingestion to the developer even more and will make entire process very transparent.
+
 
 #### AzScan parameters
 
-Following table captures recognized required and optional parameters for the *azscan* command family
+Following table captures recognized required parameters for the *azscan* command family
 
-long names use -- notation e.g. --keyVault
-short names use - notation e.g. -k
+long names use -- notation e.g. --subscription
+short names use - notation e.g. -s
 
 |Short name|Long Name|Required|Description|Example value|
 |----------|---------|--------|-----------|-------------|
-| k | keyVault | Y | target keyvault name | esw-tooling-ci |
-| g | resourceGroup | N | resource group filter | checkout-api-rg |
 | s | subscription | Y | subscription filter | evo-ci |
-| r | region | Y | region filter | we |
+| d | domain | Y | domain filter | tooling |
 
-The region filter recognizes value from the [Devops package - DeploymentRegion enum](https://github.com/eShopWorld/devops/blob/master/src/Eshopworld.DevOps/DeploymentRegion.cs), examples being 'we' and 'eus'.
 
 It is possible to either invoke individual commands e.g. dns or scan **all** supported resource types by invoking
 
@@ -162,3 +166,9 @@ Scans Service bus namespaces and projects following secrets
 ```
 SB--{resourceName}--PrimaryConnectionString
 ```
+
+#### Testing strategy
+
+This repo uses layered test approach. There are level 0, 1 and 2 tests. Layer 0 runs tests for several components with mocked dependencies. Layer 1 runs tests call external dependencies but do not require deployment. Level 2 runs tests calling external dependencies and requires the tool to be deployed (installed). 
+
+As this is CLI tool, most tests are present in layer 2. These tests use dedicated test fixture to set up test resources mimicking supported setup in the Evolution platform. The tool is then invoked (as actual dotnet tool) and Key Vault then inspected to match secrets and their values to expected state. After the test, test resources are deprovisioned.

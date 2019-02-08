@@ -21,15 +21,19 @@ namespace EshopWorld.Tools.Tests
         }
 
         [Theory, IsLayer0]
-        [InlineData("esw-payment-ci", "esw-payment")]
-        [InlineData("esw-payment-test", "esw-payment")]
-        [InlineData("esw-payment-sand", "esw-payment")]
-        [InlineData("esw-payment-preprod", "esw-payment")]
-        [InlineData("esw-payment-prod", "esw-payment")]
-        [InlineData("esw-payment-blah", "esw-payment-blah")]
-        public void StripRecognizedSuffix_Success(string input, string expectedOutput)
+        [InlineData("esw-payment-ci", "payment")]
+        [InlineData("esw-payment-test", "payment")]
+        [InlineData("esw-payment-sand", "payment")]
+        [InlineData("esw-payment-prep", "payment")]
+        [InlineData("esw-payment-prod", "payment")]
+        [InlineData("esw-payment-Prod", "payment")]
+        [InlineData("esw-payment-integration", "payment")]
+        [InlineData("esw-payment-blah", "payment-blah")]
+        [InlineData("blah-payment-blah", "blah-payment-blah")]
+        [InlineData("blah-payment-we-lb", "blah-payment", "-we-lb")]
+        public void EswTrim_Success(string input, string expectedOutput, params string[] additionalSuffixes)
         {
-            input.StripRecognizedSuffix("-ci", "-test", "-sand", "-preprod", "-prod").Should().Be(expectedOutput);
+            input.EswTrim(additionalSuffixes).Should().Be(expectedOutput);
         }
 
         [Theory, IsLayer0]
@@ -52,18 +56,6 @@ namespace EshopWorld.Tools.Tests
         public void RegionNameCheck(string input, string region, bool expectedResult)
         {
             input.RegionNameCheck(region).Should().Be(expectedResult);
-        }
-
-        [Theory, IsLayer0]
-        [InlineData("aaa", "we", true)]
-        [InlineData("West Europe", "we", true)] //this would indicate wrong check used in the code
-        // ReSharper disable once StringLiteralTypo
-        [InlineData("westeurope", "we", true)]
-        // ReSharper disable once StringLiteralTypo
-        [InlineData("eastus", "we", false)]
-        public void RegionAbbreviatedNameCheck(string input, string region, bool expectedResult)
-        {
-            input.RegionAbbreviatedNameCheck(region).Should().Be(expectedResult);
         }
     }
 }

@@ -39,14 +39,10 @@ namespace EshopWorld.Tools.Tests
         {
             using (var p = RunCLI(parameters))
             {
+                p.ExitCode.Should().Be(0);
                 p.StandardError.ReadToEnd().Should().BeNullOrWhiteSpace();
                 return p.StandardOutput.ReadToEnd();
             }
-        }
-
-        protected void OverrideTimeout(TimeSpan newValue)
-        {
-            _processTimeout = newValue.TotalMilliseconds;
         }
 
         protected void DeleteTestFiles(string basePath, params string[] fileNames)
