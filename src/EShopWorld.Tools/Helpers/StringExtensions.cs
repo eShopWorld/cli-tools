@@ -42,29 +42,28 @@ namespace EShopWorld.Tools.Helpers
         /// <param name="input">input values</param>
         /// <param name="suffixes">suffixes to strip out</param>
         /// <returns></returns>
-        public static string StripRecognizedSuffix(this string input, params string[] suffixes)
+        public static string EswTrim(this string input, params string[] suffixes)
         {
             if (string.IsNullOrWhiteSpace(input))
                 return input;
 
-            string suffixDetected;
-            if ((suffixDetected = suffixes.FirstOrDefault(s=> input.EndsWith(s, StringComparison.OrdinalIgnoreCase))) != null)
+
+            var tokenList = new List<string>(new[]
+                {"esw-", "-ci", "-test", "-sand", "-prep", "-prod", "-integration" /*~sierra-integration sub */});
+
+            //add regions
+            tokenList.AddRange(RegionHelper.DeploymentRegionsToList().Select(r => $"-{r.ToRegionCode().ToLowerInvariant()}"));
+
+            tokenList.AddRange(suffixes);
+
+            var newInput = input;
+
+            foreach (var token in tokenList)
             {
-                return input.Remove(input.Length-suffixDetected.Length);
+                newInput = newInput.Replace(token, "", StringComparison.OrdinalIgnoreCase);
             }
 
-            return input;
-        }
-
-        /// <summary>
-        /// check region against recognized regions using abbreviated name (e.g. 'eastus')
-        /// </summary>
-        /// <param name="name">resource name</param>
-        /// <param name="region">target region</param>
-        /// <returns>true if region matches</returns>
-        public static bool RegionAbbreviatedNameCheck(this string name, string region)
-        {
-            return name.RegionCheck(region, (i) => i.ToRegionName().ToCamelCase().ToLowerInvariant());
+            return newInput;
         }
 
         /// <summary>
@@ -89,21 +88,9 @@ namespace EShopWorld.Tools.Helpers
             return name.RegionCheck(region, (i) => i.ToRegionCode(),"-");
         }
 
-        private static IList<DeploymentRegion> DeploymentRegionsToList()
-        {
-            var list = new List<DeploymentRegion>();
-
-            foreach (var item in Enum.GetValues(typeof(DeploymentRegion)))
-            {
-                list.Add((DeploymentRegion)item);
-            }
-
-            return list;
-        }
-
         private static bool RegionCheck(this string name, string region, Func<DeploymentRegion, string> conversionLogic, string regionPrefix="")
         {
-            var regionList = DeploymentRegionsToList();
+            var regionList = RegionHelper.DeploymentRegionsToList();
 
             var matched = false;
 

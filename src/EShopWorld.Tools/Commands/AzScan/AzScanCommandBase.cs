@@ -1,14 +1,20 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Eshopworld.Core;
+using Eshopworld.DevOps;
+using EShopWorld.Tools.Helpers;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.Management.Fluent;
 
 namespace EShopWorld.Tools.Commands.AzScan
 {
+    /// <summary>
+    /// base class for all Az Scan family commands
+    /// </summary>
     public abstract class AzScanCommandBase
     {
         protected readonly Azure.IAuthenticated Authenticated;
@@ -17,9 +23,11 @@ namespace EShopWorld.Tools.Commands.AzScan
 
         protected AzScanCommandBase()
         {
-            
+
         }
-        protected AzScanCommandBase(Azure.IAuthenticated authenticated, KeyVaultClient keyVaultClient, IBigBrother bigBrother)
+
+        protected AzScanCommandBase(Azure.IAuthenticated authenticated, KeyVaultClient keyVaultClient,
+            IBigBrother bigBrother)
         {
             Authenticated = authenticated;
             KeyVaultClient = keyVaultClient;
@@ -27,20 +35,12 @@ namespace EShopWorld.Tools.Commands.AzScan
         }
 
         [Option(
-            Description = "name of the keyvault to insert configuration into",
-            ShortName = "k",
-            LongName = "keyVault",
+            Description = "domain filter",
+            ShortName = "d",
+            LongName = "domain",
             ShowInHelpText = true)]
         [Required]
-        public string KeyVaultName { get; set; }
-
-
-        [Option(
-            Description = "optional resource group filter",
-            ShortName = "g",
-            LongName = "resourceGroup",
-            ShowInHelpText = true)]
-        public string ResourceGroup { get; set; }
+        public string Domain { get; set; }
 
         [Option(
             Description = "name of the subscription to scan ",
@@ -50,13 +50,45 @@ namespace EShopWorld.Tools.Commands.AzScan
         [Required]
         public string Subscription { get; set; }
 
-        [Option(
-            Description = "region filter, values expected are codes recognized by Eshopworld.DevOps.DeploymentRegion",
-            ShortName = "r",
-            LongName = "region",
-            ShowInHelpText = true)]
-        [Required]
-        public string Region { get; set; } 
+        internal IEnumerable<ResourceGroupDescriptor> RegionalPlatformResourceGroups => RegionList.Select(r =>
+                new ResourceGroupDescriptor
+                {
+                    Name =
+                        $"platform-{EnvironmentName}-{r.ToRegionCode()}".ToLowerInvariant(),
+                    TargetKeyVaults = new[]
+                    {
+                        $"esw-{Domain}-{EnvironmentName}-{r.ToRegionCode()}".ToLowerInvariant()
+                    },
+                    Region = r
+                });
+
+        internal ResourceGroupDescriptor DomainResourceGroup => new ResourceGroupDescriptor
+        {
+            Name = $"{Domain}-{EnvironmentName}".ToLowerInvariant(),
+            TargetKeyVaults = RegionList.Select(r =>
+                $"esw-{Domain}-{EnvironmentName}-{r.ToRegionCode()}".ToLowerInvariant())
+        };
+
+        internal IList<DeploymentRegion> RegionList =>
+            RegionHelper.DeploymentRegionsToList("ci".Equals(EnvironmentName, StringComparison.OrdinalIgnoreCase));
+
+        private string EnvironmentName
+        {
+            get
+            {
+                var lowerSub = Subscription.ToLowerInvariant();
+                int dashIndex;
+                if ((dashIndex = lowerSub.IndexOf('-')) == (-1))
+                {
+                    throw new ApplicationException($"Unrecognized subscription name : {Subscription}");
+                }
+
+                return lowerSub.Substring(dashIndex+1)
+                    .Replace("sandbox", "sand", StringComparison.OrdinalIgnoreCase)
+                    .Replace("preprod", "prep", StringComparison.OrdinalIgnoreCase); //return suffix and deal with know "anomalies"
+
+            }
+        }
 
         public virtual async Task<int> OnExecuteAsync(CommandLineApplication app, IConsole console)
         {
@@ -70,14 +102,19 @@ namespace EShopWorld.Tools.Commands.AzScan
 
             var subClient = Authenticated.WithSubscription(sub.SubscriptionId);
 
-            await RunScanAsync(subClient, console);
-         
-            return 1;
+            return await RunScanAsync(subClient, console);
         }
 
         protected virtual Task<int> RunScanAsync(IAzure client, IConsole console)
         {
-            return Task.FromResult(1);
+            return Task.FromResult(0);
+        }
+
+        internal class ResourceGroupDescriptor
+        {
+            internal string Name { get; set; }
+            internal IEnumerable<string> TargetKeyVaults { get; set; }
+            internal DeploymentRegion Region { get; set; }
         }
     }
 }

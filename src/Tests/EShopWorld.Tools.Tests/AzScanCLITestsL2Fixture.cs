@@ -5,6 +5,7 @@ using Autofac;
 using Eshopworld.DevOps;
 using EShopWorld.Tools;
 using EShopWorld.Tools.Helpers;
+using JetBrains.Annotations;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.KeyVault.Models;
 using Microsoft.Azure.Management.ApplicationInsights.Management;
@@ -27,12 +28,13 @@ namespace EshopWorld.Tools.Tests
 
         private IAzure _azClient;
 
-        internal const string DomainAResourceGroupName = "CLITestDomainAResourceGroup";
-        private const string DomainBResourceGroupName = "CLITestDomainBResourceGroup";
-        public const string OutputKeyVaultName = "CLIToolsAzScanTestOutput"; //create it in Domain A
-        public const string SierraIntegrationSubscription = "sierra-integration"; 
-        private static readonly Region Region = Region.EuropeWest;
-        public const string TargetRegionName = "we";
+        internal const string TestDomain = "a";
+        private const string DomainAResourceGroupName = "a-integration";
+        private const string DomainAWeResourceGroupNameFormat = "a-integration-{0}";
+        private const string DomainBResourceGroupName = "b-integration";
+        private const string OutputKeyVaultNameFormat = "esw-a-integration-{0}";
+        internal const string SierraIntegrationSubscription = "sierra-integration";
+        private const string PlatformResourceGroupNameFormat = "platform-integration-{0}";
 
         public AzScanCLITestsL2Fixture()
         {
@@ -60,60 +62,83 @@ namespace EshopWorld.Tools.Tests
             _azClient = _container.Resolve<IAzure>();
           
             //set up more then one "domain"/RG to test filtering
-            var rgA = await _azClient.ResourceGroups.Define(DomainAResourceGroupName).WithRegion(Region).CreateAsync();
-            var rgB = await _azClient.ResourceGroups.Define(DomainBResourceGroupName).WithRegion(Region).CreateAsync();
+            var rgDomainATop = await _azClient.ResourceGroups.Define(DomainAResourceGroupName).WithRegion(Region.EuropeWest).CreateAsync();
+            var rgB = await _azClient.ResourceGroups.Define(DomainBResourceGroupName).WithRegion(Region.EuropeWest).CreateAsync();          
 
+            //setup regional resources
+            foreach (var region in RegionHelper.DeploymentRegionsToList())
+            {
+                var regionalRg = await _azClient.ResourceGroups
+                    .Define(GetRegionalResourceGroupName(region.ToRegionCode()))
+                    .WithRegion(Region.EuropeWest).CreateAsync();
+
+                 await _azClient.ResourceGroups
+                    .Define(GetRegionalPlatformResourceGroupName(region.ToRegionCode())).WithRegion(Region.EuropeWest)
+                    .CreateAsync();
+
+                await SetupOutputKV(regionalRg);               
+            }
             await Task.WhenAll(
-                SetupOutputKV(rgA),
-                SetupAzureMonitorAsync(rgA),
+                SetupAzureMonitorAsync(rgDomainATop),
                 SetupAzureMonitorAsync(rgB),
-                SetupServiceBusNamespace(rgA),
+                SetupServiceBusNamespace(rgDomainATop),
                 SetupServiceBusNamespace(rgB),
-                SetupCosmosDBInstance(rgA),
+                SetupCosmosDBInstance(rgDomainATop),
                 SetupCosmosDBInstance(rgB),
-                SetupDNS(rgA));
+                SetupDNS(rgDomainATop));
+        }
+
+        private static string GetRegionalResourceGroupName([NotNull] string regionCode)
+        {
+            return string.Format(DomainAWeResourceGroupNameFormat, regionCode).ToLowerInvariant();
+        }
+
+        private static string GetRegionalPlatformResourceGroupName([NotNull] string regionCode)
+        {
+            return string.Format(PlatformResourceGroupNameFormat, regionCode).ToLowerInvariant();
         }
 
         // ReSharper disable once InconsistentNaming
         private async Task SetupOutputKV(IResourceGroup rg)
         {            
             await _azClient.Vaults
-                .Define(OutputKeyVaultName)
+                .Define($"esw-{rg.Name}")
                     .WithRegion(rg.RegionName)
                 .WithExistingResourceGroup(rg)
                 .DefineAccessPolicy()
                     .ForObjectId(_testConfig.TargetIdentityObjectId) //so that CLI can write and test
                     .AllowSecretPermissions(SecretPermissions.Get, SecretPermissions.List, SecretPermissions.Set, SecretPermissions.Delete)
-                .Attach()
+                .Attach()                
                 .CreateAsync();         
-        }
+        } 
 
         private async Task SetupAzureMonitorAsync(IResourceGroup rg)
         {
             var aiClient = _container.Resolve<ApplicationInsightsManagementClient>();
             aiClient.SubscriptionId = _azClient.SubscriptionId;
-            await aiClient.Components.CreateAIInstanceIfNotExists($"{rg.Name}-ci", rg.Name);
+            await aiClient.Components.CreateAIInstanceIfNotExists($"{rg.Name}".ToLowerInvariant(), rg.Name);
         }
 
         private async Task SetupServiceBusNamespace(IResourceGroup rg)
         {
-            await _azClient.ServiceBusNamespaces.Define($"{rg.Name}-ci").WithRegion(Region).WithExistingResourceGroup(rg).CreateAsync();
+            await _azClient.ServiceBusNamespaces.Define($"esw-{rg.Name}".ToLowerInvariant()).WithRegion(Region.EuropeWest).WithExistingResourceGroup(rg).CreateAsync();
         }
 
         // ReSharper disable once InconsistentNaming
         private async Task SetupCosmosDBInstance(IResourceGroup rg)
         {
-            await _azClient.CosmosDBAccounts.Define($"{rg.Name}-ci".ToLowerInvariant()).WithRegion(Region)
-                .WithExistingResourceGroup(rg).WithDataModelSql().WithEventualConsistency().WithWriteReplication(Region)
+            await _azClient.CosmosDBAccounts.Define($"esw-{rg.Name}".ToLowerInvariant()).WithRegion(Region.EuropeWest)
+                .WithExistingResourceGroup(rg).WithDataModelSql().WithEventualConsistency().WithWriteReplication(Region.EuropeWest)
                 .CreateAsync();
         }
 
+        // ReSharper disable once InconsistentNaming
         private async Task SetupDNS(IResourceGroup rg)
         {
             var camelRgName = rg.Name.ToCamelCase();
 
-            await _azClient.DnsZones.Define($"{camelRgName}.dns").WithExistingResourceGroup(rg)
-                .DefineCNameRecordSet($"{camelRgName}-api").WithAlias($"{camelRgName}-api.azureedge.net").Attach() //Global record
+            await _azClient.DnsZones.Define($"{camelRgName}.dns".ToLowerInvariant()).WithExistingResourceGroup(rg)
+                .DefineCNameRecordSet("TestAPI1").WithAlias($"{camelRgName}-api.azureedge.net").Attach() //Global record
                 .DefineARecordSet("TestAPI1-we-lb").WithIPv4Address("1.1.1.1").Attach() //test api 1 LB -WE
                 .DefineARecordSet("TestAPI1-eus-lb").WithIPv4Address("2.2.2.2").Attach() //test api 1 LB - EUS
                 .DefineARecordSet("TestAPI1-we").WithIPv4Address("3.3.3.3").Attach() //test api 1 AG - WE
@@ -123,15 +148,25 @@ namespace EshopWorld.Tools.Tests
                 .CreateAsync();
         }
 
-        internal Task<IList<SecretBundle>> LoadAllKeyVaultSecretsAsync()
+        internal Task<IList<SecretBundle>> LoadAllKeyVaultSecretsAsync([NotNull] string regionCode)
         {
-            return _keyVaultClient.GetAllSecrets(OutputKeyVaultName);
+            return _keyVaultClient.GetAllSecrets(GetRegionalKVName(regionCode));
         }
 
-        internal async Task DeleteAllSecrets()
+        internal async Task DeleteAllSecretsAcrossRegions()
         {
-            await _keyVaultClient.DeleteAllSecrets(OutputKeyVaultName);
+            foreach (var region in RegionHelper.DeploymentRegionsToList())
+            {
+                await _keyVaultClient.DeleteAllSecrets(GetRegionalKVName(region.ToRegionCode()));
+            }
         }
+
+        // ReSharper disable once InconsistentNaming
+        private static string GetRegionalKVName([NotNull] string regionCode)
+        {
+            return string.Format(OutputKeyVaultNameFormat, regionCode.ToLowerInvariant());
+        }
+
         public void Dispose()
         {
             DeleteResources().GetAwaiter().GetResult();
@@ -142,6 +177,15 @@ namespace EshopWorld.Tools.Tests
         {
             if (_azClient != null)
             {
+                foreach (var region in RegionHelper.DeploymentRegionsToList())
+                {
+                    await _azClient.ResourceGroups.DeleteRGIfExists(
+                        GetRegionalResourceGroupName(region.ToRegionCode()));
+
+                    await _azClient.ResourceGroups.DeleteRGIfExists(
+                        GetRegionalPlatformResourceGroupName(region.ToRegionCode()));
+                }
+
                 await Task.WhenAll(
                     _azClient.ResourceGroups.DeleteRGIfExists(DomainAResourceGroupName),
                     _azClient.ResourceGroups.DeleteRGIfExists(DomainBResourceGroupName));

@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Eshopworld.Core;
+using Eshopworld.DevOps;
 using EShopWorld.Tools.Helpers;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Azure.KeyVault;
@@ -21,21 +22,26 @@ namespace EShopWorld.Tools.Commands.AzScan
 
         protected override async Task<int> RunScanAsync(IAzure client, IConsole console)
         {
-            var sqls = string.IsNullOrWhiteSpace(ResourceGroup)
-                ? await client.SqlServers.ListAsync()
-                : await client.SqlServers.ListByResourceGroupAsync(ResourceGroup);
-
-            foreach (var sql in sqls)
+            foreach (var rg in RegionalPlatformResourceGroups)
             {
-                foreach (var db in sql.Databases.List()
-                    .Where(db => !db.Name.Equals("master", StringComparison.OrdinalIgnoreCase)))
-                {
-                    if (!db.RegionName.RegionNameCheck(Region))
-                        continue;
+                var sqls = await client.SqlServers.ListByResourceGroupAsync(rg.Name);
 
-                    await KeyVaultClient.SetKeyVaultSecretAsync(KeyVaultName, "SQL", $"{sql.Name}{db.Name}",
-                        "ConnectionString",
-                        $"Server=tcp:{sql.FullyQualifiedDomainName}; Database={db.Name};Trusted_Connection=False; Encrypt=True; MultipleActiveResultSets=True;");
+                foreach (var sql in sqls)
+                {
+                    foreach (var db in sql.Databases.List()
+                        .Where(db => !db.Name.Equals("master", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        if (!db.RegionName.RegionNameCheck(rg.Region.ToRegionCode()))
+                            continue;
+
+                        foreach (var keyVault in rg.TargetKeyVaults)
+                        {
+                            await KeyVaultClient.SetKeyVaultSecretAsync(keyVault, "SQL",
+                                $"{sql.Name}{db.Name}",
+                                "ConnectionString",
+                                $"Server=tcp:{sql.FullyQualifiedDomainName}; Database={db.Name};Trusted_Connection=False; Encrypt=True; MultipleActiveResultSets=True;");
+                        }
+                    }
                 }
             }
 

@@ -34,10 +34,8 @@ namespace EShopWorld.Tools.Commands.AzScan
         {
             var instance = (T) _serviceProvider.GetService(typeof(T));
 
-            instance.KeyVaultName = KeyVaultName;
             instance.Subscription = Subscription;
-            instance.ResourceGroup = ResourceGroup;
-            instance.Region = Region;
+            instance.Domain = Domain;
 
             return instance;
         }

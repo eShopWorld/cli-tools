@@ -1,5 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Eshopworld.Core;
+using Eshopworld.DevOps;
 using EShopWorld.Tools.Helpers;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Azure.KeyVault;
@@ -16,20 +18,28 @@ namespace EShopWorld.Tools.Commands.AzScan
 
         protected override async Task<int> RunScanAsync(IAzure client, IConsole console)
         {
-            var redises = !string.IsNullOrWhiteSpace(ResourceGroup)
-                ? await client.RedisCaches.ListByResourceGroupAsync(ResourceGroup)
-                : await client.RedisCaches.ListAsync();
-
-            foreach (var redis in redises)
+            foreach (var rg in RegionalPlatformResourceGroups)
             {
-                if (!redis.RegionName.RegionNameCheck(Region))
-                    continue;
+                var redises = await client.RedisCaches.ListByResourceGroupAsync(rg.Name);
 
-                var name = redis.Name.Contains('-')
-                    ? redis.Name.Remove(redis.Name.LastIndexOf('-')) : redis.Name;
+                foreach (var redis in redises)
+                {
+                    if (!redis.RegionName.RegionNameCheck(rg.Region.ToRegionCode()))
+                        continue;
 
-                await KeyVaultClient.SetKeyVaultSecretAsync(KeyVaultName, "Redis", name, "PrimaryConnectionString", $"{redis.HostName},password={redis.Keys.PrimaryKey},ssl=True,abortConnect=False");
+                    var name = redis.Name.Contains('-')
+                        ? redis.Name.Remove(redis.Name.LastIndexOf('-'))
+                        : redis.Name;
+
+                    foreach (var keyVault in rg.TargetKeyVaults)
+                    {
+                        await KeyVaultClient.SetKeyVaultSecretAsync(keyVault, "Redis", name,
+                            "PrimaryConnectionString",
+                            $"{redis.HostName},password={redis.Keys.PrimaryKey},ssl=True,abortConnect=False");
+                    }
+                }
             }
+
             return 0;
         }
     }

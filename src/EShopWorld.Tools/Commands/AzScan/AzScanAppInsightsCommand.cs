@@ -26,28 +26,26 @@ namespace EShopWorld.Tools.Commands.AzScan
             _azClient.SubscriptionId = client.SubscriptionId;
 
             //FYI - https://github.com/Azure/azure-sdk-for-net/issues/5123
-
+       
             string nextPageLink = null;
             do
             {
-                var ais = string.IsNullOrEmpty(ResourceGroup)
-                    ? string.IsNullOrWhiteSpace(nextPageLink)
-                        ? await _azClient.Components.ListAsync()
-                        : await _azClient.Components.ListNextAsync(nextPageLink)
-                    : string.IsNullOrWhiteSpace(nextPageLink)
-                        ? await _azClient.Components.ListByResourceGroupAsync(ResourceGroup)
-                        : await _azClient.Components.ListByResourceGroupNextAsync(nextPageLink);
+                var ais = string.IsNullOrWhiteSpace(nextPageLink)
+                    ? await _azClient.Components.ListByResourceGroupAsync(DomainResourceGroup.Name)
+                    : await _azClient.Components.ListByResourceGroupNextAsync(nextPageLink);
 
                 nextPageLink = ais.NextPageLink;
 
                 foreach (var ai in ais)
-                {                    
-                    if (!ai.Location.RegionAbbreviatedNameCheck(Region))
-                        continue;
-
-                    await KeyVaultClient.SetKeyVaultSecretAsync(KeyVaultName, "AI", ai.Name, "InstrumentationKey", ai.InstrumentationKey);
+                {
+                    foreach (var keyVaultName in DomainResourceGroup.TargetKeyVaults)
+                    {
+                        await KeyVaultClient.SetKeyVaultSecretAsync(keyVaultName, "AI", ai.Name,
+                            "InstrumentationKey",
+                            ai.InstrumentationKey);
+                    }
                 }
-            } while (nextPageLink != null);
+            } while (!string.IsNullOrWhiteSpace(nextPageLink));
 
             return 0;
         }

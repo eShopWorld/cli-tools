@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Eshopworld.DevOps;
 using Eshopworld.Tests.Core;
+using EShopWorld.Tools.Helpers;
 using FluentAssertions;
 using Microsoft.Azure.KeyVault.Models;
 using Xunit;
@@ -17,36 +19,22 @@ namespace EshopWorld.Tools.Tests
         public AzScanAppInsightsCLITests(AzScanCLITestsL2Fixture fixture)
         {
             _fixture = fixture;
-        }
+        }      
 
-        [Fact, IsLayer2]
-        public void CheckOptions()
+        [InlineData("-s", "-d")]
+        [InlineData("--subscription", "--domain")]
+        [Theory, IsLayer2]
+        // ReSharper disable once InconsistentNaming
+        public async Task CheckAIResourcesProjectedPerResourceGroup(string subParam, string domainParam)
         {
-            var content = GetStandardOutput("azscan", "ai", "-h");
-            content.Should().ContainAll("-s", "--subscription", "-r", "--region", "-g", "--resourceGroup", "-k",
-                "--keyVault");
-        }
-
-        [Fact, IsLayer2]
-        public async Task CheckAIResourcesProjectedPerResourceGroup_ShortNames()
-        {
-            await _fixture.DeleteAllSecrets();
+            await _fixture.DeleteAllSecretsAcrossRegions();
             // ReSharper disable once StringLiteralTypo
-            GetStandardOutput("azscan", "ai", "-k", AzScanCLITestsL2Fixture.OutputKeyVaultName, "-s",
-                AzScanCLITestsL2Fixture.SierraIntegrationSubscription, "-r", AzScanCLITestsL2Fixture.TargetRegionName, "-g", AzScanCLITestsL2Fixture.DomainAResourceGroupName);
+            GetStandardOutput("azscan", "ai", subParam, AzScanCLITestsL2Fixture.SierraIntegrationSubscription, domainParam, AzScanCLITestsL2Fixture.TestDomain);
 
-            CheckSecrets(await _fixture.LoadAllKeyVaultSecretsAsync());
-        }
-
-        [Fact, IsLayer2]
-        public async Task CheckAIResourcesProjectedPerResourceGroup_LongNames()
-        {
-            await _fixture.DeleteAllSecrets();
-            // ReSharper disable once StringLiteralTypo
-            GetStandardOutput("azscan", "ai", "--keyVault", AzScanCLITestsL2Fixture.OutputKeyVaultName, "--subscription",
-                AzScanCLITestsL2Fixture.SierraIntegrationSubscription, "--region", AzScanCLITestsL2Fixture.TargetRegionName, "--resourceGroup", AzScanCLITestsL2Fixture.DomainAResourceGroupName);
-
-            CheckSecrets(await _fixture.LoadAllKeyVaultSecretsAsync());
+            foreach (var region in RegionHelper.DeploymentRegionsToList())
+            {
+                CheckSecrets(await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode()));
+            }
         }
 
         internal static void CheckSecrets(IList<SecretBundle> secrets)
@@ -55,7 +43,7 @@ namespace EshopWorld.Tools.Tests
             secrets.Should().ContainSingle(s => s.SecretIdentifier.Name.StartsWith("AI--", StringComparison.Ordinal));
             secrets.Should().ContainSingle(s =>
                 // ReSharper disable once StringLiteralTypo
-                s.SecretIdentifier.Name.Equals("AI--clitestdomainaresourcegroup--InstrumentationKey",
+                s.SecretIdentifier.Name.Equals("AI--a--InstrumentationKey",
                     StringComparison.Ordinal) &&
                 Guid.Parse(s.Value) != default(Guid)); //check key existence and that it is guid (parse succeeds)
         }

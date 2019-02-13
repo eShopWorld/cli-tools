@@ -15,18 +15,22 @@ namespace EShopWorld.Tools.Commands.AzScan
         }
 
         protected override async Task<int> RunScanAsync(IAzure client, IConsole console)
-        {
-            var cosmoses = string.IsNullOrWhiteSpace(ResourceGroup)
-                ? await client.CosmosDBAccounts.ListAsync()
-                : await client.CosmosDBAccounts.ListByResourceGroupAsync(ResourceGroup);
+        {                
+            var cosmoses =
+                await client.CosmosDBAccounts.ListByResourceGroupAsync(DomainResourceGroup.Name);                    
 
             foreach (var cosmos in cosmoses)
             {
                 //no region filter for cosmos
                 var keys = await cosmos.ListKeysAsync();
-           
-                await KeyVaultClient.SetKeyVaultSecretAsync(KeyVaultName, "CosmosDB", cosmos.Name, "PrimaryConnectionString", $"AccountEndpoint={cosmos.DocumentEndpoint};AccountKey={keys.PrimaryMasterKey}");
-            }
+
+                foreach (var keyVaultName in DomainResourceGroup.TargetKeyVaults)
+                {
+                    await KeyVaultClient.SetKeyVaultSecretAsync(keyVaultName, "CosmosDB", cosmos.Name,
+                        "PrimaryConnectionString",
+                        $"AccountEndpoint={cosmos.DocumentEndpoint};AccountKey={keys.PrimaryMasterKey}");
+                }
+            }                
 
             return 0;
         }

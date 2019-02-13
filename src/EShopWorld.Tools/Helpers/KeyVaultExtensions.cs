@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Eshopworld.DevOps;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.KeyVault.Models;
 using Microsoft.Rest.Azure;
@@ -40,18 +39,9 @@ namespace EShopWorld.Tools.Helpers
         }
 
         internal static async Task SetKeyVaultSecretAsync(this KeyVaultClient client, string keyVaultName,
-            string prefix, string name, string suffix, string value, bool removeEnvironmentToken = true,
-            params string[] additionalSuffixes)
-        {
-            var suffixesToRemove = new List<string>();
-            if (removeEnvironmentToken)
-            {
-                suffixesToRemove.AddRange(new[] {"-ci", "-test", "-sand", "-preprod", "-prod"});
-            }
-
-            suffixesToRemove.AddRange(additionalSuffixes);
-
-            await client.SetSecretWithHttpMessagesAsync($"https://{keyVaultName}.vault.azure.net/", $"{prefix}--{name.StripRecognizedSuffix(suffixesToRemove.ToArray()).ToCamelCase()}--{suffix}", value);
+            string prefix, string name, string suffix, string value, params string[] additionalSuffixes)
+        {          
+            await client.SetSecretWithHttpMessagesAsync($"https://{keyVaultName}.vault.azure.net/", $"{prefix}--{name.EswTrim(additionalSuffixes).ToCamelCase()}--{suffix}", value);
         }
     }
 }
