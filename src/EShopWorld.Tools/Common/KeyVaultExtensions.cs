@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.KeyVault.Models;
 using Microsoft.Rest.Azure;
 
-namespace EShopWorld.Tools.Helpers
+namespace EShopWorld.Tools.Common
 {
     /// <summary>
     /// this class encapsulates operations against the key vault
@@ -19,7 +20,7 @@ namespace EShopWorld.Tools.Helpers
             do
             {
                 secrets = !string.IsNullOrWhiteSpace(secrets?.NextPageLink) ? await client.GetSecretsNextAsync(secrets.NextPageLink) : await client.GetSecretsAsync($"https://{keyVaultName}.vault.azure.net/");
-                foreach (var secretItem in secrets)
+                foreach (var secretItem in secrets.Where(s=>s.Attributes.Enabled.GetValueOrDefault()))
                 {
                     allSecrets.Add(await client.GetSecretAsync(secretItem.Identifier.Identifier));
                 }

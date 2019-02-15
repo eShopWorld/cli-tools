@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Eshopworld.DevOps;
 
-namespace EShopWorld.Tools.Helpers
+namespace EShopWorld.Tools.Common
 {
     /// <summary>
     /// extension stuff to camel case given string - based on Humanize package but with adjusted regexp
@@ -33,7 +34,17 @@ namespace EShopWorld.Tools.Helpers
         /// <returns>pascal case string</returns>
         public static string ToPascalCase(this string input)
         {
-            return string.IsNullOrWhiteSpace(input) ? input : System.Text.RegularExpressions.Regex.Replace(input.ToLowerInvariant(), "(?:^|-|_|\\s|\\.)(.)", match => match.Groups[1].Value.ToUpperInvariant());
+            return string.IsNullOrWhiteSpace(input) ? input : Regex.Replace(input.ToLowerInvariant(), "(?:^|-|_|\\s|\\.)(.)", match => match.Groups[1].Value.ToUpperInvariant());
+        }
+
+        /// <summary>
+        /// checks whether this is an unsigned int - use regexp instead of try parse as we really do not care about output
+        /// </summary>
+        /// <param name="input">input value</param>
+        /// <returns>true if unsigned int</returns>
+        public static bool IsUnsignedInt(this string input)
+        {
+            return !string.IsNullOrWhiteSpace(input) && Regex.IsMatch(input, "^\\d+$");
         }
 
         /// <summary>
@@ -107,6 +118,23 @@ namespace EShopWorld.Tools.Helpers
                 return true;
 
             return name.EndsWith($"{regionPrefix}{regionValueToCheck}", StringComparison.OrdinalIgnoreCase) || name.EndsWith($"{regionPrefix}{regionValueToCheck}-lb", StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// ensure property name conforms to grammar rules
+        ///
+        /// if it starts with number, prefix with underscore
+        ///
+        /// this assumes secret names are given as an input with Azure key value - naming rules allow for a-z, A0Z, 0-9
+        /// </summary>
+        /// <param name="value">property name</param>
+        /// <returns>gr</returns>
+        public static string SanitizePropertyName(this string value)
+        {
+            if (string.IsNullOrWhiteSpace(value) || !Regex.IsMatch(value, "^\\d"))
+                return value;
+
+            return $"_{value}";
         }
     }
 }

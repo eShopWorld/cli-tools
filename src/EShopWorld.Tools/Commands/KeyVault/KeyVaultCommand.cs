@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Eshopworld.Core;
-using EShopWorld.Tools.Helpers;
+using EShopWorld.Tools.Common;
 using EShopWorld.Tools.Telemetry;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Azure.KeyVault;
@@ -14,17 +14,25 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
+
 namespace EShopWorld.Tools.Commands.KeyVault
 {
     /// <summary>
     /// key vault top level command 
     /// </summary>
+    
     [Command("keyvault", Description = "keyvault associated functionality"), HelpOption]
     [Subcommand(typeof(GeneratePOCOsCommand))]
     public class KeyVaultCommand
     {
+        /// <summary>
+        /// output appropriate message to denote subcommand is missing
+        /// </summary>
+        /// <param name="app">app instance</param>
+        /// <param name="console">console</param>
+        /// <returns></returns>
         public Task<int> OnExecuteAsync(CommandLineApplication app, IConsole console)
-        {
+        {            
             console.Error.WriteLine("You must specify a sub-command");
             app.ShowHelp();
 
@@ -42,16 +50,7 @@ namespace EShopWorld.Tools.Commands.KeyVault
                 ShowInHelpText = true)]
             [Required]
             // ReSharper disable once MemberCanBePrivate.Global
-            public string KeyVaultName { get; set; }
-
-            [Option(
-                Description = "name of the class for the generated top level POCO",
-                ShortName = "c",
-                LongName = "className",
-                ShowInHelpText = true)]
-            [Required] 
-            // ReSharper disable once MemberCanBePrivate.Global
-            public string ClassName { get; set; }
+            public string KeyVaultName { get; set; }           
 
             [Option(
                 Description = "optional namespace for generated POCOs",
@@ -69,6 +68,15 @@ namespace EShopWorld.Tools.Commands.KeyVault
                 ShowInHelpText = true)]
             // ReSharper disable once MemberCanBePrivate.Global
             public string OutputFolder { get; set; } = ".";
+
+            [Option(
+                Description = "name of the application to generate the POCO for",
+                ShortName = "m",
+                LongName = "appName",
+                ShowInHelpText = true)]
+            [Required]
+            // ReSharper disable once MemberCanBePrivate.Global
+            public string AppName { get; set; }
 
             [Option(
                 Description = "version number to inject into NuSpec",
@@ -90,24 +98,38 @@ namespace EShopWorld.Tools.Commands.KeyVault
 
             public async Task<int> OnExecuteAsync(CommandLineApplication app, IConsole console)
             {
-                //collect all secrets
+
+                ////collect all secrets
                 var secrets =  await _kvClient.GetAllSecrets(KeyVaultName);
 
                 Directory.CreateDirectory(OutputFolder);             
-                                      
+
                 //generate POCOs
-                var tree = BuildTree(secrets);
+                // ReSharper disable once IdentifierTypo
+                var poco = GeneratePOCOSyntaxTree(BuildTree(secrets));
+                File.WriteAllText(Path.Combine(OutputFolder, "Configuration.cs"), poco.NormalizeWhitespace().ToFullString());
+
+                //generate csproj
+                var csproj = ProjectFileBuilder.CreateEswNetStandard20NuGet(AppName, Version);
+                File.WriteAllText(Path.Combine(OutputFolder, $"{AppName}.csproj"), csproj.GetContent());
+               
+                _bigBrother.Publish(new KeyVaultPOCOGeneratedEvent{AppName = AppName, Version = Version, Namespace = Namespace, KeyVaultName = KeyVaultName});
+
+                return 0;
+            }
+
+            // ReSharper disable once InconsistentNaming
+            // ReSharper disable once IdentifierTypo
+            private SyntaxNode GeneratePOCOSyntaxTree(ConfigurationNode tree)
+            {
                 var @namespace = SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName(Namespace))
-                    .AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System")));                
+                    .AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System")));
 
                 var topClass = BuildClassHierarchy(tree);
 
                 @namespace = @namespace.AddMembers(topClass);
 
-                //TODO: refresh
-                //_bigBrother.Publish(new KeyVaultPOCOGeneratedEvent{AppName = AppName, Version = Version, Namespace = Namespace, KeyVaultName = KeyVaultName});
-
-                return 0;
+                return @namespace;
             }
 
             private ClassDeclarationSyntax BuildClassHierarchy(ConfigurationNode node)
@@ -120,13 +142,15 @@ namespace EShopWorld.Tools.Commands.KeyVault
                 foreach (var subNode in node.Children)
                 {
 
-                    TypeSyntax memberType = null;
+                    TypeSyntax memberType;
 
                     if (subNode.Children.Any())
                     {
                         var subclass = BuildClassHierarchy(subNode);
                         innerClasses.Add(subclass);
-                        memberType = SyntaxFactory.ParseTypeName(subclass.Identifier.Text);
+                        memberType = subNode.IsArray
+                            ? SyntaxFactory.ArrayType(SyntaxFactory.ParseTypeName(subclass.Identifier.Text), new SyntaxList<ArrayRankSpecifierSyntax>(SyntaxFactory.ArrayRankSpecifier()))
+                            : SyntaxFactory.ParseTypeName(subclass.Identifier.Text);
                     }
                     else
                     {
@@ -135,7 +159,7 @@ namespace EShopWorld.Tools.Commands.KeyVault
 
                     innerMembers.Add(SyntaxFactory
                         .PropertyDeclaration(memberType,
-                            subNode.Name.ToPascalCase())
+                            subNode.Name)
                         .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
                         .AddAccessorListAccessors(
                             SyntaxFactory.AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
@@ -150,20 +174,24 @@ namespace EShopWorld.Tools.Commands.KeyVault
                     .AddMembers(innerClasses.ToArray());
             }
 
-            internal ConfigurationNode BuildTree(IList<SecretBundle> secrets)
+            private ConfigurationNode BuildTree(IEnumerable<SecretBundle> secrets)
             {
-                var topLevel = new ConfigurationNode {Name = ClassName};
+                var topLevel = new ConfigurationNode {Name = AppName};
 
+             
                 foreach (var secret in secrets)
                 {
                     var tokens = secret.SecretIdentifier.Name.Split("--");
-                    ConfigurationNode valueNode = topLevel;
+                    var valueNode = topLevel;
                     foreach (var token in tokens)
                     {
-                        valueNode = valueNode.AddGetChild(token);
-                    }
-
-                    valueNode.Value = secret.Value;
+                        if (token.IsUnsignedInt())
+                        {
+                            valueNode.IsArray = true; //skip this level but treat it as an index to array represented by level above
+                            continue;
+                        }
+                        valueNode = valueNode.AddChild(token);
+                    }                    
                 }
 
                 return topLevel;
@@ -172,11 +200,10 @@ namespace EShopWorld.Tools.Commands.KeyVault
             internal class ConfigurationNode
             {
                 internal string Name { get; set; }
-                internal string Value { get; set; }
+                internal bool IsArray { get; set; }
+                internal readonly List<ConfigurationNode> Children = new List<ConfigurationNode>();
 
-                internal List<ConfigurationNode> Children = new List<ConfigurationNode>();
-
-                internal ConfigurationNode AddGetChild(string name)
+                internal ConfigurationNode AddChild(string name)
                 {
                     ConfigurationNode existing;
 

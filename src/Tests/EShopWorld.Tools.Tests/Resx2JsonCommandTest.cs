@@ -7,6 +7,7 @@ using Eshopworld.Core;
 using Eshopworld.Tests.Core;
 using EshopWorld.Tools.Tests.data;
 using EShopWorld.Tools.Commands.Transform;
+using EShopWorld.Tools.Common;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -63,7 +64,7 @@ namespace EShopWorld.Tools.Tests
                 var resxPath = AppContext.BaseDirectory.Substring(0, AppContext.BaseDirectory.IndexOf(@"\bin", StringComparison.Ordinal)) + @"\data\test.resx";
                 var resx = File.ReadAllText(resxPath);
 
-                var json = new TransformCommand.Resx2JsonCommand(Mock.Of<IBigBrother>())
+                var json = new TransformCommand.Resx2JsonCommand(Mock.Of<IBigBrother>(), new PathService())
                 {
                     ResxProject = string.Empty,
                     JsonProject = string.Empty
@@ -230,7 +231,7 @@ namespace EShopWorld.Tools.Tests
 ";
                 var sp = Program.ServiceProvider;
 
-                var result = new TransformCommand.Resx2JsonCommand(sp.GetRequiredService<IBigBrother>())
+                var result = new TransformCommand.Resx2JsonCommand(sp.GetRequiredService<IBigBrother>(), new PathService())
                 {
                     JsonProject = string.Empty,
                     ResxProject = string.Empty
@@ -316,7 +317,7 @@ namespace EShopWorld.Tools.Tests
 ";
                 var sp = Program.ServiceProvider;
 
-                var result = new TransformCommand.Resx2JsonCommand(sp.GetRequiredService<IBigBrother>())
+                var result = new TransformCommand.Resx2JsonCommand(sp.GetRequiredService<IBigBrother>(), new PathService())
                 {
                     JsonProject = string.Empty,
                     ResxProject = string.Empty

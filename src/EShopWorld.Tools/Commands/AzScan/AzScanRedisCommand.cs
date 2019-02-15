@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Eshopworld.Core;
 using Eshopworld.DevOps;
-using EShopWorld.Tools.Helpers;
+using EShopWorld.Tools.Common;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.Management.Fluent;

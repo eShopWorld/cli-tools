@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Eshopworld.DevOps;
 
-namespace EShopWorld.Tools.Helpers
+namespace EShopWorld.Tools.Common
 {
     internal static class RegionHelper
     {
