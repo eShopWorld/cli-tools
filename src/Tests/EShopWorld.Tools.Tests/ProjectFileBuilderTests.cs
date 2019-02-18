@@ -10,7 +10,7 @@ namespace EshopWorld.Tools.Tests
         [Fact, IsLayer0]
         public void MainPackageFlow()
         {
-            var str = ProjectFileBuilder.CreateEswNetStandard20NuGet("testApp", "1.2.3")
+            var str = ProjectFileBuilder.CreateEswNetStandard20NuGet("testApp", "1.2.3", "c# poco representation of the testApp configuration Azure KeyVault")
                 .GetContent();
 
             const string expectedContent = @"<Project Sdk=""Microsoft.NET.Sdk"">

@@ -1,6 +1,6 @@
 ﻿using Eshopworld.Core;
 
-namespace EShopWorld.Tools.Commands.AutoRest
+namespace EShopWorld.Tools.Telemetry
 {
     /// <summary>
     /// event describing the project file generated for given swagger file

@@ -110,7 +110,8 @@ namespace EShopWorld.Tools.Commands.KeyVault
                 File.WriteAllText(Path.Combine(OutputFolder, "Configuration.cs"), poco.NormalizeWhitespace().ToFullString());
 
                 //generate csproj
-                var csproj = ProjectFileBuilder.CreateEswNetStandard20NuGet(AppName, Version);
+                // ReSharper disable once StringLiteralTypo
+                var csproj = ProjectFileBuilder.CreateEswNetStandard20NuGet(AppName, Version, $"c# poco representation of the {AppName} configuration Azure KeyVault");
                 File.WriteAllText(Path.Combine(OutputFolder, $"{AppName}.csproj"), csproj.GetContent());
                
                 _bigBrother.Publish(new KeyVaultPOCOGeneratedEvent{AppName = AppName, Version = Version, Namespace = Namespace, KeyVaultName = KeyVaultName});

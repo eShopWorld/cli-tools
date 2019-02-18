@@ -17,28 +17,39 @@ namespace EshopWorld.Tools.Tests
             console.Should().ContainAll("-s", "--swagger", "-o", "--output", "-t", "--tfm");
         }
 
-        [Fact, IsLayer2]
-        public void GenerateProjectFileFlow_LongNames()
+        [Theory, IsLayer2]
+        [InlineData("--swagger","--output")]
+        [InlineData("-s", "-o")]
+
+        public void GenerateProjectFileFlow(string swaggerParam, string outputParam)
         {
             var output = Path.GetTempPath();
             DeleteTestFiles(output, "SwaggerPetStore.csproj");
-            GetStandardOutput("autorest", "generateProjectFile", "--swagger",
+            GetStandardOutput("autorest", "generateProjectFile", swaggerParam,
                 "https://raw.githubusercontent.com/Azure/autorest/master/Samples/1a-code-generation-minimal/pétstöre.json",
-                "--output", output);
-
-            File.Exists(Path.Combine(output, "SwaggerPetStore.csproj")).Should().BeTrue();
-        }
-
-        [Fact, IsLayer2]
-        public void GenerateProjectFileFlow_ShortNames()
-        {
-            var output = Path.GetTempPath();
-            DeleteTestFiles(output, "SwaggerPetStore.csproj");
-            GetStandardOutput("autorest", "generateProjectFile", "-s",
-                "https://raw.githubusercontent.com/Azure/autorest/master/Samples/1a-code-generation-minimal/pétstöre.json",
-                "-o", output);
-
-            File.Exists(Path.Combine(output, "SwaggerPetStore.csproj")).Should().BeTrue();
-        }
+                outputParam, output);
+            var projectFile = Path.Combine(output, "SwaggerPetStore.csproj");
+            File.Exists(projectFile).Should().BeTrue();
+            File.ReadAllText(projectFile).Should().Be(@"<Project Sdk=""Microsoft.NET.Sdk"">
+  <PropertyGroup>
+    <TargetFrameworks>net462,netstandard2.0</TargetFrameworks>
+    <Company>eShopWorld</Company>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageId>eShopWorld.SwaggerPetstore.Configuration</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>eShopWorld</Authors>
+    <Product>SwaggerPetstore</Product>
+    <Description>client side library for SwaggerPetstore API</Description>
+    <Copyright>eShopWorld</Copyright>
+    <AssemblyVersion>1.0.0</AssemblyVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include=""System.Net.Http"" />
+    <PackageReference Include=""Microsoft.Rest.ClientRuntime"" Version=""2.3.10"" />
+    <PackageReference Include=""Newtonsoft.Json"" Version=""10.0.3"" />
+  </ItemGroup>
+</Project>");
+        }    
     }
 }

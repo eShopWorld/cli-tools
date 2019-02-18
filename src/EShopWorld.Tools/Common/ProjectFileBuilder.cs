@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 using System.Xml.Linq;
 
 namespace EShopWorld.Tools.Common
@@ -6,9 +7,9 @@ namespace EShopWorld.Tools.Common
     /// <summary>
     /// fluent API to generate csproj structure and render it into XML
     /// </summary>
-    public class ProjectFileBuilder
+    public class ProjectFileBuilder : IProjectBuilder
     {
-        private XElement _scope = new XElement(XName.Get("Project"), new XAttribute(XName.Get("Sdk"), "Microsoft.NET.Sdk"));
+        private readonly XElement _scope = new XElement(XName.Get("Project"), new XAttribute(XName.Get("Sdk"), "Microsoft.NET.Sdk"));
 
         /// <summary>
         /// enter into property group definition level
@@ -20,10 +21,19 @@ namespace EShopWorld.Tools.Common
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public IItemGroupBuilder WithItemGroup()
+        {
+            return new ItemGroupBuilder(this);
+        }
+
+        /// <summary>
         /// create default - empty - builder instance
         /// </summary>
         /// <returns>builder api instance</returns>
-        public static ProjectFileBuilder Default()
+        public static IProjectBuilder Default()
         {
             return new ProjectFileBuilder();
         }
@@ -33,32 +43,64 @@ namespace EShopWorld.Tools.Common
         /// </summary>
         /// <param name="appName">name of the app</param>
         /// <param name="version">version of the package</param>
+        /// <param name="description">description of the package</param>
+        /// <param name="tfms">tfm(s) to cover</param>
         /// <returns>fluent api</returns>
-        public static ProjectFileBuilder CreateEswNetStandard20NuGet(string appName, string version)
+        // ReSharper disable once IdentifierTypo
+        public static IProjectBuilder CreateEswNetStandard20NuGet(string appName, string version, string description, string tfms = "netstandard2.0")
         {
-            return new ProjectFileBuilder()
-                .WithPropertyGroup()
-                    .WithTargetFramework("netstandard2.0")
-                    .WithCompany("eShopWorld")
-                    .GeneratePackageOnBuild(true)
-                    .RequirePackageLicenseAcceptance(false)
-                    .WithPackageId($"eShopWorld.{appName}.Configuration")
-                    .WithVersion(version)
-                    .WithAuthors("eShopWorld")
-                    .WithCompany("eShopWorld")
-                    .WithProduct(appName)
-                    // ReSharper disable once StringLiteralTypo
-                    .WithDescription($"c# poco representation of the {appName} configuration Azure KeyVault")
-                    .WithCopyright("eShopWorld")
-                    .WithAssemblyVersion(version)
-                    .Attach();
+            if (string.IsNullOrWhiteSpace(appName))
+            {
+                throw new ArgumentException("invalid value", nameof(appName));
+            }
+
+            if (string.IsNullOrWhiteSpace(version))
+            {
+                throw new ArgumentException("invalid value", nameof(version));
+            }
+
+            if (string.IsNullOrWhiteSpace(description))
+            {
+                throw new ArgumentException("invalid value", nameof(description));
+            }
+
+            if (string.IsNullOrWhiteSpace(tfms))
+            {
+                throw new ArgumentException("invalid value", nameof(tfms));
+            }
+
+            var builder = new ProjectFileBuilder();
+
+            var pg = builder.WithPropertyGroup();
+            if (!tfms.Contains(';')) //single or multiple frameworks detection
+            {
+                pg.WithTargetFramework(tfms);
+            }
+            else
+            {
+                pg.WithTargetFrameworks(tfms);
+            }
+
+            return pg
+            .WithCompany("eShopWorld")
+            .GeneratePackageOnBuild(true)
+            .RequirePackageLicenseAcceptance(false)
+            .WithPackageId($"eShopWorld.{appName}.Configuration")
+            .WithVersion(version)
+            .WithAuthors("eShopWorld")
+            .WithCompany("eShopWorld")
+            .WithProduct(appName)
+            .WithDescription(description)
+            .WithCopyright("eShopWorld")
+            .WithAssemblyVersion(version)
+            .Attach();            
         }
 
-        private void AddPropertyGroup(XElement pg)
+        private void AddChild(XElement pg)
         {
             _scope.Add(pg);
         }
-
+        
         /// <summary>
         /// termination call of the fluent api, get the built up XML representation as a string
         /// </summary>
@@ -66,6 +108,52 @@ namespace EShopWorld.Tools.Common
         public string GetContent()
         {
             return _scope.ToString();
+        }
+
+        private class ItemGroupBuilder : IItemGroupBuilder
+        {
+            private readonly ProjectFileBuilder _parent;
+            private readonly XElement _scope;
+
+            public ItemGroupBuilder(ProjectFileBuilder parent)
+            {
+                _parent = parent;
+                _scope = new XElement(XName.Get("ItemGroup"));
+            }
+
+            public IItemGroupBuilder WithReference(string name)
+            {
+                if (string.IsNullOrWhiteSpace(name))
+                {
+                    throw new ArgumentException("invalid value", nameof(name));
+                }
+
+                _scope.Add(new XElement(XName.Get("Reference"), new XAttribute(XName.Get("Include"), name)));
+                return this;
+            }
+
+            public IItemGroupBuilder WithPackageReference(string name, string version)
+            {
+                if (string.IsNullOrWhiteSpace(name))
+                {
+                    throw new ArgumentException("invalid value", nameof(name));
+                }
+
+                if (string.IsNullOrWhiteSpace(version))
+                {
+                    throw new ArgumentException("invalid value", nameof(version));
+                }
+
+                _scope.Add(new XElement(XName.Get("PackageReference"), new XAttribute(XName.Get("Include"), name), new XAttribute(XName.Get("Version"), version)));
+                return this;
+            }
+
+            public IProjectBuilder Attach()
+            {
+                _parent.AddChild(_scope);
+
+                return _parent;
+            }
         }
 
         private class PropertyGroupBuilder : IPropertyGroupBuilder
@@ -81,7 +169,7 @@ namespace EShopWorld.Tools.Common
 
             public ProjectFileBuilder Attach()
             {
-                _parent.AddPropertyGroup(_scope);
+                _parent.AddChild(_scope);
 
                 return _parent;
             }
@@ -89,6 +177,11 @@ namespace EShopWorld.Tools.Common
             public IPropertyGroupBuilder WithTargetFramework(string tfm)
             {
                 return WithProperty("TargetFramework", tfm);
+            }
+
+            public IPropertyGroupBuilder WithTargetFrameworks(string tfm)
+            {
+                return WithProperty("TargetFrameworks", tfm);
             }
 
             public IPropertyGroupBuilder WithPackageId(string id)
@@ -128,6 +221,15 @@ namespace EShopWorld.Tools.Common
 
             public IPropertyGroupBuilder WithProperty(string name, string value)
             {
+                if (string.IsNullOrWhiteSpace(name))
+                {
+                    throw new ArgumentException("invalid value", nameof(name));
+                }
+
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    throw new ArgumentException("invalid value", nameof(name));
+                }
 
                 var el = _scope.Element(XName.Get(name));
                 if (el == null)
@@ -159,6 +261,54 @@ namespace EShopWorld.Tools.Common
     }
 
     /// <summary>
+    /// builder definition for the project level
+    /// </summary>
+    public interface IProjectBuilder
+    {
+        /// <summary>
+        /// allows adding property group level
+        /// </summary>
+        /// <returns>property group builder</returns>
+        IPropertyGroupBuilder WithPropertyGroup();
+
+        /// <summary>
+        /// allows adding item group level
+        /// </summary>
+        /// <returns>item group level</returns>
+        IItemGroupBuilder WithItemGroup();
+
+        /// <summary>
+        /// terminate the chain and return product of the builder
+        /// </summary>
+        /// <returns>project file content</returns>
+        string GetContent();
+    }
+
+    public interface IItemGroupBuilder
+    {
+        /// <summary>
+        /// with assembly reference
+        /// </summary>
+        /// <param name="name">name of the assembly</param>
+        /// <returns>builder reference for chaining</returns>
+        IItemGroupBuilder WithReference(string name);
+
+        /// <summary>
+        /// with package (nuget) reference
+        /// </summary>
+        /// <param name="name">id of the package</param>
+        /// <param name="version">version id</param>
+        /// <returns>builder reference for chaining</returns>
+        IItemGroupBuilder WithPackageReference(string name, string version);
+
+        /// <summary>
+        /// attach the item group and return builder back to project level
+        /// </summary>
+        /// <returns>project level builder</returns>
+        IProjectBuilder Attach();
+    }
+
+    /// <summary>
     /// fluent api options for property group level
     /// </summary>
     public interface IPropertyGroupBuilder
@@ -176,6 +326,12 @@ namespace EShopWorld.Tools.Common
         /// <returns>fluent API scope</returns>
         IPropertyGroupBuilder WithTargetFramework(string tfm);
 
+        /// <summary>
+        /// set "TargetFrameworks" property
+        /// </summary>
+        /// <param name="tfmList">comma-separated list of tfms</param>
+        /// <returns>fluent API scope</returns>
+        IPropertyGroupBuilder WithTargetFrameworks(string tfmList);
         /// <summary>
         /// set "PackageId" property
         /// </summary>
