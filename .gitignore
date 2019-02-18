@@ -281,3 +281,4 @@ paket-files/
 *.sln.iml
 
 nupkg
+/src/EShopWorld.Tools/Properties/launchSettings.json

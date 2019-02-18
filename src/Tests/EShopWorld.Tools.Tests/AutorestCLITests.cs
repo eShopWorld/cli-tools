@@ -32,7 +32,7 @@ namespace EshopWorld.Tools.Tests
             File.Exists(projectFile).Should().BeTrue();
             File.ReadAllText(projectFile).Should().Be(@"<Project Sdk=""Microsoft.NET.Sdk"">
   <PropertyGroup>
-    <TargetFrameworks>net462,netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net462;netstandard2.0</TargetFrameworks>
     <Company>eShopWorld</Company>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
@@ -46,8 +46,8 @@ namespace EshopWorld.Tools.Tests
   </PropertyGroup>
   <ItemGroup>
     <Reference Include=""System.Net.Http"" />
-    <PackageReference Include=""Microsoft.Rest.ClientRuntime"" Version=""2.3.10"" />
-    <PackageReference Include=""Newtonsoft.Json"" Version=""10.0.3"" />
+    <PackageReference Include=""Microsoft.Rest.ClientRuntime"" Version=""2.3.19"" />
+    <PackageReference Include=""Newtonsoft.Json"" Version=""12.0.1"" />
   </ItemGroup>
 </Project>");
         }    
