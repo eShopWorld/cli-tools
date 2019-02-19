@@ -46,8 +46,8 @@ namespace EshopWorld.Tools.Tests
   </PropertyGroup>
   <ItemGroup>
     <Reference Include=""System.Net.Http"" />
-    <PackageReference Include=""Microsoft.Rest.ClientRuntime"" Version=""2.3.19"" />
-    <PackageReference Include=""Newtonsoft.Json"" Version=""12.0.1"" />
+    <PackageReference Include=""Microsoft.Rest.ClientRuntime"" Version=""2.*"" />
+    <PackageReference Include=""Newtonsoft.Json"" Version=""12.*"" />
   </ItemGroup>
 </Project>");
         }    

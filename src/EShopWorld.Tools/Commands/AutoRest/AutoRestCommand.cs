@@ -70,8 +70,8 @@ namespace EShopWorld.Tools.Commands.AutoRest
                         $"client side library for {swaggerInfo.Item1} API", "net462;netstandard2.0")
                     .WithItemGroup()
                     .WithReference("System.Net.Http")
-                    .WithPackageReference("Microsoft.Rest.ClientRuntime", "2.3.19")
-                    .WithPackageReference("Newtonsoft.Json", "12.0.1")
+                    .WithPackageReference("Microsoft.Rest.ClientRuntime", "2.*")
+                    .WithPackageReference("Newtonsoft.Json", "12.*")
                     .Attach();
 
                 File.WriteAllText(Path.Combine(Output, projectFileName), csproj.GetContent());
