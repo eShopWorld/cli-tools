@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Eshopworld.Core;
-using EShopWorld.Tools.Helpers;
+using EShopWorld.Tools.Common;
 using EShopWorld.Tools.Telemetry;
 using McMaster.Extensions.CommandLineUtils;
 
@@ -34,10 +34,12 @@ namespace EShopWorld.Tools.Commands.Transform
         protected internal class Resx2JsonCommand : TransformBase
         {
             private readonly IBigBrother _bigBrother;
+            private readonly PathService _pathService;
 
-            public Resx2JsonCommand(IBigBrother bigBrother)
+            public Resx2JsonCommand(IBigBrother bigBrother, PathService pathService)
             {
                 _bigBrother = bigBrother;
+                _pathService = pathService;
             }
 
             /// <summary>
@@ -67,8 +69,7 @@ namespace EShopWorld.Tools.Commands.Transform
                 var sourceFolder = Path.GetFullPath(ResxProject);
                 var outputFolder = Path.GetFullPath(JsonProject);
 
-                var pathHelper = new PathHelper();
-                pathHelper.CreateDirectory(outputFolder);
+                _pathService.CreateDirectory(outputFolder);
 
                 var resxFiles = Directory.GetFiles(sourceFolder, "*.resx", SearchOption.AllDirectories)
                                          .Select(Path.GetFullPath);
@@ -80,7 +81,7 @@ namespace EShopWorld.Tools.Commands.Transform
                     var json = ConvertResx2Json(fileContent);
 
                     // always insert culture on JSON file names using the default culture constant
-                    var jsonFilePath = GetJsonPath(pathHelper.EnforceSameFolders(sourceFolder, outputFolder, resxFile), resxFile);
+                    var jsonFilePath = GetJsonPath(_pathService.EnforceSameFolders(sourceFolder, outputFolder, resxFile), resxFile);
                     File.WriteAllText(jsonFilePath, json);
                 }
 

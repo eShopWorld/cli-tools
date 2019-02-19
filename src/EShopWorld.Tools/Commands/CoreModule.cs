@@ -3,6 +3,7 @@ using Autofac;
 using Eshopworld.Core;
 using Eshopworld.DevOps;
 using Eshopworld.Telemetry;
+using EShopWorld.Tools.Common;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.Management.ApplicationInsights.Management;
 using Microsoft.Azure.Management.Fluent;
@@ -35,7 +36,7 @@ namespace EShopWorld.Tools.Commands
             builder.RegisterInstance(client);
             builder.Register(c=> Azure.Authenticate(client, "3e14278f-8366-4dfd-bcc8-7e4e9d57f2c1"));       
             builder.Register(c=> new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(atp.KeyVaultTokenCallback))); //cannot use token from above - different resource     
-
+            builder.RegisterType<PathService>().SingleInstance();
             builder.RegisterInstance(new ApplicationInsightsManagementClient(new TokenCredentials(token)));
 
             var config = EswDevOpsSdk.BuildConfiguration();

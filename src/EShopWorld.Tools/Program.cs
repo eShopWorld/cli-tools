@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -13,13 +11,7 @@ using EShopWorld.Tools.Commands.AzScan;
 using EShopWorld.Tools.Commands.KeyVault;
 using EShopWorld.Tools.Commands.Transform;
 using EShopWorld.Tools.Telemetry;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Internal;
-using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.ObjectPool;
-using Microsoft.Extensions.PlatformAbstractions;
 
 namespace EShopWorld.Tools
 {
@@ -83,66 +75,16 @@ namespace EShopWorld.Tools
             }
         }
 
-        private static IServiceProvider _serviceProvider;
-
-        /// <summary>
-        /// service provider offered by the CLI
-        /// </summary>
-        public static IServiceProvider ServiceProvider
-        {
-            get
-            {
-                if (_serviceProvider == null)
-                    _serviceProvider = SetupAutofac();
-
-                return _serviceProvider;
-            }
-        }
-        internal static IServiceProvider SetupAutofac()
+        private static IServiceProvider SetupAutofac()
         {           
             var f = new AutofacServiceProviderFactory();
-            var builder = f.CreateBuilder(ASPNetContext);
 
+            var builder = new ContainerBuilder();        
             builder.RegisterAssemblyModules(Assembly.GetExecutingAssembly());
           
             return f.CreateServiceProvider(builder);
         }
 
-        // ReSharper disable once InconsistentNaming
-        private static IServiceCollection ASPNetContext
-        {
-            get
-            {
-                var sc = new ServiceCollection();
-
-                var applicationEnvironment = PlatformServices.Default.Application;
-                sc.AddSingleton(applicationEnvironment);
-
-                sc.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
-
-                var applicationName = Assembly.GetEntryAssembly().GetName().Name;
-                IFileProvider fileProvider = new PhysicalFileProvider(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
-                sc.AddSingleton<IHostingEnvironment>(new HostingEnvironment
-                {
-                    ApplicationName = applicationName,
-                    WebRootFileProvider = fileProvider,
-                });
-
-                sc.Configure<RazorViewEngineOptions>(options =>
-                {
-                    options.FileProviders.Clear();
-                    options.FileProviders.Add(fileProvider);
-                });
-
-                var diagnosticSource = new DiagnosticListener("Microsoft.AspNetCore");
-                sc.AddSingleton<DiagnosticSource>(diagnosticSource);
-
-                sc.AddLogging();
-                sc.AddMvc();
-
-                return sc;
-            }
-        }
 
         /// <summary>
         /// global command execution logic

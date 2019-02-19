@@ -19,33 +19,51 @@ namespace EshopWorld.Tools.Tests
                 "--appName", "-m", "--namespace", "-n", "--output", "-o", "--version", "-v");
         }
 
-        [Fact, IsLayer2]
-        public void GeneratePOCOsFlow_MSI_LongNames()
+        [Theory, IsLayer2]
+        [InlineData("--keyVault", "--appName","--output","--namespace", "--version")]
+        [InlineData("-k", "-m", "-o", "-n", "-v")]
+
+        // ReSharper disable once InconsistentNaming
+        public void GeneratePOCOsFlow(string keyVaultParam, string appNameParam, string outputParam, string namespaceParam, string versionParam)
         {
             //config load
             var config = EswDevOpsSdk.BuildConfiguration(true);
             var output = Path.GetTempPath();
 
-            DeleteTestFiles(output, "ConfigurationSecrets.cs", "KeyVaultCLITest.csproj");
-            GetStandardOutput("keyvault", "generatePOCOs", "--keyVault",
-                config["keyvault"], "--appName", "KeyVaultCLITest", "--output", output, "--namespace", "n", "--version", "1.2");
+            DeleteTestFiles(output, "Configuration.cs", "KeyVaultCLITest.csproj");
+            GetStandardOutput("keyvault", "generatePOCOs", keyVaultParam,
+                config["InputTestKeyVault"], appNameParam, "KeyVaultCLITest", outputParam, output, namespaceParam, "n", versionParam, "1.2");
 
-            File.Exists(Path.Combine(output, "ConfigurationSecrets.cs")).Should().BeTrue();
-            File.Exists(Path.Combine(output, "KeyVaultCLITest.csproj")).Should().BeTrue();
+            File.Exists(Path.Combine(output, "Configuration.cs")).Should().BeTrue();
+            File.ReadAllText(Path.Combine(output, "Configuration.cs")).Should().Be(@"namespace n
+{
+    using System;
+
+    public class KeyvaultclitestType
+    {
+        public string keyVaultItem
+        {
+            get;
+            set;
         }
-
-        [Fact, IsLayer2]
-        public void GeneratePOCOsFlow_MSI_ShortNames()
-        {
-            //config load
-            var config = EswDevOpsSdk.BuildConfiguration(true);
-            var output = Path.GetTempPath();
-
-            DeleteTestFiles(output, "ConfigurationSecrets.cs", "KeyVaultCLITest.csproj");
-            GetStandardOutput("keyvault", "generatePOCOs","-k", config["keyvault"], "-m", "KeyVaultCLITest", "-o", output, "--namespace", "n", "-v", "1.2");
-
-            File.Exists(Path.Combine(output, "ConfigurationSecrets.cs")).Should().BeTrue();
+    }
+}");
             File.Exists(Path.Combine(output, "KeyVaultCLITest.csproj")).Should().BeTrue();
+            File.ReadAllText(Path.Combine(output, "KeyVaultCLITest.csproj")).Should().Be(@"<Project Sdk=""Microsoft.NET.Sdk"">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Company>eShopWorld</Company>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageId>eShopWorld.KeyVaultCLITest.Configuration</PackageId>
+    <Version>1.2</Version>
+    <Authors>eShopWorld</Authors>
+    <Product>KeyVaultCLITest</Product>
+    <Description>c# poco representation of the KeyVaultCLITest configuration Azure KeyVault</Description>
+    <Copyright>eShopWorld</Copyright>
+    <AssemblyVersion>1.2</AssemblyVersion>
+  </PropertyGroup>
+</Project>");
         }
     }
 }

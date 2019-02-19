@@ -5,7 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Eshopworld.Core;
-using EShopWorld.Tools.Commands.AutoRest.Models;
+using EShopWorld.Tools.Common;
+using EShopWorld.Tools.Telemetry;
 
 namespace EShopWorld.Tools.Commands.AutoRest
 {
@@ -27,12 +28,10 @@ namespace EShopWorld.Tools.Commands.AutoRest
         [Command("generateProjectFile", Description = "Generates project file for the Autorest generated code")]
         internal class GenerateProjectFileCommand 
         {
-            private readonly RenderProjectFileInternalCommand _intCommand;
             private readonly IBigBrother _bigBrother;
 
-            public GenerateProjectFileCommand(RenderProjectFileInternalCommand intCommand, IBigBrother bigBrother)
+            public GenerateProjectFileCommand(IBigBrother bigBrother)
             {
-                _intCommand = intCommand;
                 _bigBrother = bigBrother;
             }
 
@@ -67,7 +66,15 @@ namespace EShopWorld.Tools.Commands.AutoRest
                 var projectFileName = swaggerInfo.Item1 + ".csproj";
 
                 //generate project file
-                _intCommand.Render(new ProjectFileViewModel { TFMs = TFMs.ToArray(), ProjectName = swaggerInfo.Item1, Version = swaggerInfo.Item2 }, Path.Combine(Output, projectFileName));
+                var csproj = ProjectFileBuilder.CreateEswNetStandard20NuGet(swaggerInfo.Item1, swaggerInfo.Item2,
+                        $"client side library for {swaggerInfo.Item1} API", "net462;netstandard2.0")
+                    .WithItemGroup()
+                    .WithReference("System.Net.Http")
+                    .WithPackageReference("Microsoft.Rest.ClientRuntime", "2.*")
+                    .WithPackageReference("Newtonsoft.Json", "12.*")
+                    .Attach();
+
+                File.WriteAllText(Path.Combine(Output, projectFileName), csproj.GetContent());
 
                 _bigBrother?.Publish(new AutorestProjectFileGenerated{SwaggerFile = SwaggerFile});
 

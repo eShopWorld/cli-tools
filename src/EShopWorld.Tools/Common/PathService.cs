@@ -4,12 +4,12 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
-namespace EShopWorld.Tools.Helpers
+namespace EShopWorld.Tools.Common
 {
     /// <summary>
     /// Contains extensions to the <see cref="Path"/> class in System.IO as a helper class to improve mocking.
     /// </summary>
-    public class PathHelper
+    public class PathService
     {
         /// <summary>
         /// Creates a relative path from one file or folder to another.

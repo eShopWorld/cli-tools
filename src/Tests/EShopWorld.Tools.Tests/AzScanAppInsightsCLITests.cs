@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Eshopworld.DevOps;
 using Eshopworld.Tests.Core;
-using EShopWorld.Tools.Helpers;
+using EShopWorld.Tools.Common;
 using FluentAssertions;
 using Microsoft.Azure.KeyVault.Models;
 using Xunit;

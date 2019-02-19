@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Autofac;
 using Eshopworld.DevOps;
 using EShopWorld.Tools;
-using EShopWorld.Tools.Helpers;
+using EShopWorld.Tools.Common;
 using JetBrains.Annotations;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.KeyVault.Models;

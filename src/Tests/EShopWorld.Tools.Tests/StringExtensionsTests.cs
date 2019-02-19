@@ -1,7 +1,7 @@
 ﻿using System;
 using Eshopworld.Tests.Core;
+using EShopWorld.Tools.Common;
 using FluentAssertions;
-using EShopWorld.Tools.Helpers;
 using Xunit;
 
 namespace EshopWorld.Tools.Tests
@@ -30,7 +30,7 @@ namespace EshopWorld.Tools.Tests
         [InlineData("esw-payment-integration", "payment")]
         [InlineData("esw-payment-blah", "payment-blah")]
         [InlineData("blah-payment-blah", "blah-payment-blah")]
-        [InlineData("blah-payment-we-lb", "blah-payment", "-we-lb")]
+        [InlineData("blah-payment-we-lb", "blah-payment", "-lb")]
         public void EswTrim_Success(string input, string expectedOutput, params string[] additionalSuffixes)
         {
             input.EswTrim(additionalSuffixes).Should().Be(expectedOutput);
@@ -56,6 +56,30 @@ namespace EshopWorld.Tools.Tests
         public void RegionNameCheck(string input, string region, bool expectedResult)
         {
             input.RegionNameCheck(region).Should().Be(expectedResult);
+        }
+
+        [Theory, IsLayer0]
+        [InlineData("", false)]
+        [InlineData("1", true)]
+        [InlineData("0", true)]
+        [InlineData("-1", false)]
+        [InlineData("a", false)]
+        [InlineData("1.0", false)]
+
+        public void IsUnsignedIntCheck(string input, bool expectedResult)
+        {
+            input.IsUnsignedInt().Should().Be(expectedResult);
+        }
+
+        [Theory, IsLayer0]
+        [InlineData("", "")]
+        [InlineData("1aaa", "_1aaa")]
+        [InlineData("a", "a")]
+        [InlineData("aaa11", "aaa11")]
+
+        public void SanitizePropertyNameCheck(string input, string expectedResult)
+        {
+            input.SanitizePropertyName().Should().Be(expectedResult);
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Linq;
 using Eshopworld.Tests.Core;
-using EShopWorld.Tools.Helpers;
+using EShopWorld.Tools.Common;
 using FluentAssertions;
 using Moq;
 using Xunit;
@@ -25,7 +25,7 @@ namespace EshopWorld.Tools.Tests
                 var firstPath = Path.Combine("C:\\", folders.First());
                 var secondPath = Path.Combine(new[] { firstPath }.Concat(folders.Skip(1).Take(2)).ToArray());
 
-                var result = new PathHelper().CreateRelativePath(firstPath, secondPath);
+                var result = new PathService().CreateRelativePath(firstPath, secondPath);
 
                 result.Should().BeEquivalentTo(Path.Combine(new[] { "." }.Concat(folders.Skip(1).Take(2)).ToArray()));
             }
@@ -43,7 +43,7 @@ namespace EshopWorld.Tools.Tests
                 var secondPath = Path.Combine("C:\\", folders.First());
                 var firstPath = Path.Combine(new[] { secondPath }.Concat(folders.Skip(1).Take(2)).ToArray());
 
-                var result = new PathHelper().CreateRelativePath(firstPath, secondPath);
+                var result = new PathService().CreateRelativePath(firstPath, secondPath);
 
                 result.Should().BeEquivalentTo(Path.Combine(new[] { "..", ".." }.Concat(folders.Take(1)).ToArray()));
             }
@@ -60,7 +60,7 @@ namespace EshopWorld.Tools.Tests
 
                 var path = Path.Combine(new[] { "C:\\" }.Concat(folders.Take(3)).ToArray());
 
-                var result = new PathHelper().CreateRelativePath(path, path);
+                var result = new PathService().CreateRelativePath(path, path);
 
                 result.Should().BeEquivalentTo("");
             }
@@ -78,7 +78,7 @@ namespace EshopWorld.Tools.Tests
                 var firstPath = Path.Combine(new[] { "C:\\" }.Concat(folders.Skip(2).Take(1)).ToArray());
                 var secondPath = Path.Combine(new[] { "D:\\" }.Concat(folders.Skip(1).Take(1)).ToArray());
 
-                var result = new PathHelper().CreateRelativePath(firstPath, secondPath);
+                var result = new PathService().CreateRelativePath(firstPath, secondPath);
 
                 result.Should().BeNull();
             }
@@ -96,7 +96,7 @@ namespace EshopWorld.Tools.Tests
                 var firstPath = Path.Combine(new[] { "C:\\" }.Concat(folders.Skip(2).Take(1)).ToArray());
                 const string secondPath = "http://www.google.com";
 
-                var result = new PathHelper().CreateRelativePath(firstPath, secondPath);
+                var result = new PathService().CreateRelativePath(firstPath, secondPath);
 
                 result.Should().BeNull();
             }
@@ -112,7 +112,7 @@ namespace EshopWorld.Tools.Tests
                 const string targetFolder = @"C:\Target";
                 var file = Path.Combine(sourceFolder, extraFolder, "file.txt");
 
-                var helperMock = new Mock<PathHelper> {CallBase = true};
+                var helperMock = new Mock<PathService> {CallBase = true};
                 helperMock.Setup(x => x.CreateDirectory(It.IsAny<string>())).Verifiable();
 
                 helperMock.Object.EnforceSameFolders(sourceFolder, targetFolder, file);
@@ -129,7 +129,7 @@ namespace EshopWorld.Tools.Tests
                 const string targetFolder = @"C:\Target";
                 var file = Path.Combine(sourceFolder, extraFolderOne, extraFolderTwo, "file.txt");
 
-                var helperMock = new Mock<PathHelper> { CallBase = true };
+                var helperMock = new Mock<PathService> { CallBase = true };
                 helperMock.Setup(x => x.CreateDirectory(It.IsAny<string>())).Verifiable();
 
                 helperMock.Object.EnforceSameFolders(sourceFolder, targetFolder, file);
@@ -143,7 +143,7 @@ namespace EshopWorld.Tools.Tests
                 const string sourceFolder = @"C:\FolderOne\FolderTwo";
                 var file = Path.Combine(sourceFolder, "file.txt");
 
-                var helperMock = new Mock<PathHelper> { CallBase = true };
+                var helperMock = new Mock<PathService> { CallBase = true };
                 helperMock.Setup(x => x.CreateDirectory(It.IsAny<string>())).Verifiable();
 
                 helperMock.Object.EnforceSameFolders(sourceFolder, sourceFolder, file);
