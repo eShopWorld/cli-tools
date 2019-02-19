@@ -15,7 +15,6 @@
     <None Remove="appsettings.Development.json" />
     <None Remove="appsettings.INTEGRATION.json" />
     <None Remove="appsettings.json" />
-    <None Remove="Views\TestAutorestProjectFileTemplate.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,9 +25,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="appsettings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Views\TestAutorestProjectFileTemplate.cshtml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
