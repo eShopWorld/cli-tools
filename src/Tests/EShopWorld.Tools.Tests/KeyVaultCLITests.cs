@@ -39,12 +39,33 @@ namespace EshopWorld.Tools.Tests
 {
     using System;
 
-    public class KeyvaultclitestType
+    public class KeyVaultCLITestType
     {
+        public _eventType _event
+        {
+            get;
+            set;
+        }
+
         public string keyVaultItem
         {
             get;
             set;
+        }
+
+        public class _eventType
+        {
+            public string _1secret
+            {
+                get;
+                set;
+            }
+
+            public string a_b
+            {
+                get;
+                set;
+            }
         }
     }
 }");

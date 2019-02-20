@@ -53,7 +53,7 @@ namespace EShopWorld.Tools.Commands.KeyVault
             public string KeyVaultName { get; set; }           
 
             [Option(
-                Description = "optional namespace for generated POCOs",
+                Description = "namespace for generated POCOs",
                 ShortName = "n",
                 LongName = "namespace",
                 ShowInHelpText = true)]
@@ -135,7 +135,7 @@ namespace EShopWorld.Tools.Commands.KeyVault
 
             private ClassDeclarationSyntax BuildClassHierarchy(ConfigurationNode node)
             {                
-                var currentClass = SyntaxFactory.ClassDeclaration($"{node.Name.ToPascalCase()}Type").AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword));
+                var currentClass = SyntaxFactory.ClassDeclaration($"{node.Name}Type").AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword));
 
                 var innerMembers = new List<MemberDeclarationSyntax>();
                 var innerClasses = new List<MemberDeclarationSyntax>();
@@ -191,12 +191,15 @@ namespace EShopWorld.Tools.Commands.KeyVault
                             valueNode.IsArray = true; //skip this level but treat it as an index to array represented by level above
                             continue;
                         }
-                        valueNode = valueNode.AddChild(token);
+                       
+                        valueNode = valueNode.AddChild(token.SanitizePropertyName());
                     }                    
                 }
 
                 return topLevel;
             }
+
+          
 
             internal class ConfigurationNode
             {

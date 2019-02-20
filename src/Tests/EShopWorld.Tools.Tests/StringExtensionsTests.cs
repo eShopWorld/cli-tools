@@ -76,6 +76,8 @@ namespace EshopWorld.Tools.Tests
         [InlineData("1aaa", "_1aaa")]
         [InlineData("a", "a")]
         [InlineData("aaa11", "aaa11")]
+        [InlineData("event", "_event")]
+        [InlineData("aa-aa", "aa_aa")]
 
         public void SanitizePropertyNameCheck(string input, string expectedResult)
         {
