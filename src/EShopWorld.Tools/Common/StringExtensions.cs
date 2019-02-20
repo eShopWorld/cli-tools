@@ -124,17 +124,39 @@ namespace EShopWorld.Tools.Common
         /// ensure property name conforms to grammar rules
         ///
         /// if it starts with number, prefix with underscore
+        /// dashes replaced with underscore
+        /// c# keywords prefixed with underscore
         ///
         /// this assumes secret names are given as an input with Azure key value - naming rules allow for a-z, A0Z, 0-9
         /// </summary>
         /// <param name="value">property name</param>
-        /// <returns>gr</returns>
+        /// <returns>grammar compliant property name</returns>
         public static string SanitizePropertyName(this string value)
         {
-            if (string.IsNullOrWhiteSpace(value) || !Regex.IsMatch(value, "^\\d"))
-                return value;
+            string ret = value;
+            if (string.IsNullOrWhiteSpace(ret))
+            {
+                return ret;
+            }
 
-            return $"_{value}";
+            if (KeywordList.Contains(ret, StringComparer.OrdinalIgnoreCase) || Regex.IsMatch(ret, "^\\d"))
+            {
+                ret = $"_{ret}";
+            }
+
+            return ret.Replace('-', '_');
         }
+
+        private static List<string> KeywordList = new List<string>(new[]
+        {
+            "abstract", "as", "base", "bool",
+            "break", "byte", "case", "catch", "char", "checked", "class", "const", "continue", "decimal", "default",
+            "delegate", "do", "double", "else", "enum", "event", "explicit", "extern", "false", "finally", "fixed",
+            "float", "for", "foreach", "goto", "if", "implicit", "in", "int", "interface", "internal", "is", "lock",
+            "long", "namespace", "new", "null", "object", "operator", "out", "override", "params", "private",
+            "protected", "public", "readonly", "ref", "return", "sbyte", "sealed", "short", "sizeof", "stackalloc",
+            "static", "string", "struct", "switch", "this", "throw", "true", "try", "typeof", "uint", "ulong",
+            "unchecked", "unsafe", "ushort", "using", "using", "static", "virtual", "void", "volatile", "while"
+        });
     }
 }
