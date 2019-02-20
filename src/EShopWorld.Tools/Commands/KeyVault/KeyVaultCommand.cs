@@ -135,7 +135,7 @@ namespace EShopWorld.Tools.Commands.KeyVault
 
             private ClassDeclarationSyntax BuildClassHierarchy(ConfigurationNode node)
             {                
-                var currentClass = SyntaxFactory.ClassDeclaration($"{node.Name.ToPascalCase()}Type").AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword));
+                var currentClass = SyntaxFactory.ClassDeclaration($"{node.Name}Type").AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword));
 
                 var innerMembers = new List<MemberDeclarationSyntax>();
                 var innerClasses = new List<MemberDeclarationSyntax>();
