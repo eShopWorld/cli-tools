@@ -69,10 +69,11 @@ namespace EShopWorld.Tools.Commands.AzScan
                 $"esw-{Domain}-{EnvironmentName}-{r.ToRegionCode()}".ToLowerInvariant())
         };
 
+
         internal IList<DeploymentRegion> RegionList =>
             RegionHelper.DeploymentRegionsToList("ci".Equals(EnvironmentName, StringComparison.OrdinalIgnoreCase));
 
-        private string EnvironmentName
+        protected string EnvironmentName
         {
             get
             {
@@ -92,18 +93,38 @@ namespace EShopWorld.Tools.Commands.AzScan
 
         public virtual async Task<int> OnExecuteAsync(CommandLineApplication app, IConsole console)
         {
+            var sub = await GetSubscriptionId(Subscription);
+
+            var subClient = Authenticated.WithSubscription(sub);
+
+            return await RunScanAsync(subClient, console);
+        }
+
+        /// <summary>
+        /// get subscription id for a given sub name
+        /// </summary>
+        /// <param name="name">subscription name</param>
+        /// <returns>subscription id</returns>
+        protected async Task<string> GetSubscriptionId(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentException("invalid value", nameof(name));
+            }
+
             //look up subscription id for the given name
             var defaultSubClient = Authenticated.WithDefaultSubscription();
 
             var subs = await defaultSubClient.Subscriptions.ListAsync();
-            var sub = subs.FirstOrDefault(s => Subscription.Equals(s.DisplayName, StringComparison.OrdinalIgnoreCase));
+            var sub = subs.FirstOrDefault(s => name.Equals(s.DisplayName, StringComparison.OrdinalIgnoreCase));
             if (sub == null)
+            {
                 throw new ApplicationException($"Subscription {Subscription} not found. Check the account role setup.");
+            }
 
-            var subClient = Authenticated.WithSubscription(sub.SubscriptionId);
-
-            return await RunScanAsync(subClient, console);
+            return sub.SubscriptionId;
         }
+        
 
         protected virtual Task<int> RunScanAsync(IAzure client, IConsole console)
         {

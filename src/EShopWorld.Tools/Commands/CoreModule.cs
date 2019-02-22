@@ -7,6 +7,7 @@ using EShopWorld.Tools.Common;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.Management.ApplicationInsights.Management;
 using Microsoft.Azure.Management.Fluent;
+using Microsoft.Azure.Management.Kusto;
 using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
@@ -37,7 +38,9 @@ namespace EShopWorld.Tools.Commands
             builder.Register(c=> Azure.Authenticate(client, "3e14278f-8366-4dfd-bcc8-7e4e9d57f2c1"));       
             builder.Register(c=> new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(atp.KeyVaultTokenCallback))); //cannot use token from above - different resource     
             builder.RegisterType<PathService>().SingleInstance();
-            builder.RegisterInstance(new ApplicationInsightsManagementClient(new TokenCredentials(token)));
+
+            builder.RegisterInstance(new ApplicationInsightsManagementClient(tokenCredentials));
+            builder.RegisterInstance(new KustoManagementClient(tokenCredentials));
 
             var config = EswDevOpsSdk.BuildConfiguration();
             builder.RegisterInstance(config);

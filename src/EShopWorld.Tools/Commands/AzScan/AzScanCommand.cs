@@ -14,6 +14,7 @@ namespace EShopWorld.Tools.Commands.AzScan
     [Subcommand(typeof(AzScanAllCommand))]
     [Subcommand(typeof(AzScanAppInsightsCommand))]
     [Subcommand(typeof(AzScanDNSCommand))]
+    [Subcommand(typeof(AzScanKustoCommand))]
     public class AzScanCommand
     {
         public Task<int> OnExecuteAsync(CommandLineApplication app, IConsole console)

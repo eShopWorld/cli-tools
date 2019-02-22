@@ -23,6 +23,7 @@
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
     <PreserveCompilationContext>true</PreserveCompilationContext>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -53,6 +54,7 @@
     <PackageReference Include="Microsoft.Azure.KeyVault" Version="3.0.3" />
     <PackageReference Include="Microsoft.Azure.Management.ApplicationInsights" Version="0.2.0-preview" />
     <PackageReference Include="Microsoft.Azure.Management.Fluent" Version="1.19.0" />
+    <PackageReference Include="Microsoft.Azure.Management.Kusto" Version="0.9.0-preview" />
     <PackageReference Include="Microsoft.Azure.Management.ResourceManager.Fluent" Version="1.19.0" />
     <PackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.2.0-preview" />
     <PackageReference Include="Microsoft.CodeAnalysis.Compilers" Version="3.0.0-beta2-final" />
