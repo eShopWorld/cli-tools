@@ -9,6 +9,7 @@ using EShopWorld.Tools.Commands.AutoRest;
 using McMaster.Extensions.CommandLineUtils;
 using EShopWorld.Tools.Commands.AzScan;
 using EShopWorld.Tools.Commands.KeyVault;
+using EShopWorld.Tools.Commands.Security;
 using EShopWorld.Tools.Commands.Transform;
 using EShopWorld.Tools.Telemetry;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,6 +24,7 @@ namespace EShopWorld.Tools
     [Subcommand(typeof(AutoRestCommand))]
     [Subcommand(typeof(KeyVaultCommand))]
     [Subcommand(typeof(AzScanCommand))]
+    [Subcommand(typeof(SecurityCommand))]
     [VersionOptionFromMember("--version", MemberName = nameof(GetVersion))]
     public class Program 
     {
