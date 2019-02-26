@@ -21,6 +21,7 @@ This tool contains the dotnet cli commands/subcommands produced by the eShopWorl
     * redis - scans Redis caches
     * serviceBus - scans service bus namespaces
     * SQL - scans SQL databases
+    * Kusto - scans Kusto engines
     * all - runs scans for all above mentioned Azure resources
     
 
@@ -166,6 +167,19 @@ Scans Service bus namespaces and projects following secrets
 ```
 SB--{resourceName}--PrimaryConnectionString
 ```
+
+##### Kusto scan - Kusto prefix
+
+Scans Kusto engines and projects following secrets
+
+```
+Kusto--{domain}--ClusterUri
+Kusto--{domain}--ClusterIngestionUri
+Kusto--{domain}--TenantId
+Kusto--{domain}--DBName
+```
+
+Note that due to financial implications, there will not be a kusto cluster per subscription. Instead, single cluster is reserved for non-PROD databases and another cluster reserved for PROD. Non-PROD cluster will host multiple databases per domain and environment e.g. tooling-ci, tooling-sand. 
 
 #### Testing strategy
 

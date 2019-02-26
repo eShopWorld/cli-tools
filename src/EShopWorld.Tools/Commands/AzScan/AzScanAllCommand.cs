@@ -25,7 +25,8 @@ namespace EShopWorld.Tools.Commands.AzScan
                 GetCompositeCommand<AzScanRedisCommand>().OnExecuteAsync(app, console),
                 GetCompositeCommand<AzScanServiceBusCommand>().OnExecuteAsync(app, console),
                 GetCompositeCommand<AzScanAppInsightsCommand>().OnExecuteAsync(app, console),
-                GetCompositeCommand<AzScanDNSCommand>().OnExecuteAsync(app, console));
+                GetCompositeCommand<AzScanDNSCommand>().OnExecuteAsync(app, console),
+                GetCompositeCommand<AzScanKustoCommand>().OnExecuteAsync(app, console));
 
             return 0;
         }

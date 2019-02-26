@@ -12,6 +12,8 @@ namespace EShopWorld.Tools.Commands.AzScan
             builder.RegisterType<AzScanServiceBusCommand>();
             builder.RegisterType<AzScanAppInsightsCommand>();
             builder.RegisterType<AzScanDNSCommand>();
+            builder.RegisterType<AzScanKustoCommand>();
+
         }
     }
 }
