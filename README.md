@@ -179,6 +179,7 @@ Kusto--{domain}--TenantId
 Kusto--{domain}--DBName
 ```
 
+Note that due to financial implications, there will not be a kusto cluster per subscription. Instead, single cluster is reserved for non-PROD databases and another cluster reserved for PROD. Non-PROD cluster will host multiple databases per domain and environment e.g. tooling-ci, tooling-sand. 
 
 #### Testing strategy
 
