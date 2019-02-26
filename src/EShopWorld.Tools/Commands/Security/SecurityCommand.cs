@@ -85,7 +85,7 @@ namespace EShopWorld.Tools.Commands.Security
                 ShortName = "e",
                 LongName = "masterSecretEncryptionAlg",
                 ShowInHelpText = true)]
-            public string SecretEncryptionAlgorithm { get; set; } = JsonWebKeyEncryptionAlgorithm.RSAOAEP256;
+            public string SecretEncryptionAlgorithm { get; } = JsonWebKeyEncryptionAlgorithm.RSAOAEP256;
 
             public RotateSDSKeysCommand(KeyVaultClient kvClient, IBigBrother bigBrother)
             {
