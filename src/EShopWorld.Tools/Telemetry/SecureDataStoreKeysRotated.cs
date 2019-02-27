@@ -25,5 +25,9 @@ namespace EShopWorld.Tools.Telemetry
         /// version identifier of the rotated MasterSecret
         /// </summary>
         public string MasterSecretNewVersionId { get; set; }
+        /// <summary>
+        /// name of the keyvault with rotated key and secret
+        /// </summary>
+        public string KeyVault { get; set; }
     }
 }

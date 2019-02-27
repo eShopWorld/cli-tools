@@ -119,7 +119,8 @@ namespace EShopWorld.Tools.Commands.Security
                 {
                     MasterKeyName = MasterKeyName, MasterSecretName = MasterSecretName,
                     MasterKeyNewVersionId = masterKey.KeyIdentifier.Version,
-                    MasterSecretNewVersionId = masterSecret.SecretIdentifier.Version
+                    MasterSecretNewVersionId = masterSecret.SecretIdentifier.Version,
+                    KeyVault =  KeyVaultName
                 });
                 
                 return 0;
