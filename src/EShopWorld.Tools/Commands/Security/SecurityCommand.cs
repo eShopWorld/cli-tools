@@ -4,11 +4,13 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Eshopworld.Core;
+using Eshopworld.DevOps;
 using EShopWorld.Tools.Telemetry;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.KeyVault.Models;
 using Microsoft.Azure.KeyVault.WebKey;
+using Microsoft.Azure.Management.ResourceManager.Fluent;
 
 namespace EShopWorld.Tools.Commands.Security
 {

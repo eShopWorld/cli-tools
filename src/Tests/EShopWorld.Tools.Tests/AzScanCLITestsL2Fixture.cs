@@ -52,7 +52,8 @@ namespace EshopWorld.Tools.Tests
             _container = builder.Build();
 
             _keyVaultClient = _container.Resolve<KeyVaultClient>();
-            var testConfigRoot  = EswDevOpsSdk.BuildConfiguration(true);
+            var testConfigRoot = EswDevOpsSdk.BuildConfiguration();
+
             _testConfig = new TestConfig();
             testConfigRoot.GetSection("CLIToolingIntTest").Bind(_testConfig);
         }
