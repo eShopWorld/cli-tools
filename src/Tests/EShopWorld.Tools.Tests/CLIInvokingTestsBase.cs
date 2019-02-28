@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using FluentAssertions;
 using JetBrains.Annotations;
+using Xunit;
 
 namespace EshopWorld.Tools.Tests
 {
@@ -39,8 +40,8 @@ namespace EshopWorld.Tools.Tests
         {
             using (var p = RunCLI(parameters))
             {
-                p.ExitCode.Should().Be(0);
                 p.StandardError.ReadToEnd().Should().BeNullOrWhiteSpace();
+                p.ExitCode.Should().Be(0);             
                 return p.StandardOutput.ReadToEnd();
             }
         }
