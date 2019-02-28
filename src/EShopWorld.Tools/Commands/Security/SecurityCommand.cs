@@ -4,13 +4,11 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Eshopworld.Core;
-using Eshopworld.DevOps;
 using EShopWorld.Tools.Telemetry;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.KeyVault.Models;
 using Microsoft.Azure.KeyVault.WebKey;
-using Microsoft.Azure.Management.ResourceManager.Fluent;
 
 namespace EShopWorld.Tools.Commands.Security
 {
@@ -55,12 +53,12 @@ namespace EShopWorld.Tools.Commands.Security
             public string KeyVaultName { get; set; }
 
             [Option(
-                Description = "name of master HSM backed key (defaults to 'RSAHSMKEY')",
+                Description = "name of master HSM backed key (defaults to 'MASTERKEY')",
                 ShortName = "a",
                 LongName = "masterKeyName",
                 ShowInHelpText = true)]
             // ReSharper disable once StringLiteralTypo
-            public string MasterKeyName { get; } = "RSAHSMKEY";
+            public string MasterKeyName { get; } = "MASTERKEY";
 
             [Option(
                 Description = "name of master secret (defaults to 'MASTERSECRET')",
@@ -80,7 +78,7 @@ namespace EShopWorld.Tools.Commands.Security
             private static readonly int[] AllowedKeyStrengths = {2048, 3072, 4096};
 
             //256 is max (https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.aesmanaged.keysize?redirectedfrom=MSDN&view=netframework-4.7.2#System_Security_Cryptography_AesManaged_KeySize)           
-            private static readonly int MasterSecretStrength  = 256;
+            private const int MasterSecretStrength = 256;
 
             [Option(
                 Description = "encryption algorithm for master secret (defaults to RSA-OAEP-256)- possible values 'RSA-OAEP-256','RSA1_5','RSA-OAEP'",
@@ -109,7 +107,6 @@ namespace EShopWorld.Tools.Commands.Security
                 var aesManaged = new AesManaged { KeySize = MasterSecretStrength };
 
                 //but encrypt it with master key first
-
                 var encryptResult = await _kvClient.EncryptAsync(kvUrl,
                     masterKey.KeyIdentifier.Name, masterKey.KeyIdentifier.Version, SecretEncryptionAlgorithm,
                     aesManaged.Key);
