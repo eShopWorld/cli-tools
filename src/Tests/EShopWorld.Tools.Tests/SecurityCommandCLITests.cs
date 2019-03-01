@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Eshopworld.Tests.Core;
 using FluentAssertions;
 using Microsoft.Azure.KeyVault;
@@ -18,13 +20,15 @@ namespace EshopWorld.Tools.Tests
         {
             _fixture = fixture;
         }
+
         [Theory, IsLayer2]
         [InlineData("-k", "-a", "-b", "-c", "-e")]
-        public async Task RotationFlow(string keyvaultParamName, string masterKeyParamName,string masterSecretParamName, string masterKeyStrengthParamName, string secretEncryptionAlgParamName )
+        [InlineData("--keyVault", "--masterKeyName", "--masterSecretName", "--masterKeyStrength", "--masterSecretEncryptionAlg")]
+        public async Task RotationFlow(string keyVaultParamName, string masterKeyParamName,string masterSecretParamName, string masterKeyStrengthParamName, string secretEncryptionAlgParamName )
         {
             
             //do not use defaults
-            GetStandardOutput("security", "rotateSDSKeys", keyvaultParamName, SecurityCLITestsL2Fixture.KeyVaultName,
+            GetStandardOutput("security", "rotateSDSKeys", keyVaultParamName, SecurityCLITestsL2Fixture.KeyVaultName,
                 masterKeyParamName, TestMasterKeyName, masterSecretParamName, TestMasterSecretName, masterKeyStrengthParamName, "2048", secretEncryptionAlgParamName,
                 JsonWebKeyEncryptionAlgorithm.RSAOAEP256);
 
@@ -40,7 +44,7 @@ namespace EshopWorld.Tools.Tests
             secret.Value.Should().NotBeNullOrWhiteSpace();
 
             //rotate
-            GetStandardOutput("security", "rotateSDSKeys", keyvaultParamName, SecurityCLITestsL2Fixture.KeyVaultName,
+            GetStandardOutput("security", "rotateSDSKeys", keyVaultParamName, SecurityCLITestsL2Fixture.KeyVaultName,
                 masterKeyParamName, TestMasterKeyName, masterSecretParamName, TestMasterSecretName, masterKeyStrengthParamName, "2048", secretEncryptionAlgParamName,
                 JsonWebKeyEncryptionAlgorithm.RSAOAEP256);
 
@@ -51,6 +55,24 @@ namespace EshopWorld.Tools.Tests
             key2.KeyIdentifier.Version.Should().NotBe(key.KeyIdentifier.Version);
             // ReSharper disable once PossibleInvalidOperationException
             key2.Attributes.Created.Should().BeAfter(key.Attributes.Created.Value);
+
+            var nextLink = string.Empty;
+            bool found;
+            //check previous version is still there
+            do
+            {
+                var versions = string.IsNullOrWhiteSpace(nextLink) ? await _fixture.KeyVaultClient.GetKeyVersionsAsync(kvUrl, TestMasterKeyName): await
+                    _fixture.KeyVaultClient.GetKeyVersionsNextAsync(nextLink);
+
+                found = versions.Any(v =>
+                    v.Identifier.Version.Equals(key.KeyIdentifier.Version, StringComparison.Ordinal));
+                nextLink = versions.NextPageLink;
+
+            } while (!found && !string.IsNullOrWhiteSpace(nextLink));
+
+            found.Should().BeTrue();
+
+            //secret latest version checks
             var secret2 = await _fixture.KeyVaultClient.GetSecretAsync(kvUrl, TestMasterSecretName);
 
             secret2.Should().NotBeNull();
@@ -58,6 +80,22 @@ namespace EshopWorld.Tools.Tests
             secret2.SecretIdentifier.Version.Should().NotBe(secret.SecretIdentifier.Version);            
             // ReSharper disable once PossibleInvalidOperationException
             secret2.Attributes.Created.Should().BeAfter(secret.Attributes.Created.Value);
+
+            nextLink = string.Empty;
+
+            //check previous version is still there
+            do
+            {
+                var versions = string.IsNullOrWhiteSpace(nextLink) ? await _fixture.KeyVaultClient.GetSecretVersionsAsync(kvUrl, TestMasterSecretName) : await
+                    _fixture.KeyVaultClient.GetSecretVersionsNextAsync(nextLink);
+
+                found = versions.Any(v =>
+                    v.Identifier.Version.Equals(secret.SecretIdentifier.Version, StringComparison.Ordinal));
+                nextLink = versions.NextPageLink;
+
+            } while (!found && !string.IsNullOrWhiteSpace(nextLink));
+
+            found.Should().BeTrue();
         }
     }
 }

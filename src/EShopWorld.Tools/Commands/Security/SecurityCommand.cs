@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Eshopworld.Core;
@@ -48,6 +47,7 @@ namespace EShopWorld.Tools.Commands.Security
                 ShortName = "k",
                 LongName = "keyVault",
                 ShowInHelpText = true)]
+            [StringLength(24, MinimumLength = 3, ErrorMessage = "KeyVault name must be between 3 and 24 characters long")]
             [Required]
             // ReSharper disable once MemberCanBePrivate.Global
             public string KeyVaultName { get; set; }
@@ -57,6 +57,7 @@ namespace EShopWorld.Tools.Commands.Security
                 ShortName = "a",
                 LongName = "masterKeyName",
                 ShowInHelpText = true)]
+            [StringLength(127, MinimumLength = 1, ErrorMessage = "Master Key Name cannot be empty")]
             // ReSharper disable once StringLiteralTypo
             public string MasterKeyName { get; } = "MASTERKEY";
 
@@ -65,6 +66,7 @@ namespace EShopWorld.Tools.Commands.Security
                 ShortName = "b",
                 LongName = "masterSecretName",
                 ShowInHelpText = true)]
+            [StringLength(127, MinimumLength = 1, ErrorMessage = "Master Secret Name cannot be empty")]
             // ReSharper disable once StringLiteralTypo
             public string MasterSecretName { get; } = "MASTERSECRET";
 
@@ -73,9 +75,10 @@ namespace EShopWorld.Tools.Commands.Security
                 ShortName = "c",
                 LongName = "masterKeyStrength",
                 ShowInHelpText = true)]
+            [RegularExpression("2048|3072|4096", ErrorMessage = "Master Key Strength must be either 2048, 3072 or 4096")]
             public int MasterKeyStrength { get; } = 2048;
 
-            private static readonly int[] AllowedKeyStrengths = {2048, 3072, 4096};
+            //private enum AllowedKeyStrengths : string {S2048="2048", S3072="3072", S4096="4096"};
 
             //256 is max (https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.aesmanaged.keysize?redirectedfrom=MSDN&view=netframework-4.7.2#System_Security_Cryptography_AesManaged_KeySize)           
             private const int MasterSecretStrength = 256;
@@ -85,6 +88,7 @@ namespace EShopWorld.Tools.Commands.Security
                 ShortName = "e",
                 LongName = "masterSecretEncryptionAlg",
                 ShowInHelpText = true)]
+            [RegularExpression("RSA\\-OAEP\\-256|RSA\\-OAEP|RSA1_5", ErrorMessage = "Secret Encryption Algorithm must be either RSA-OAEP or RSA1_5 or RSA-OAEP-256")]
             public string SecretEncryptionAlgorithm { get; } = JsonWebKeyEncryptionAlgorithm.RSAOAEP256;
 
             public RotateSDSKeysCommand(KeyVaultClient kvClient, IBigBrother bigBrother)
@@ -94,9 +98,7 @@ namespace EShopWorld.Tools.Commands.Security
             }
 
             public async Task<int> OnExecuteAsync(CommandLineApplication app, IConsole console)
-            {
-                ValidateOptions();
-
+            {                
                 var kvUrl = $"https://{KeyVaultName}.vault.azure.net/";
                 //create/rotate master key
 
@@ -123,36 +125,7 @@ namespace EShopWorld.Tools.Commands.Security
                 });
                 
                 return 0;
-            }
-
-            private void ValidateOptions()
-            {
-                if (string.IsNullOrWhiteSpace(KeyVaultName))
-                {
-                    throw new ArgumentException("missing key vault name", nameof(KeyVaultName));
-                }
-
-                if (string.IsNullOrWhiteSpace(MasterKeyName))
-                {
-                    throw new ArgumentException("missing master key name", nameof(MasterKeyName));
-                }
-
-                if (string.IsNullOrWhiteSpace(MasterSecretName))
-                {
-                    throw new ArgumentException("missing master secret name", nameof(MasterSecretName));
-                }
-
-                if (!AllowedKeyStrengths.Contains(MasterKeyStrength))
-                {
-                    throw new ArgumentException($"invalid key strength - {MasterKeyStrength} - allowed values are {string.Join(',', AllowedKeyStrengths)}", nameof(MasterKeyStrength));
-                }
-
-                if (!JsonWebKeyEncryptionAlgorithm.AllAlgorithms.Contains(SecretEncryptionAlgorithm))
-                {
-                    throw new ArgumentException(
-                        $"invalid secret encryption algorithm- {SecretEncryptionAlgorithm} - allowed values are {string.Join(',', JsonWebKeyEncryptionAlgorithm.AllAlgorithms)}");
-                }
-            }
+            }           
         }
     }
 }
