@@ -27,12 +27,12 @@ namespace EshopWorld.Tools.Tests
         public void GeneratePOCOsFlow(string keyVaultParam, string appNameParam, string outputParam, string namespaceParam, string versionParam)
         {
             //config load
-            var config = EswDevOpsSdk.BuildConfiguration(true);
+            var config = EswDevOpsSdk.BuildConfiguration();
             var output = Path.GetTempPath();
 
             DeleteTestFiles(output, "Configuration.cs", "KeyVaultCLITest.csproj");
             GetStandardOutput("keyvault", "generatePOCOs", keyVaultParam,
-                config["InputTestKeyVault"], appNameParam, "KeyVaultCLITest", outputParam, output, namespaceParam, "n", versionParam, "1.2");
+                config["POCOBindInputTestKeyVault"], appNameParam, "KeyVaultCLITest", outputParam, output, namespaceParam, "n", versionParam, "1.2");
 
             File.Exists(Path.Combine(output, "Configuration.cs")).Should().BeTrue();
             File.ReadAllText(Path.Combine(output, "Configuration.cs")).Should().Be(@"namespace n

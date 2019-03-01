@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using FluentAssertions;
 using JetBrains.Annotations;
+using Xunit;
 
 namespace EshopWorld.Tools.Tests
 {
@@ -35,12 +36,22 @@ namespace EshopWorld.Tools.Tests
             return p;
         }
 
+        protected string GetErrorOutput(params string[] parameters)
+        {
+            using (var p = RunCLI(parameters))
+            {
+                var errorStream = p.StandardError.ReadToEnd();
+                errorStream.Should().NotBeNullOrEmpty();
+                p.ExitCode.Should().NotBe(0);
+                return errorStream;
+            }
+        }
         protected string GetStandardOutput(params string[] parameters)
         {
             using (var p = RunCLI(parameters))
             {
-                p.ExitCode.Should().Be(0);
                 p.StandardError.ReadToEnd().Should().BeNullOrWhiteSpace();
+                p.ExitCode.Should().Be(0);             
                 return p.StandardOutput.ReadToEnd();
             }
         }

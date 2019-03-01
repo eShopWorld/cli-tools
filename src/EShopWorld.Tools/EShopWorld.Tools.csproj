@@ -11,7 +11,7 @@
     <ToolCommandName>dotnet-esw</ToolCommandName>
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>1.1.14</Version>
+    <Version>1.1.15</Version>
     <Authors>David Rodrigues, David Guerin, Oisin Haken</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/eShopWorld/cli-tools</PackageProjectUrl>
@@ -46,19 +46,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.3.1" />
-    <PackageReference Include="Eshopworld.DevOps" Version="2.0.1" />
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.4.0" />
+    <PackageReference Include="Eshopworld.DevOps" Version="3.0.0" />
     <PackageReference Include="Eshopworld.Telemetry" Version="2.1.3" />
     <PackageReference Include="JetBrains.Annotations" Version="2018.3.0" />
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.3.2" />
     <PackageReference Include="Microsoft.Azure.KeyVault" Version="3.0.3" />
     <PackageReference Include="Microsoft.Azure.Management.ApplicationInsights" Version="0.2.0-preview" />
     <PackageReference Include="Microsoft.Azure.Management.Fluent" Version="1.19.0" />
-    <PackageReference Include="Microsoft.Azure.Management.Kusto" Version="0.9.0-preview" />
+    <PackageReference Include="Microsoft.Azure.Management.Kusto" Version="1.0.0" />
     <PackageReference Include="Microsoft.Azure.Management.ResourceManager.Fluent" Version="1.19.0" />
-    <PackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.2.0-preview" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Compilers" Version="3.0.0-beta2-final" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.0.0-beta2-final" />
+    <PackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.2.0-preview2" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Compilers" Version="3.0.0-beta3-final" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.0.0-beta3-final" />
     <PackageReference Include="Microsoft.Extensions.PlatformAbstractions" Version="1.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
   </ItemGroup>
