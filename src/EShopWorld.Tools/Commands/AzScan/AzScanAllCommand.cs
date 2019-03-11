@@ -12,6 +12,16 @@ namespace EShopWorld.Tools.Commands.AzScan
     {
         private readonly IServiceProvider _serviceProvider;
 
+        /// <summary>
+        /// boolean flag to indicate secondary key should be used instead of primary
+        /// </summary>
+        [Option(
+            Description = "flag indicating to use secondary key  - applicable for Cosmos Db resources",
+            ShortName = "2",
+            LongName = "secondary",
+            ShowInHelpText = true)]
+        public bool UseSecondaryKey { get; set; }
+
         public AzScanAllCommand(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
@@ -37,6 +47,11 @@ namespace EShopWorld.Tools.Commands.AzScan
 
             instance.Subscription = Subscription;
             instance.Domain = Domain;
+
+            if (instance is AzScanCosmosDbCommand cosmosCommand)
+            {
+                cosmosCommand.UseSecondaryKey = UseSecondaryKey;
+            }
 
             return instance;
         }
