@@ -16,7 +16,7 @@ namespace EshopWorld.Tools.Tests
     // ReSharper disable once InconsistentNaming
     public abstract class CLIInvokingTestsBase
     {
-        private double _processTimeout = TimeSpan.FromMinutes(1).TotalMilliseconds;
+        private double _processTimeout = TimeSpan.FromMinutes(2).TotalMilliseconds;
 
         // ReSharper disable once InconsistentNaming
         private Process RunCLI([NotNull] params string[] parameters)

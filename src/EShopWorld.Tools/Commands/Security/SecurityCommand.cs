@@ -57,7 +57,7 @@ namespace EShopWorld.Tools.Commands.Security
                 ShortName = "a",
                 LongName = "masterKeyName",
                 ShowInHelpText = true)]
-            [StringLength(127, MinimumLength = 1, ErrorMessage = "Master Key Name cannot be empty")]
+            [StringLength(127, MinimumLength = 1, ErrorMessage = "Master Key Name cannot be empty or longer than 127 characters")]
             // ReSharper disable once StringLiteralTypo
             public string MasterKeyName { get; } = "MASTERKEY";
 
@@ -66,7 +66,7 @@ namespace EShopWorld.Tools.Commands.Security
                 ShortName = "b",
                 LongName = "masterSecretName",
                 ShowInHelpText = true)]
-            [StringLength(127, MinimumLength = 1, ErrorMessage = "Master Secret Name cannot be empty")]
+            [StringLength(127, MinimumLength = 1, ErrorMessage = "Master Secret Name cannot be empty or longer than 127 characters")]
             // ReSharper disable once StringLiteralTypo
             public string MasterSecretName { get; } = "MASTERSECRET";
 
