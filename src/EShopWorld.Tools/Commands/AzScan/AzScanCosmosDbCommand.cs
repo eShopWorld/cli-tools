@@ -8,18 +8,8 @@ using Microsoft.Azure.Management.Fluent;
 namespace EShopWorld.Tools.Commands.AzScan
 {
     [Command("cosmosDb", Description = "scan and project Cosmos Dbs configuration into KV")]
-    public class AzScanCosmosDbCommand  : AzScanCommandBase
-    {
-        /// <summary>
-        /// boolean flag to indicate secondary key should be used instead of primary
-        /// </summary>
-        [Option(
-            Description = "flag indicating to use secondary key",
-            ShortName = "2",
-            LongName = "secondary",
-            ShowInHelpText = true)]
-        public bool UseSecondaryKey { get; set; }
-        
+    public class AzScanCosmosDbCommand  : AzScanKeyRotationCommandBase
+    {       
         public AzScanCosmosDbCommand(Azure.IAuthenticated authenticated, KeyVaultClient keyVaultClient, IBigBrother bigBrother) : base(authenticated, keyVaultClient, bigBrother)
         {
         }

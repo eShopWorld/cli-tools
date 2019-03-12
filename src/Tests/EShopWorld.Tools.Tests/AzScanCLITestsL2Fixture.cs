@@ -9,10 +9,15 @@ using JetBrains.Annotations;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.KeyVault.Models;
 using Microsoft.Azure.Management.ApplicationInsights.Management;
+using Microsoft.Azure.Management.ApplicationInsights.Management.Models;
+using Microsoft.Azure.Management.CosmosDB.Fluent;
+using Microsoft.Azure.Management.Dns.Fluent;
 using Microsoft.Azure.Management.Fluent;
+using Microsoft.Azure.Management.KeyVault.Fluent;
 using Microsoft.Azure.Management.KeyVault.Fluent.Models;
 using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
+using Microsoft.Azure.Management.ServiceBus.Fluent;
 using Microsoft.Extensions.Configuration;
 using Xunit;
 
@@ -27,6 +32,9 @@ namespace EshopWorld.Tools.Tests
         private TestConfig _testConfig;
 
         private IAzure _azClient;
+
+        public IServiceBusNamespace TestServiceBusNamespace { get; private set; }
+        public ICosmosDBAccount TestCosmosDbAccount { get; private set; }
 
         internal const string TestDomain = "a";
         private const string DomainAResourceGroupName = "a-integration";
@@ -79,14 +87,21 @@ namespace EshopWorld.Tools.Tests
 
                 await SetupOutputKV(regionalRg);               
             }
+
+            var cosmosTestResourceTask = SetupCosmosDBInstance(rgDomainATop);
+            var sbTestResourceTask = SetupServiceBusNamespace(rgDomainATop);
+
             await Task.WhenAll(
                 SetupAzureMonitorAsync(rgDomainATop),
                 SetupAzureMonitorAsync(rgB),
-                SetupServiceBusNamespace(rgDomainATop),
+                sbTestResourceTask,
                 SetupServiceBusNamespace(rgB),
-                SetupCosmosDBInstance(rgDomainATop),
+                cosmosTestResourceTask,
                 SetupCosmosDBInstance(rgB),
                 SetupDNS(rgDomainATop));
+
+            TestCosmosDbAccount = cosmosTestResourceTask.Result;
+            TestServiceBusNamespace = sbTestResourceTask.Result;
         }
 
         private static string GetRegionalResourceGroupName([NotNull] string regionCode)
@@ -100,45 +115,46 @@ namespace EshopWorld.Tools.Tests
         }
 
         // ReSharper disable once InconsistentNaming
-        private async Task SetupOutputKV(IResourceGroup rg)
+        private async Task<IVault> SetupOutputKV(IResourceGroup rg)
         {            
-            await _azClient.Vaults
+            return await _azClient.Vaults
                 .Define($"esw-{rg.Name}")
                     .WithRegion(rg.RegionName)
                 .WithExistingResourceGroup(rg)
                 .DefineAccessPolicy()
-                    .ForObjectId(_testConfig.TargetIdentityObjectId) //so that CLI can write and test
+                    .ForObjectId(_testConfig.TargetIdentityObjectId) //so that CLI can write and test                
                     .AllowSecretPermissions(SecretPermissions.Get, SecretPermissions.List, SecretPermissions.Set, SecretPermissions.Delete)
                 .Attach()                
                 .CreateAsync();         
         } 
 
-        private async Task SetupAzureMonitorAsync(IResourceGroup rg)
+        private async Task<ApplicationInsightsComponent> SetupAzureMonitorAsync(IResourceGroup rg)
         {
             var aiClient = _container.Resolve<ApplicationInsightsManagementClient>();
             aiClient.SubscriptionId = _azClient.SubscriptionId;
-            await aiClient.Components.CreateAIInstanceIfNotExists($"{rg.Name}".ToLowerInvariant(), rg.Name);
+            return await aiClient.Components.CreateAIInstanceIfNotExists($"{rg.Name}".ToLowerInvariant(), rg.Name);
         }
 
-        private async Task SetupServiceBusNamespace(IResourceGroup rg)
+        private async Task<IServiceBusNamespace> SetupServiceBusNamespace(IResourceGroup rg)
         {
-            await _azClient.ServiceBusNamespaces.Define($"esw-{rg.Name}".ToLowerInvariant()).WithRegion(Region.EuropeWest).WithExistingResourceGroup(rg).CreateAsync();
+            return await _azClient.ServiceBusNamespaces.Define($"esw-{rg.Name}".ToLowerInvariant())
+                .WithRegion(Region.EuropeWest).WithExistingResourceGroup(rg).CreateAsync();
         }
 
         // ReSharper disable once InconsistentNaming
-        private async Task SetupCosmosDBInstance(IResourceGroup rg)
+        private async Task<ICosmosDBAccount> SetupCosmosDBInstance(IResourceGroup rg)
         {
-            await _azClient.CosmosDBAccounts.Define($"esw-{rg.Name}".ToLowerInvariant()).WithRegion(Region.EuropeWest)
+            return await _azClient.CosmosDBAccounts.Define($"esw-{rg.Name}".ToLowerInvariant()).WithRegion(Region.EuropeWest)
                 .WithExistingResourceGroup(rg).WithDataModelSql().WithEventualConsistency().WithWriteReplication(Region.EuropeWest)
                 .CreateAsync();
         }
 
         // ReSharper disable once InconsistentNaming
-        private async Task SetupDNS(IResourceGroup rg)
+        private async Task<IDnsZone> SetupDNS(IResourceGroup rg)
         {
             var camelRgName = rg.Name.ToCamelCase();
 
-            await _azClient.DnsZones.Define($"{camelRgName}.dns".ToLowerInvariant()).WithExistingResourceGroup(rg)
+            return await _azClient.DnsZones.Define($"{camelRgName}.dns".ToLowerInvariant()).WithExistingResourceGroup(rg)
                 .DefineCNameRecordSet("TestAPI1").WithAlias($"{camelRgName}-api.azureedge.net").Attach() //Global record
                 .DefineARecordSet("TestAPI1-we-lb").WithIPv4Address("1.1.1.1").Attach() //test api 1 LB -WE
                 .DefineARecordSet("TestAPI1-eus-lb").WithIPv4Address("2.2.2.2").Attach() //test api 1 LB - EUS

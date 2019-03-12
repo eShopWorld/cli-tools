@@ -121,8 +121,11 @@ AI--{resourceName}--InstrumentationKey
 Scans Cosmos DB and projects following secrets
 
 ```
-CosmosDB--{resourceName}--PrimaryConnectionString
+CosmosDB--{resourceName}--ConnectionString
+
 ```
+
+Key rotation between primary and secondary is supported - see below.
 
 ##### DNS scan - Platform prefix
 
@@ -149,8 +152,10 @@ Please note that this will be reviewed when Azure FrontDoor will be adopted.
 Scans Redis instances and projects following secrets
 
 ```
-Redis--{resourceName}--PrimaryConnectionString
+Redis--{resourceName}--ConnectionString
 ```
+
+Key rotation between primary and secondary is supported.
 
 ##### SQL scan - SQL prefix
 
@@ -165,8 +170,10 @@ SQL--{resourceName}--ConnectionString
 Scans Service bus namespaces and projects following secrets
 
 ```
-SB--{resourceName}--PrimaryConnectionString
+SB--{resourceName}--ConnectionString
 ```
+
+Key rotation between primary and secondary is supported.
 
 ##### Kusto scan - Kusto prefix
 
@@ -180,6 +187,10 @@ Kusto--{domain}--DBName
 ```
 
 Note that due to financial implications, there will not be a kusto cluster per subscription. Instead, single cluster is reserved for non-PROD databases and another cluster reserved for PROD. Non-PROD cluster will host multiple databases per domain and environment e.g. tooling-ci, tooling-sand. 
+
+#### Security key rotation process
+
+For selected supported services - i.e. SB, Cosmos and Redis - the az scan verbs -including the 'all' scope - support key rotation. Use the -2 (or --switchToSecondaryKey) switch to use secondary key instead of primary.
 
 #### Testing strategy
 

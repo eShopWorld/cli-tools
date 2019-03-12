@@ -10,7 +10,7 @@ using Microsoft.Azure.Management.Fluent;
 namespace EShopWorld.Tools.Commands.AzScan
 {
     [Command("redis", Description = "scans and projects redis level configuration into KV")]
-    public class AzScanRedisCommand : AzScanCommandBase
+    public class AzScanRedisCommand : AzScanKeyRotationCommandBase
     {
         public AzScanRedisCommand(Azure.IAuthenticated authenticated, KeyVaultClient keyVaultClient, IBigBrother bigBrother) : base(authenticated, keyVaultClient, bigBrother)
         {
@@ -34,8 +34,8 @@ namespace EShopWorld.Tools.Commands.AzScan
                     foreach (var keyVault in rg.TargetKeyVaults)
                     {
                         await KeyVaultClient.SetKeyVaultSecretAsync(keyVault, "Redis", name,
-                            "PrimaryConnectionString",
-                            $"{redis.HostName},password={redis.Keys.PrimaryKey},ssl=True,abortConnect=False");
+                            "ConnectionString",
+                            $"{redis.HostName},password={(UseSecondaryKey ? redis.Keys.SecondaryKey : redis.Keys.PrimaryKey)},ssl=True,abortConnect=False");
                     }
                 }
             }

@@ -8,19 +8,9 @@ namespace EShopWorld.Tools.Commands.AzScan
     /// scan all meta command, delegating to commands serving particular resources
     /// </summary>
     [Command("all", Description = "scans all supported resources and projects their configuration into KV")]
-    public class AzScanAllCommand : AzScanCommandBase
+    public class AzScanAllCommand : AzScanKeyRotationCommandBase
     {
         private readonly IServiceProvider _serviceProvider;
-
-        /// <summary>
-        /// boolean flag to indicate secondary key should be used instead of primary
-        /// </summary>
-        [Option(
-            Description = "flag indicating to use secondary key  - applicable for Cosmos Db resources",
-            ShortName = "2",
-            LongName = "secondary",
-            ShowInHelpText = true)]
-        public bool UseSecondaryKey { get; set; }
 
         public AzScanAllCommand(IServiceProvider serviceProvider)
         {
@@ -48,7 +38,7 @@ namespace EShopWorld.Tools.Commands.AzScan
             instance.Subscription = Subscription;
             instance.Domain = Domain;
 
-            if (instance is AzScanCosmosDbCommand cosmosCommand)
+            if (instance is AzScanKeyRotationCommandBase cosmosCommand)
             {
                 cosmosCommand.UseSecondaryKey = UseSecondaryKey;
             }

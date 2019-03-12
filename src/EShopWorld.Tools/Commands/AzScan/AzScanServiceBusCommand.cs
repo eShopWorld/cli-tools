@@ -8,7 +8,7 @@ using Microsoft.Azure.Management.Fluent;
 namespace EShopWorld.Tools.Commands.AzScan
 {
     [Command("serviceBus", Description = "scan project service bus configuration into KV")]
-    public class AzScanServiceBusCommand : AzScanCommandBase
+    public class AzScanServiceBusCommand : AzScanKeyRotationCommandBase
     {
         public AzScanServiceBusCommand(Azure.IAuthenticated authenticated, KeyVaultClient keyVaultClient, IBigBrother bigBrother) : base(authenticated, keyVaultClient, bigBrother)
         {
@@ -29,8 +29,8 @@ namespace EShopWorld.Tools.Commands.AzScan
 
                 foreach (var keyVaultName in DomainResourceGroup.TargetKeyVaults)
                 {
-                    await KeyVaultClient.SetKeyVaultSecretAsync(keyVaultName, "SB", name, "PrimaryConnectionString",
-                        keys.PrimaryConnectionString);
+                    await KeyVaultClient.SetKeyVaultSecretAsync(keyVaultName, "SB", name, "ConnectionString",
+                        UseSecondaryKey ? keys.SecondaryConnectionString : keys.PrimaryConnectionString);
                 }
             }
 
