@@ -190,7 +190,7 @@ Note that due to financial implications, there will not be a kusto cluster per s
 
 #### Security key rotation process
 
-For selected supported services - i.e. SB, Cosmos and Redis - the az scan verbs -including the 'all' scope - support key rotation. Use the -2 (or --switchToSecondaryKey) switch to use secondary key instead of primary.
+For selected supported services - i.e. Service Bus, Cosmos and Redis - the az scan verbs -including the 'all' scope - support key rotation. Use the -2 (or --switchToSecondaryKey) switch to use secondary key instead of primary.
 
 #### Testing strategy
 

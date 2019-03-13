@@ -76,9 +76,7 @@ namespace EShopWorld.Tools.Commands.Security
                 LongName = "masterKeyStrength",
                 ShowInHelpText = true)]
             [RegularExpression("2048|3072|4096", ErrorMessage = "Master Key Strength must be either 2048, 3072 or 4096")]
-            public int MasterKeyStrength { get; } = 2048;
-
-            //private enum AllowedKeyStrengths : string {S2048="2048", S3072="3072", S4096="4096"};
+            public int MasterKeyStrength { get; } = 2048;          
 
             //256 is max (https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.aesmanaged.keysize?redirectedfrom=MSDN&view=netframework-4.7.2#System_Security_Cryptography_AesManaged_KeySize)           
             private const int MasterSecretStrength = 256;

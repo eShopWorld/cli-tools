@@ -92,8 +92,8 @@ namespace EshopWorld.Tools.Tests
             var sbTestResourceTask = SetupServiceBusNamespace(rgDomainATop);
 
             await Task.WhenAll(
-                SetupAzureMonitorAsync(rgDomainATop),
-                SetupAzureMonitorAsync(rgB),
+                SetupAzureMonitor(rgDomainATop),
+                SetupAzureMonitor(rgB),
                 sbTestResourceTask,
                 SetupServiceBusNamespace(rgB),
                 cosmosTestResourceTask,
@@ -128,7 +128,7 @@ namespace EshopWorld.Tools.Tests
                 .CreateAsync();         
         } 
 
-        private async Task<ApplicationInsightsComponent> SetupAzureMonitorAsync(IResourceGroup rg)
+        private async Task<ApplicationInsightsComponent> SetupAzureMonitor(IResourceGroup rg)
         {
             var aiClient = _container.Resolve<ApplicationInsightsManagementClient>();
             aiClient.SubscriptionId = _azClient.SubscriptionId;
