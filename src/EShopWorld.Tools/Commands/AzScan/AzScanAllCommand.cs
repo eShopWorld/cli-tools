@@ -8,7 +8,7 @@ namespace EShopWorld.Tools.Commands.AzScan
     /// scan all meta command, delegating to commands serving particular resources
     /// </summary>
     [Command("all", Description = "scans all supported resources and projects their configuration into KV")]
-    public class AzScanAllCommand : AzScanCommandBase
+    public class AzScanAllCommand : AzScanKeyRotationCommandBase
     {
         private readonly IServiceProvider _serviceProvider;
 
@@ -37,6 +37,11 @@ namespace EShopWorld.Tools.Commands.AzScan
 
             instance.Subscription = Subscription;
             instance.Domain = Domain;
+
+            if (instance is AzScanKeyRotationCommandBase cosmosCommand)
+            {
+                cosmosCommand.UseSecondaryKey = UseSecondaryKey;
+            }
 
             return instance;
         }

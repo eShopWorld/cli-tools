@@ -29,10 +29,10 @@ namespace EshopWorld.Tools.Tests
             {
                 var secrets = await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode());
 
-                AzScanAppInsightsCLITests.CheckSecrets(secrets);
-                AzScanCosmosCLITests.CheckSecrets(secrets);
-                AzScanDNSCLITests.CheckSecrets(secrets, region);
-                AzScanSBCLITests.CheckSecrets(secrets);
+                new AzScanAppInsightsCLITests(_fixture).CheckSecrets(secrets);
+                await new AzScanCosmosCLITests(_fixture).CheckSecrets(secrets);
+                new AzScanDNSCLITests(_fixture).CheckSecrets(secrets, region);
+                await new AzScanSBCLITests(_fixture).CheckSecrets(secrets);
             }
         }
     }

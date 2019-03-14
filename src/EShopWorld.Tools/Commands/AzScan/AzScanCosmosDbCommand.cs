@@ -8,8 +8,8 @@ using Microsoft.Azure.Management.Fluent;
 namespace EShopWorld.Tools.Commands.AzScan
 {
     [Command("cosmosDb", Description = "scan and project Cosmos Dbs configuration into KV")]
-    public class AzScanCosmosDbCommand  : AzScanCommandBase
-    {
+    public class AzScanCosmosDbCommand  : AzScanKeyRotationCommandBase
+    {       
         public AzScanCosmosDbCommand(Azure.IAuthenticated authenticated, KeyVaultClient keyVaultClient, IBigBrother bigBrother) : base(authenticated, keyVaultClient, bigBrother)
         {
         }
@@ -27,8 +27,8 @@ namespace EShopWorld.Tools.Commands.AzScan
                 foreach (var keyVaultName in DomainResourceGroup.TargetKeyVaults)
                 {
                     await KeyVaultClient.SetKeyVaultSecretAsync(keyVaultName, "CosmosDB", cosmos.Name,
-                        "PrimaryConnectionString",
-                        $"AccountEndpoint={cosmos.DocumentEndpoint};AccountKey={keys.PrimaryMasterKey}");
+                        "ConnectionString",
+                        $"AccountEndpoint={cosmos.DocumentEndpoint};AccountKey={(UseSecondaryKey ? keys.SecondaryMasterKey : keys.PrimaryMasterKey)}");
                 }
             }                
 

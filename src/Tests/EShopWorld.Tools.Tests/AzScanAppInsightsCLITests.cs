@@ -37,7 +37,7 @@ namespace EshopWorld.Tools.Tests
             }
         }
 
-        internal static void CheckSecrets(IList<SecretBundle> secrets)
+        internal void CheckSecrets(IList<SecretBundle> secrets)
         {
             //check the KV
             secrets.Should().ContainSingle(s => s.SecretIdentifier.Name.StartsWith("AI--", StringComparison.Ordinal));

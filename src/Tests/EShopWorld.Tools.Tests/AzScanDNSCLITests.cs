@@ -36,7 +36,7 @@ namespace EshopWorld.Tools.Tests
         }
 
 
-        internal static void CheckSecrets(IList<SecretBundle> secrets, DeploymentRegion region)
+        internal void CheckSecrets(IList<SecretBundle> secrets, DeploymentRegion region)
         {
             switch (region)
             {

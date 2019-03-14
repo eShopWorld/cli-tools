@@ -36,15 +36,31 @@ namespace EshopWorld.Tools.Tests
             }
         }
 
-        internal static void CheckSecrets(IList<SecretBundle> secrets)
+        [Fact, IsLayer2]
+        public async Task CheckCosmosKeyRotation()
+        {
+            await _fixture.DeleteAllSecretsAcrossRegions();
+            GetStandardOutput("azscan", "cosmosDb", "-s", AzScanCLITestsL2Fixture.SierraIntegrationSubscription,
+                "-d", AzScanCLITestsL2Fixture.TestDomain, "-2");
+
+            foreach (var region in RegionHelper.DeploymentRegionsToList())
+            {
+                await CheckSecrets(await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode()), true);
+            }
+        }
+
+        internal async Task CheckSecrets(IList<SecretBundle> secrets, bool useSecondary=false)
         {
             secrets.Should()
                 .ContainSingle(s => s.SecretIdentifier.Name.StartsWith("CosmosDB--", StringComparison.Ordinal));
+
+            var cosmosKeys = await _fixture.TestCosmosDbAccount.ListKeysAsync();
+
             secrets.Should().ContainSingle(s =>
-                s.SecretIdentifier.Name.Equals("CosmosDB--a--PrimaryConnectionString",
+                s.SecretIdentifier.Name.Equals("CosmosDB--a--ConnectionString",
                     StringComparison.Ordinal) &&
-                s.Value.StartsWith(
-                    "AccountEndpoint=https://esw-a-integration.documents.azure.com:443/;AccountKey=",
+                s.Value.Equals(
+                    $"AccountEndpoint=https://esw-a-integration.documents.azure.com:443/;AccountKey={(useSecondary?  cosmosKeys.SecondaryMasterKey : cosmosKeys.PrimaryMasterKey)}",
                     StringComparison.Ordinal));
         }
     }

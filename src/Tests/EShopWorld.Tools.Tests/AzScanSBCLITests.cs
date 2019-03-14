@@ -32,20 +32,37 @@ namespace EshopWorld.Tools.Tests
 
             foreach (var region in RegionHelper.DeploymentRegionsToList())
             {
-                CheckSecrets(await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode()));
+                await CheckSecrets(await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode()));
             }
         }
 
-        internal static void CheckSecrets(IList<SecretBundle> secrets)
+        [Fact, IsLayer2]
+        // ReSharper disable once InconsistentNaming
+        public async Task CheckSBKeyRotation()
+        {
+            await _fixture.DeleteAllSecretsAcrossRegions();
+            GetStandardOutput("azscan", "serviceBus", "-s", AzScanCLITestsL2Fixture.SierraIntegrationSubscription, "-d", AzScanCLITestsL2Fixture.TestDomain, "-2");
+
+            foreach (var region in RegionHelper.DeploymentRegionsToList())
+            {
+                await CheckSecrets(await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode()), true);
+            }
+        }
+
+        internal async Task CheckSecrets(IList<SecretBundle> secrets, bool useSecondary = false)
         {
             //check the KV
             secrets.Should().ContainSingle(s => s.SecretIdentifier.Name.StartsWith("SB--", StringComparison.Ordinal));
+
+            var rule = await _fixture.TestServiceBusNamespace.AuthorizationRules.GetByNameAsync("RootManageSharedAccessKey");
+            var keys = await rule.GetKeysAsync();
+
             secrets.Should().ContainSingle(s =>
                 // ReSharper disable once StringLiteralTypo
-                s.SecretIdentifier.Name.Equals("SB--a--PrimaryConnectionString",
+                s.SecretIdentifier.Name.Equals("SB--a--ConnectionString",
                     StringComparison.Ordinal) &&
-                s.Value.StartsWith(
-                    "Endpoint=sb://esw-a-integration.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=",
+                s.Value.Equals(
+                    useSecondary ? keys.SecondaryConnectionString : keys.PrimaryConnectionString,
                     StringComparison.Ordinal));
         }
     }

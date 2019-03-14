@@ -7,9 +7,9 @@ namespace EshopWorld.Tools.Tests
     public class SecurityCommandCLIValidationFailureTests : CLIInvokingTestsBase
     {
         [InlineData("-a", "", "Command  produced an error Missing value for option 'a'")]
-        [InlineData("-a", "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789", "Master Key Name cannot be empty")]
+        [InlineData("-a", "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789", "Master Key Name cannot be empty or longer than 127 characters")]
         [InlineData("-b", "", "Command  produced an error Missing value for option 'b'")]
-        [InlineData("-b", "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789", "Master Secret Name cannot be empty")]
+        [InlineData("-b", "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789", "Master Secret Name cannot be empty or longer than 127 characters")]
         [InlineData("-c", "", "Command  produced an error Missing value for option 'c'")]
         [InlineData("-c", "1", "Master Key Strength must be either 2048, 3072 or 4096")]
         [InlineData("-e", "", "Command  produced an error Missing value for option 'e'")]
