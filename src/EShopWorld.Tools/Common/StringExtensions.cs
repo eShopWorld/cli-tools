@@ -60,7 +60,10 @@ namespace EShopWorld.Tools.Common
 
 
             var tokenList = new List<string>(new[]
-                {"esw-", "-ci", "-test", "-sand", "-prep", "-prod", "-integration" /*~sierra-integration sub */});
+            {
+                "esw-ci", "esw-test", "esw-sand", "esw-prep", "esw-prod", "esw-integration", "esw-", "-ci", "-test",
+                "-sand", "-prep", "-prod", "-integration" /*~sierra-integration sub */
+            });
 
             //add regions
             tokenList.AddRange(RegionHelper.DeploymentRegionsToList().Select(r => $"-{r.ToRegionCode().ToLowerInvariant()}"));
