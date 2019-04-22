@@ -27,6 +27,12 @@ namespace EshopWorld.Tools.Tests
         public async Task CheckAIResourcesProjectedPerResourceGroup(string subParam, string domainParam)
         {
             await _fixture.DeleteAllSecretsAcrossRegions();
+            //set up dummy secrets
+            foreach (var region in RegionHelper.DeploymentRegionsToList())
+            {
+                await _fixture.SetSecret(region.ToRegionCode(), "AI--dummy--dummy", "dummy");
+            }
+
             // ReSharper disable once StringLiteralTypo
             GetStandardOutput("azscan", "ai", subParam, AzScanCLITestsL2Fixture.SierraIntegrationSubscription, domainParam, AzScanCLITestsL2Fixture.TestDomain);
 

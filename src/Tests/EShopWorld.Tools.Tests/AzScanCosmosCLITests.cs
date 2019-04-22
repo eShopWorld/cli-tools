@@ -26,6 +26,13 @@ namespace EshopWorld.Tools.Tests
         public async Task CheckCosmosResourcesProjectedPerResourceGroup(string subParam, string domainParam)
         {
             await _fixture.DeleteAllSecretsAcrossRegions();
+
+            //set up dummy secrets
+            foreach (var region in RegionHelper.DeploymentRegionsToList())
+            {
+                await _fixture.SetSecret(region.ToRegionCode(), "Platform--dummy--dummy", "dummy");
+            }
+
             GetStandardOutput("azscan", "cosmosDb", subParam, AzScanCLITestsL2Fixture.SierraIntegrationSubscription,
                 domainParam, AzScanCLITestsL2Fixture.TestDomain);
 

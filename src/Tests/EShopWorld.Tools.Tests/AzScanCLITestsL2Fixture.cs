@@ -246,6 +246,11 @@ namespace EshopWorld.Tools.Tests
             }
         }
 
+        internal async Task SetSecret(string regionCode, string name, string @value)
+        {
+            await _keyVaultClient.SetKeyVaultSecretAsync(GetRegionalKVName(regionCode), name, value);
+        }
+
         // ReSharper disable once InconsistentNaming
         private static string GetRegionalKVName([NotNull] string regionCode)
         {

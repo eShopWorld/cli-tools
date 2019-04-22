@@ -40,6 +40,12 @@ namespace EshopWorld.Tools.Tests
         public async Task CheckSBKeyRotation()
         {
             await _fixture.DeleteAllSecretsAcrossRegions();
+            //set up dummy secrets
+            foreach (var region in RegionHelper.DeploymentRegionsToList())
+            {
+                await _fixture.SetSecret(region.ToRegionCode(), "SB--dummy--dummy", "dummy");
+            }
+
             GetStandardOutput("azscan", "serviceBus", "-s", AzScanCLITestsL2Fixture.SierraIntegrationSubscription, "-d", AzScanCLITestsL2Fixture.TestDomain, "-2");
 
             foreach (var region in RegionHelper.DeploymentRegionsToList())

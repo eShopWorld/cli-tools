@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Eshopworld.DevOps;
 using Eshopworld.Tests.Core;
+using EShopWorld.Tools.Common;
 using FluentAssertions;
 using Microsoft.Azure.KeyVault.Models;
 using Xunit;
@@ -27,7 +28,13 @@ namespace EshopWorld.Tools.Tests
         public async Task CheckDNSResourcesProjected(string subParam, string domainParam)
         {
             await _fixture.DeleteAllSecretsAcrossRegions();
-           
+
+            //set up dummy secrets
+            foreach (var region in RegionHelper.DeploymentRegionsToList())
+            {
+                await _fixture.SetSecret(region.ToRegionCode(), "Platform--dummy--dummy", "dummy");
+            }
+
             GetStandardOutput("azscan", "dns", subParam, AzScanCLITestsL2Fixture.SierraIntegrationSubscription, domainParam, AzScanCLITestsL2Fixture.TestDomain);
 
             CheckSecretsWE(await _fixture.LoadAllKeyVaultSecretsAsync(DeploymentRegion.WestEurope.ToRegionCode()));
@@ -53,7 +60,7 @@ namespace EshopWorld.Tools.Tests
         // ReSharper disable once InconsistentNaming
         private void CheckSecretsWE(IList<SecretBundle> secrets)
         {           
-            secrets.Should().HaveSecretCountWithNameStarting("Platform", 4);
+            secrets.Should().HaveSecretCountWithNameStarting("Platform--", 4);
 
             //CNAME check
             secrets.Should().HaveSecret("Platform--testapi1--Global", "https://testapi1.platformintegration.dns");
@@ -72,7 +79,7 @@ namespace EshopWorld.Tools.Tests
         // ReSharper disable once InconsistentNaming
         private void CheckSecretsEUS(IList<SecretBundle> secrets)
         {
-            secrets.Should().HaveSecretCountWithNameStarting("Platform", 4);
+            secrets.Should().HaveSecretCountWithNameStarting("Platform--", 4);
 
             //CNAME check
             secrets.Should().HaveSecret("Platform--testapi1--Global", "https://testapi1.platformintegration.dns");
