@@ -1,19 +1,22 @@
 ﻿using System.Threading.Tasks;
 using Eshopworld.Core;
-using EShopWorld.Tools.Common;
 using McMaster.Extensions.CommandLineUtils;
-using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.Management.Fluent;
 
 namespace EShopWorld.Tools.Commands.AzScan
 {
+    /// <summary>
+    /// cosmos db scan implementation
+    /// </summary>
     [Command("cosmosDb", Description = "scan and project Cosmos Dbs configuration into KV")]
     public class AzScanCosmosDbCommand  : AzScanKeyRotationCommandBase
-    {       
-        public AzScanCosmosDbCommand(Azure.IAuthenticated authenticated, KeyVaultClient keyVaultClient, IBigBrother bigBrother) : base(authenticated, keyVaultClient, bigBrother)
+    {
+        /// <inheritdoc />
+        public AzScanCosmosDbCommand(Azure.IAuthenticated authenticated, AzScanKeyVaultManager keyVaultManager, IBigBrother bigBrother) : base(authenticated, keyVaultManager, bigBrother, "CosmosDB")
         {
         }
 
+        /// <inheritdoc />
         protected override async Task<int> RunScanAsync(IAzure client, IConsole console)
         {                
             var cosmoses =
@@ -26,7 +29,7 @@ namespace EShopWorld.Tools.Commands.AzScan
 
                 foreach (var keyVaultName in DomainResourceGroup.TargetKeyVaults)
                 {
-                    await KeyVaultClient.SetKeyVaultSecretAsync(keyVaultName, "CosmosDB", cosmos.Name,
+                    await KeyVaultManager.SetKeyVaultSecretAsync(keyVaultName, SecretPrefix, cosmos.Name,
                         "ConnectionString",
                         $"AccountEndpoint={cosmos.DocumentEndpoint};AccountKey={(UseSecondaryKey ? keys.SecondaryMasterKey : keys.PrimaryMasterKey)}");
                 }

@@ -12,16 +12,21 @@ namespace EShopWorld.Tools.Common
     /// </summary>
     internal static class KeyVaultExtensions
     {       
-        internal static async Task<IList<SecretBundle>> GetAllSecrets(this KeyVaultClient client, string keyVaultName)
+        internal static async Task<IList<SecretBundle>> GetAllSecrets(this KeyVaultClient client, string keyVaultName, string prefix=null)
         {        
             //iterate via secret pages
             var allSecrets = new List<SecretBundle>();
             IPage<SecretItem> secrets = null;
             do
             {
-                secrets = !string.IsNullOrWhiteSpace(secrets?.NextPageLink) ? await client.GetSecretsNextAsync(secrets.NextPageLink) : await client.GetSecretsAsync($"https://{keyVaultName}.vault.azure.net/");
+                secrets = !string.IsNullOrWhiteSpace(secrets?.NextPageLink) ? await client.GetSecretsNextAsync(secrets.NextPageLink) : await client.GetSecretsAsync(GetKeyVaultUrlFromName(keyVaultName));
                 foreach (var secretItem in secrets.Where(s=>s.Attributes.Enabled.GetValueOrDefault()))
                 {
+                    if (!string.IsNullOrWhiteSpace(prefix) && !secretItem.Identifier.Name.StartsWith(prefix)) //if prefix is specified, only load those
+                    {
+                        continue;
+                    }
+
                     allSecrets.Add(await client.GetSecretAsync(secretItem.Identifier.Identifier));
                 }
 
@@ -35,16 +40,26 @@ namespace EShopWorld.Tools.Common
             var list = await client.GetAllSecrets(keyVaultName);
             foreach (var s in list)
             {
-                await client.DeleteSecretAsync($"https://{keyVaultName}.vault.azure.net/", s.SecretIdentifier.Name);
+                await client.DeleteSecretAsync(GetKeyVaultUrlFromName(keyVaultName), s.SecretIdentifier.Name);
             }
         }
 
-        internal static async Task SetKeyVaultSecretAsync(this KeyVaultClient client, string keyVaultName,
-            string prefix, string name, string suffix, string value, params string[] additionalSuffixes)
+        internal static async Task DeleteSecret(this KeyVaultClient client, string keyVaultName, SecretBundle secret)
         {
-            var trimmedName = name.EswTrim(additionalSuffixes).ToCamelCase();
+            await client.DeleteSecretAsync(GetKeyVaultUrlFromName(keyVaultName), secret.SecretIdentifier.Name);
+        }
 
-            await client.SetSecretWithHttpMessagesAsync($"https://{keyVaultName}.vault.azure.net/", $"{prefix}{(!string.IsNullOrWhiteSpace(trimmedName)? "--"+trimmedName : "")}--{suffix}", value);
+        internal static async Task<SecretBundle> SetKeyVaultSecretAsync(this KeyVaultClient client, string keyVaultName,
+            string name, string value)
+        {
+
+            var result = await client.SetSecretWithHttpMessagesAsync(GetKeyVaultUrlFromName(keyVaultName), name, value);
+            return result.Body;
+        }
+
+        private static string GetKeyVaultUrlFromName(string name)
+        {
+            return $"https://{name}.vault.azure.net/";
         }
     }
 }

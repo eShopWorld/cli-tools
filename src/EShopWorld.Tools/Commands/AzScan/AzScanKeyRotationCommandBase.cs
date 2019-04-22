@@ -1,6 +1,5 @@
 ﻿using Eshopworld.Core;
 using McMaster.Extensions.CommandLineUtils;
-using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.Management.Fluent;
 
 namespace EShopWorld.Tools.Commands.AzScan
@@ -24,8 +23,8 @@ namespace EShopWorld.Tools.Commands.AzScan
         {        
         }
 
-        protected AzScanKeyRotationCommandBase(Azure.IAuthenticated authenticated, KeyVaultClient keyVaultClient,
-            IBigBrother bigBrother) : base(authenticated, keyVaultClient, bigBrother)
+        protected AzScanKeyRotationCommandBase(Azure.IAuthenticated authenticated, AzScanKeyVaultManager keyVaultManager,
+            IBigBrother bigBrother, string secretPrefix) : base(authenticated, keyVaultManager, bigBrother, secretPrefix)
         {           
         }
     }

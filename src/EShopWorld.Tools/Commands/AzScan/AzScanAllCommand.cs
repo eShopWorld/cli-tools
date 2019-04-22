@@ -12,11 +12,17 @@ namespace EShopWorld.Tools.Commands.AzScan
     {
         private readonly IServiceProvider _serviceProvider;
 
+        /// <summary>
+        /// ctor
+        /// </summary>
+        /// <param name="serviceProvider"><see cref="IServiceProvider"/> instance to locate inner commands</param>
         public AzScanAllCommand(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
         }
 
+
+        /// <inheritdoc />
         public override async Task<int> OnExecuteAsync(CommandLineApplication app, IConsole console)
         {
             await Task.WhenAll(

@@ -2,8 +2,13 @@
 
 namespace EShopWorld.Tools.Commands.AzScan
 {
+    /// <summary>
+    /// AutoFac module fo AzScan family
+    /// </summary>
+    // ReSharper disable once UnusedMember.Global
     public class AzScanModule : Module
     {
+        /// <inheritdoc />
         protected override void Load(ContainerBuilder builder)
         {
             builder.RegisterType<AzScanSqlCommand>();
@@ -13,7 +18,7 @@ namespace EShopWorld.Tools.Commands.AzScan
             builder.RegisterType<AzScanAppInsightsCommand>();
             builder.RegisterType<AzScanDNSCommand>();
             builder.RegisterType<AzScanKustoCommand>();
-
+            builder.RegisterType<AzScanKeyVaultManager>();
         }
     }
 }

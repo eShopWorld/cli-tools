@@ -7,7 +7,6 @@ using Eshopworld.Core;
 using Eshopworld.DevOps;
 using EShopWorld.Tools.Common;
 using McMaster.Extensions.CommandLineUtils;
-using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.Management.Fluent;
 using Microsoft.Azure.Management.Network.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
@@ -25,10 +24,12 @@ namespace EShopWorld.Tools.Commands.AzScan
         private IPagedCollection<ILoadBalancer> _loadBalancersCache;
         private IPagedCollection<IPublicIPAddress> _pipCache;
 
-        public AzScanDNSCommand(Azure.IAuthenticated authenticated, KeyVaultClient keyVaultClient, IBigBrother bigBrother) : base(authenticated, keyVaultClient, bigBrother)
+        /// <inheritdoc />
+        public AzScanDNSCommand(Azure.IAuthenticated authenticated, AzScanKeyVaultManager keyVaultManager, IBigBrother bigBrother) : base(authenticated, keyVaultManager, bigBrother, "Platform")
         {
         }
 
+        /// <inheritdoc />
         protected override async Task<int> RunScanAsync(IAzure client, IConsole console)
         {
             //filter out non V1 DNS zones
@@ -52,7 +53,7 @@ namespace EShopWorld.Tools.Commands.AzScan
                 {
                     foreach (var keyVaultName in DomainResourceGroup.TargetKeyVaults)
                     {
-                        await KeyVaultClient.SetKeyVaultSecretAsync(keyVaultName, "Platform", cName.Name, "Global",
+                        await KeyVaultManager.SetKeyVaultSecretAsync(keyVaultName, "Platform", cName.Name, "Global",
                             $"https://{cName.Fqdn.TrimEnd('.')}");
                     }
                 }
@@ -90,8 +91,8 @@ namespace EShopWorld.Tools.Commands.AzScan
 
                         foreach (var keyVault in regionalDef.TargetKeyVaults)
                         {
-                            await KeyVaultClient.SetKeyVaultSecretAsync(keyVault,
-                                "Platform", aName.Name,
+                            await KeyVaultManager.SetKeyVaultSecretAsync(keyVault,
+                                SecretPrefix, aName.Name,
                                 isLb ? "HTTP" : "HTTPS",
                                 $"{(isLb ? "http" : "https")}://{aName.IPv4Addresses.First()}{(isLb ? ":" + port.Value.ToString(CultureInfo.InvariantCulture) : "")}", "-lb");
                         }

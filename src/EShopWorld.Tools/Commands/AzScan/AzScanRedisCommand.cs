@@ -1,21 +1,24 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Eshopworld.Core;
 using Eshopworld.DevOps;
 using EShopWorld.Tools.Common;
 using McMaster.Extensions.CommandLineUtils;
-using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.Management.Fluent;
 
 namespace EShopWorld.Tools.Commands.AzScan
 {
+    /// <summary>
+    /// Azure Redis configuration manager scan
+    /// </summary>
     [Command("redis", Description = "scans and projects redis level configuration into KV")]
     public class AzScanRedisCommand : AzScanKeyRotationCommandBase
     {
-        public AzScanRedisCommand(Azure.IAuthenticated authenticated, KeyVaultClient keyVaultClient, IBigBrother bigBrother) : base(authenticated, keyVaultClient, bigBrother)
+        /// <inheritdoc />
+        public AzScanRedisCommand(Azure.IAuthenticated authenticated, AzScanKeyVaultManager keyVaultManager, IBigBrother bigBrother) : base(authenticated, keyVaultManager, bigBrother, "Redis")
         {
         }
 
+        /// <inheritdoc />
         protected override async Task<int> RunScanAsync(IAzure client, IConsole console)
         {
             foreach (var rg in RegionalPlatformResourceGroups)
@@ -33,7 +36,7 @@ namespace EShopWorld.Tools.Commands.AzScan
 
                     foreach (var keyVault in rg.TargetKeyVaults)
                     {
-                        await KeyVaultClient.SetKeyVaultSecretAsync(keyVault, "Redis", name,
+                        await KeyVaultManager.SetKeyVaultSecretAsync(keyVault, SecretPrefix, name,
                             "ConnectionString",
                             $"{redis.HostName},password={(UseSecondaryKey ? redis.Keys.SecondaryKey : redis.Keys.PrimaryKey)},ssl=True,abortConnect=False");
                     }

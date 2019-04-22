@@ -4,25 +4,28 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Eshopworld.Core;
-using EShopWorld.Tools.Common;
 using JetBrains.Annotations;
 using McMaster.Extensions.CommandLineUtils;
-using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.Management.Fluent;
 using Microsoft.Azure.Management.Kusto;
 
 namespace EShopWorld.Tools.Commands.AzScan
 {
+    /// <summary>
+    /// Azure Kusto configuration management scan process
+    /// </summary>
     [Command("kusto", Description = "scans Kusto resources and projects their configuration to KV")]
     public class AzScanKustoCommand : AzScanCommandBase
     {
         private readonly KustoManagementClient _kustoClient;
 
-        public AzScanKustoCommand(Azure.IAuthenticated authenticated, KeyVaultClient keyVaultClient, IBigBrother bigBrother, KustoManagementClient kustoClient):base(authenticated, keyVaultClient, bigBrother)
+        /// <inheritdoc />
+        public AzScanKustoCommand(Azure.IAuthenticated authenticated, AzScanKeyVaultManager keyVaultManager, IBigBrother bigBrother, KustoManagementClient kustoClient):base(authenticated, keyVaultManager, bigBrother, "Kusto")
         {
             _kustoClient = kustoClient;
         }
 
+        /// <inheritdoc />
         protected override async Task<int> RunScanAsync(IAzure client, IConsole console)
         {
             //identify target subs to scan
@@ -48,19 +51,19 @@ namespace EShopWorld.Tools.Commands.AzScan
                     //if appropriate db found, emit secrets - to all regional KVs
                     foreach (var keyVault in DomainResourceGroup.TargetKeyVaults)
                     {
-                        await KeyVaultClient.SetKeyVaultSecretAsync(keyVault, "Kusto",
+                        await KeyVaultManager.SetKeyVaultSecretAsync(keyVault, SecretPrefix,
                             match.Value,
                             "ClusterUri",
                             kusto.Uri);
-                        await KeyVaultClient.SetKeyVaultSecretAsync(keyVault, "Kusto",
+                        await KeyVaultManager.SetKeyVaultSecretAsync(keyVault, SecretPrefix,
                             match.Value,
                             "ClusterIngestionUri",
                             kusto.DataIngestionUri);
-                        await KeyVaultClient.SetKeyVaultSecretAsync(keyVault, "Kusto",
+                        await KeyVaultManager.SetKeyVaultSecretAsync(keyVault, SecretPrefix,
                             match.Value,
                             "TenantId",
                             Authenticated.TenantId);
-                        await KeyVaultClient.SetKeyVaultSecretAsync(keyVault, "Kusto",
+                        await KeyVaultManager.SetKeyVaultSecretAsync(keyVault, SecretPrefix,
                             match.Value,
                             "DBName",
                             match.Value);
