@@ -20,7 +20,6 @@ namespace EshopWorld.Tools.Tests
         }
 
         [Theory, IsLayer2]
-        [InlineData("--keyVault", "--appName","--output","--namespace", "--version")]
         [InlineData("-k", "-m", "-o", "-n", "-v")]
 
         // ReSharper disable once InconsistentNaming

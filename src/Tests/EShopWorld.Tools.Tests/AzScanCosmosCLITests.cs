@@ -22,7 +22,6 @@ namespace EshopWorld.Tools.Tests
         }       
 
         [InlineData("-s", "-d")]
-        [InlineData("--subscription", "--domain")]
         [Theory, IsLayer2]
         public async Task CheckCosmosResourcesProjectedPerResourceGroup(string subParam, string domainParam)
         {

@@ -23,7 +23,6 @@ namespace EshopWorld.Tools.Tests
 
         [Theory, IsLayer2]
         [InlineData("-k", "-a", "-b", "-c", "-e")]
-        [InlineData("--keyVault", "--masterKeyName", "--masterSecretName", "--masterKeyStrength", "--masterSecretEncryptionAlg")]
         public async Task RotationFlow(string keyVaultParamName, string masterKeyParamName,string masterSecretParamName, string masterKeyStrengthParamName, string secretEncryptionAlgParamName )
         {
             

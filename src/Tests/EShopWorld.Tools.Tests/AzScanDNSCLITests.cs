@@ -22,7 +22,6 @@ namespace EshopWorld.Tools.Tests
 
 
         [InlineData("-s", "-d")]
-        [InlineData("--subscription", "--domain")]
         [Theory, IsLayer2]
         // ReSharper disable once InconsistentNaming
         public async Task CheckDNSResourcesProjected(string subParam, string domainParam)
