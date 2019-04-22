@@ -32,7 +32,7 @@ namespace EshopWorld.Tools.Tests
 
             foreach (var region in RegionHelper.DeploymentRegionsToList())
             {
-                CheckSecrets(await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode()));
+                await CheckSecrets(await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode()));
             }
         }
 

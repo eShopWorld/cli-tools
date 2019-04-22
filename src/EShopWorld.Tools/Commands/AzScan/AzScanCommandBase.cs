@@ -20,6 +20,7 @@ namespace EShopWorld.Tools.Commands.AzScan
         protected readonly Azure.IAuthenticated Authenticated;
         protected readonly KeyVaultClient KeyVaultClient;
         protected readonly IBigBrother BigBrother;
+        protected CommandLineApplication AppInstance;
 
         protected AzScanCommandBase()
         {
@@ -49,6 +50,8 @@ namespace EShopWorld.Tools.Commands.AzScan
             ShowInHelpText = true)]
         [Required]
         public string Subscription { get; set; }
+
+        internal string PlatformResourceGroup => $"platform-{EnvironmentName}";
 
         internal IEnumerable<ResourceGroupDescriptor> RegionalPlatformResourceGroups => RegionList.Select(r =>
                 new ResourceGroupDescriptor
@@ -93,8 +96,8 @@ namespace EShopWorld.Tools.Commands.AzScan
 
         public virtual async Task<int> OnExecuteAsync(CommandLineApplication app, IConsole console)
         {
+            AppInstance = app;
             var sub = await GetSubscriptionId(Subscription);
-
             var subClient = Authenticated.WithSubscription(sub);
 
             return await RunScanAsync(subClient, console);
@@ -125,10 +128,9 @@ namespace EShopWorld.Tools.Commands.AzScan
             return sub.SubscriptionId;
         }
         
-
         protected virtual Task<int> RunScanAsync(IAzure client, IConsole console)
         {
-            return Task.FromResult(0);
+            throw new InvalidOperationException("This method is not meant to be executed at base level. Override in specific command implementation");
         }
 
         internal class ResourceGroupDescriptor

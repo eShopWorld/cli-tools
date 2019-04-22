@@ -11,6 +11,7 @@ using EShopWorld.Tools.Commands.AzScan;
 using EShopWorld.Tools.Commands.KeyVault;
 using EShopWorld.Tools.Commands.Security;
 using EShopWorld.Tools.Commands.Transform;
+using EShopWorld.Tools.Common;
 using EShopWorld.Tools.Telemetry;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -62,17 +63,8 @@ namespace EShopWorld.Tools
             }
             catch (Exception e)
             {
-                var @event = e.ToExceptionEvent<CLIExceptionEvent>();
-                @event.CommandType = commandParsed;
-                @event.Arguments = string.Join(',', app.Options.Select(t => $"{t.LongName}-'{t.Value()}'"));
-
-                _console.ForegroundColor = ConsoleColor.Red;
-                _console.Error.WriteLine($"Command {commandParsed} produced an error {e.Message}");
-                _console.ResetColor();
-
-                _bigBrother?.Publish(@event);
-                _bigBrother?.Flush();
-
+                _console.EmitException(_bigBrother, e, commandParsed.GetType(), app.Options);
+                
                 return -1;
             }
         }

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Eshopworld.Tests.Core;
+﻿using Eshopworld.Tests.Core;
 using EShopWorld.Tools.Commands.AzScan;
 using FluentAssertions;
 using Xunit;

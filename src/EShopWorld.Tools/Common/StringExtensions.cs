@@ -49,32 +49,43 @@ namespace EShopWorld.Tools.Common
 
         /// <summary>
         /// remove recognized environmental suffix from the name but keep unrecognized ones
+        ///
+        /// this works by "trim start" and "trim end" so the order of prefixes and suffixes is important to respect the order in the naming convention
         /// </summary>
         /// <param name="input">input values</param>
-        /// <param name="suffixes">suffixes to strip out</param>
-        /// <returns></returns>
+        /// <param name="suffixes">additional suffixes to strip out</param>
+        /// <returns>trimmed string - core name</returns>
         public static string EswTrim(this string input, params string[] suffixes)
         {
             if (string.IsNullOrWhiteSpace(input))
                 return input;
 
 
-            var tokenList = new List<string>(new[]
+            var prefixList = new List<string>(new[]
             {
-                "esw-ci", "esw-test", "esw-sand", "esw-prep", "esw-prod", "esw-integration", "esw-", "-ci", "-test",
-                "-sand", "-prep", "-prod", "-integration" /*~sierra-integration sub */
+                "esw-ci", "esw-test", "esw-sand", "esw-prep", "esw-prod", "esw-integration", "esw-"
             });
 
-            //add regions
-            tokenList.AddRange(RegionHelper.DeploymentRegionsToList().Select(r => $"-{r.ToRegionCode().ToLowerInvariant()}"));
+            IEnumerable<string> suffixList = new List<string>(new[]
+            {
+                "-ci", "-test", "-sand", "-prep", "-prod", "-integration" /*~sierra-integration sub */
+            });
 
-            tokenList.AddRange(suffixes);
+            //prepend regions
+            suffixList = RegionHelper.DeploymentRegionsToList().Select(r => $"-{r.ToRegionCode().ToLowerInvariant()}").Aggregate(suffixList, (current, suffix) => current.Prepend(suffix));
+            //prepend additional suffixes
+            suffixList = suffixes.Aggregate(suffixList, (current, suffix) => current.Prepend(suffix));
 
             var newInput = input;
 
-            foreach (var token in tokenList)
+            foreach (var token in prefixList)
             {
-                newInput = newInput.Replace(token, "", StringComparison.OrdinalIgnoreCase);
+                newInput = newInput.StartsWith(token, StringComparison.OrdinalIgnoreCase)?  newInput.Substring(token.Length) : newInput;
+            }
+
+            foreach (var token in suffixList)
+            {
+                newInput = newInput.EndsWith(token, StringComparison.OrdinalIgnoreCase) ? newInput.Substring(0, newInput.Length - token.Length) : newInput;
             }
 
             return newInput;
@@ -136,7 +147,7 @@ namespace EShopWorld.Tools.Common
         /// <returns>grammar compliant property name</returns>
         public static string SanitizePropertyName(this string value)
         {
-            string ret = value;
+            var ret = value;
             if (string.IsNullOrWhiteSpace(ret))
             {
                 return ret;
@@ -150,7 +161,7 @@ namespace EShopWorld.Tools.Common
             return ret.Replace('-', '_');
         }
 
-        private static List<string> KeywordList = new List<string>(new[]
+        private static readonly List<string> KeywordList = new List<string>(new[]
         {
             "abstract", "as", "base", "bool",
             "break", "byte", "case", "catch", "char", "checked", "class", "const", "continue", "decimal", "default",

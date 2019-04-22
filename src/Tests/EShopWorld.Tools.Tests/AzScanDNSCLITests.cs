@@ -52,40 +52,40 @@ namespace EshopWorld.Tools.Tests
         }
 
         // ReSharper disable once InconsistentNaming
-        private static void CheckSecretsWE(IList<SecretBundle> secrets)
+        private void CheckSecretsWE(IList<SecretBundle> secrets)
         {           
             secrets.Should().HaveSecretCountWithNameStarting("Platform", 4);
 
             //CNAME check
-            secrets.Should().HaveSecret("Platform--testapi1--Global", "https://testapi1.aintegration.dns");
+            secrets.Should().HaveSecret("Platform--testapi1--Global", "https://testapi1.platformintegration.dns");
 
             //API 1 - AG check
             secrets.Should().HaveSecret("Platform--testapi1--HTTPS", "https://3.3.3.3");
 
             //API 1 - LB check
-            secrets.Should().HaveSecret("Platform--testapi1--HTTP", "http://1.1.1.1");
+            secrets.Should().HaveSecret("Platform--testapi1--HTTP", $"http://{_fixture.WeIpAddress.IPAddress}:1111");
 
             //API 2 - Internal - LB check
-            secrets.Should().HaveSecret("Platform--testapi2--HTTP", "http://5.5.5.5");
+            secrets.Should().HaveSecret("Platform--testapi2--HTTP", $"http://{_fixture.WeIpAddress.IPAddress}:1112");
 
         }
 
         // ReSharper disable once InconsistentNaming
-        private static void CheckSecretsEUS(IList<SecretBundle> secrets)
+        private void CheckSecretsEUS(IList<SecretBundle> secrets)
         {
             secrets.Should().HaveSecretCountWithNameStarting("Platform", 4);
 
             //CNAME check
-            secrets.Should().HaveSecret("Platform--testapi1--Global", "https://testapi1.aintegration.dns");
+            secrets.Should().HaveSecret("Platform--testapi1--Global", "https://testapi1.platformintegration.dns");
 
             //API 1 - AG check
             secrets.Should().HaveSecret("Platform--testapi1--HTTPS", "https://4.4.4.4");
 
             //API 1 - LB check
-            secrets.Should().HaveSecret("Platform--testapi1--HTTP", "http://2.2.2.2");
+            secrets.Should().HaveSecret("Platform--testapi1--HTTP", $"http://{_fixture.EusIpAddress.IPAddress}:2222");
 
             //API 2 - Internal - LB check
-            secrets.Should().HaveSecret("Platform--testapi2--HTTP", "http://6.6.6.6");     
+            secrets.Should().HaveSecret("Platform--testapi2--HTTP", $"http://{_fixture.EusIpAddress.IPAddress}:2223");     
         }
     }
 }

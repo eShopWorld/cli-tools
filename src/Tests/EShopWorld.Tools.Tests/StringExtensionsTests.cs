@@ -32,6 +32,8 @@ namespace EshopWorld.Tools.Tests
         [InlineData("blah-payment-blah", "blah-payment-blah")]
         [InlineData("blah-payment-we-lb", "blah-payment", "-lb")]
         [InlineData("esw-ci-we-redis", "", "-redis")]
+        [InlineData("nike-snkrs-product-api-afd-eus", "nike-snkrs-product-api-afd")]
+        [InlineData("nike-snkrs-product-api-afd-eus-lb", "nike-snkrs-product-api-afd", "-lb")]
         public void EswTrim_Success(string input, string expectedOutput, params string[] additionalSuffixes)
         {
             input.EswTrim(additionalSuffixes).Should().Be(expectedOutput);
