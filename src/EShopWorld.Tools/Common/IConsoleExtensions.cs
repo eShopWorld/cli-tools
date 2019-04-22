@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Eshopworld.Core;
 using EShopWorld.Tools.Telemetry;
@@ -33,13 +34,13 @@ namespace EShopWorld.Tools.Common
             bb?.Publish(@event);
             bb?.Flush();
 
-            EmitMessage(console, ConsoleColor.Yellow, $"Command {@event.CommandType}, Arguments {@event.Arguments} produced warning - {warning}");
+            console.EmitMessage(console.Out, ConsoleColor.Yellow, $"Command {@event.CommandType}, Arguments {@event.Arguments} produced warning - {warning}");
         }
 
-        private static void EmitMessage(this IConsole console, ConsoleColor color, string text)
+        private static void EmitMessage(this IConsole console, TextWriter tw, ConsoleColor color, string text)
         {
             console.ForegroundColor = color;
-            console.WriteLine(text);
+            tw.WriteLine(text);
             console.ResetColor();
         }
 
@@ -55,12 +56,13 @@ namespace EShopWorld.Tools.Common
         {
             var @event = e.ToExceptionEvent<AzCLIExceptionEvent>();
             @event.CommandType = command.ToString();
-            @event.Arguments = string.Join(',', args.Select(t => $"{t.LongName}-'{t.Value()}'")); 
+            @event.Arguments = args!=null ? string.Join(',', args.Select(t => $"{t.LongName}-'{t.Value()}'")) : string.Empty; 
 
             bb?.Publish(@event);
             bb?.Flush();
 
-            EmitMessage(console, ConsoleColor.Red, $"Command {@event.CommandType}, Arguments {@event.Arguments} produced an error - {e.Message}");
+            var argsMessage = string.IsNullOrWhiteSpace(@event.Arguments) ? "" : $",Arguments '{@event.Arguments}'";
+            console.EmitMessage(console.Error, ConsoleColor.Red, $"Command {@event.CommandType}{argsMessage} produced an error - {e.Message}");
         }
     }
 }

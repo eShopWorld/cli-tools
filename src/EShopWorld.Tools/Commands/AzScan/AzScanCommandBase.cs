@@ -59,7 +59,11 @@ namespace EShopWorld.Tools.Commands.AzScan
                 new ResourceGroupDescriptor
                 {
                     Name =
-                        $"platform-{EnvironmentName}-{r.ToRegionCode()}".ToLowerInvariant(),                    
+                        $"platform-{EnvironmentName}-{r.ToRegionCode()}".ToLowerInvariant(),
+                    TargetKeyVaults = new[]
+                    {
+                        $"esw-{Domain}-{EnvironmentName}-{r.ToRegionCode()}".ToLowerInvariant()
+                    },
                     Region = r
                 });
 
