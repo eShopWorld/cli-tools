@@ -259,7 +259,7 @@ namespace EshopWorld.Tools.Tests
 
         public void Dispose()
         {
-            //DeleteResources().GetAwaiter().GetResult(); //TODO: reenable
+            DeleteResources().GetAwaiter().GetResult(); 
             _container.Dispose();
         }
 

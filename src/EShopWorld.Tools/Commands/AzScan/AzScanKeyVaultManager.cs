@@ -17,8 +17,8 @@ namespace EShopWorld.Tools.Commands.AzScan
     public class AzScanKeyVaultManager 
     {
         private readonly KeyVaultClient _kvClient;
-
         private readonly Dictionary<string, IList<TrackedSecretBundle>> _kvInitialState = new Dictionary<string, IList<TrackedSecretBundle>>();
+        private const string KeyVaultLevelSeparator = "--";
 
         /// <summary>
         /// ctor
@@ -32,7 +32,7 @@ namespace EShopWorld.Tools.Commands.AzScan
         /// <summary>
         /// attach tracked key vaults to the manager
         /// </summary>
-        /// <param name="kvNames">list of tracked keyvaults</param>
+        /// <param name="kvNames">list of tracked key (regional) vaults</param>
         /// <param name="secretPrefix">prefix for secrets to narrow loaded secrets</param>
         /// <returns>task result</returns>
         public async Task AttachKeyVaults(IEnumerable<string> kvNames, string secretPrefix)
@@ -40,7 +40,9 @@ namespace EShopWorld.Tools.Commands.AzScan
             foreach (var kv in kvNames)
             {
                 _kvInitialState.Add(kv,
-                    (await _kvClient.GetAllSecrets(kv, secretPrefix))?.Select(i => new TrackedSecretBundle(i, false)).ToList());
+                    (await _kvClient.GetAllSecrets(kv, GetSecretPrefixLevelToken(secretPrefix)))
+                    .Select(i => new TrackedSecretBundle(i, false))
+                    .ToList());
             }
         }
 
@@ -60,8 +62,15 @@ namespace EShopWorld.Tools.Commands.AzScan
 
             //cross check all matching prefix secrets that have not been touched
             _kvInitialState.ForEach(k =>
-                k.Value.Where(s => s.Secret.SecretIdentifier.Name.StartsWith(secretPrefix) && !s.Touched)
+                k.Value.Where(s => s.Secret.SecretIdentifier.Name.StartsWith(GetSecretPrefixLevelToken(secretPrefix)) && !s.Touched)
                     .ForEach(async i => await _kvClient.DeleteSecret(k.Key, i.Secret)));
+        }
+
+        private static string GetSecretPrefixLevelToken(string secretPrefix)
+        {
+            return secretPrefix.EndsWith(KeyVaultLevelSeparator)
+                ? secretPrefix
+                : $"{secretPrefix}{KeyVaultLevelSeparator}";
         }
 
         /// <summary>
@@ -79,7 +88,7 @@ namespace EShopWorld.Tools.Commands.AzScan
             string prefix, string name, string suffix, string value, params string[] additionalSuffixes)
         {
             var trimmedName = name.EswTrim(additionalSuffixes).ToCamelCase();
-            var targetName = $"{prefix}{(!string.IsNullOrWhiteSpace(trimmedName) ? "--" + trimmedName : "")}--{suffix}";
+            var targetName = $"{prefix}{(!string.IsNullOrWhiteSpace(trimmedName) ? KeyVaultLevelSeparator + trimmedName : "")}{KeyVaultLevelSeparator}{suffix}";
             
             //detect new vs change, otherwise just track visit
             var trackedSecret = LocateSecret(keyVaultName, targetName);

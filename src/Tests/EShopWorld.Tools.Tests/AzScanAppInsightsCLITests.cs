@@ -24,13 +24,16 @@ namespace EshopWorld.Tools.Tests
         [InlineData("-s", "-d")]
         [Theory, IsLayer2]
         // ReSharper disable once InconsistentNaming
-        public async Task CheckAIResourcesProjectedPerResourceGroup(string subParam, string domainParam)
+        public async Task CheckExpectedSecretProcess(string subParam, string domainParam)
         {
             await _fixture.DeleteAllSecretsAcrossRegions();
             //set up dummy secrets
             foreach (var region in RegionHelper.DeploymentRegionsToList())
             {
                 await _fixture.SetSecret(region.ToRegionCode(), "AI--dummy--dummy", "dummy");
+                //following secrets are not to be touched by the CLI
+                await _fixture.SetSecret(region.ToRegionCode(), "AIBLah", "dummy");
+                await _fixture.SetSecret(region.ToRegionCode(), "Prefix--blah", "dummy");
             }
 
             // ReSharper disable once StringLiteralTypo
@@ -51,6 +54,10 @@ namespace EshopWorld.Tools.Tests
                 s.SecretIdentifier.Name.Equals("AI--a--InstrumentationKey",
                     StringComparison.Ordinal) &&
                 Guid.Parse(s.Value) != default(Guid)); //check key existence and that it is guid (parse succeeds)
+
+            secrets.Should().HaveSecret("AIBLah", "dummy");
+
+            secrets.Should().HaveSecret("Prefix--blah", "dummy");
         }
     }
 }

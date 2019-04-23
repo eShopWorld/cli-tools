@@ -33,6 +33,8 @@ namespace EshopWorld.Tools.Tests
             foreach (var region in RegionHelper.DeploymentRegionsToList())
             {
                 await _fixture.SetSecret(region.ToRegionCode(), "Platform--dummy--dummy", "dummy");
+                await _fixture.SetSecret(region.ToRegionCode(), "PlatformBlah", "dummy");
+                await _fixture.SetSecret(region.ToRegionCode(), "Prefix--blah", "dummy");
             }
 
             GetStandardOutput("azscan", "dns", subParam, AzScanCLITestsL2Fixture.SierraIntegrationSubscription, domainParam, AzScanCLITestsL2Fixture.TestDomain);
@@ -74,6 +76,8 @@ namespace EshopWorld.Tools.Tests
             //API 2 - Internal - LB check
             secrets.Should().HaveSecret("Platform--testapi2--HTTP", $"http://{_fixture.WeIpAddress.IPAddress}:1112");
 
+            secrets.Should().HaveSecret("PlatformBlah", "dummy");
+            secrets.Should().HaveSecret("Prefix--blah", "dummy");
         }
 
         // ReSharper disable once InconsistentNaming
@@ -91,7 +95,10 @@ namespace EshopWorld.Tools.Tests
             secrets.Should().HaveSecret("Platform--testapi1--HTTP", $"http://{_fixture.EusIpAddress.IPAddress}:2222");
 
             //API 2 - Internal - LB check
-            secrets.Should().HaveSecret("Platform--testapi2--HTTP", $"http://{_fixture.EusIpAddress.IPAddress}:2223");     
+            secrets.Should().HaveSecret("Platform--testapi2--HTTP", $"http://{_fixture.EusIpAddress.IPAddress}:2223");
+
+            secrets.Should().HaveSecret("PlatformBlah", "dummy");
+            secrets.Should().HaveSecret("Prefix--blah", "dummy");
         }
     }
 }

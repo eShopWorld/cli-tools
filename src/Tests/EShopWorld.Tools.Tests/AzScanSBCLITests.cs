@@ -27,6 +27,15 @@ namespace EshopWorld.Tools.Tests
         public async Task CheckSBResourcesProjected(string subParam, string domainParam)
         {
             await _fixture.DeleteAllSecretsAcrossRegions();
+
+            //set up dummy secrets
+            foreach (var region in RegionHelper.DeploymentRegionsToList())
+            {
+                await _fixture.SetSecret(region.ToRegionCode(), "SB--dummy--dummy", "dummy");
+                await _fixture.SetSecret(region.ToRegionCode(), "SBBlah", "dummy");
+                await _fixture.SetSecret(region.ToRegionCode(), "Prefix--blah", "dummy");
+            }
+
             GetStandardOutput("azscan", "serviceBus", subParam, AzScanCLITestsL2Fixture.SierraIntegrationSubscription, domainParam, AzScanCLITestsL2Fixture.TestDomain);
 
             foreach (var region in RegionHelper.DeploymentRegionsToList())
@@ -44,6 +53,8 @@ namespace EshopWorld.Tools.Tests
             foreach (var region in RegionHelper.DeploymentRegionsToList())
             {
                 await _fixture.SetSecret(region.ToRegionCode(), "SB--dummy--dummy", "dummy");
+                await _fixture.SetSecret(region.ToRegionCode(), "SBBlah", "dummy");
+                await _fixture.SetSecret(region.ToRegionCode(), "Prefix--blah", "dummy");
             }
 
             GetStandardOutput("azscan", "serviceBus", "-s", AzScanCLITestsL2Fixture.SierraIntegrationSubscription, "-d", AzScanCLITestsL2Fixture.TestDomain, "-2");
@@ -69,6 +80,9 @@ namespace EshopWorld.Tools.Tests
                 s.Value.Equals(
                     useSecondary ? keys.SecondaryConnectionString : keys.PrimaryConnectionString,
                     StringComparison.Ordinal));
+
+            secrets.Should().HaveSecret("SBBlah", "dummy");
+            secrets.Should().HaveSecret("Prefix--blah", "dummy");
         }
     }
 }
