@@ -23,14 +23,17 @@ namespace EshopWorld.Tools.Tests
 
         [InlineData("-s", "-d")]
         [Theory, IsLayer2]
-        public async Task CheckCosmosResourcesProjectedPerResourceGroup(string subParam, string domainParam)
+        public async Task CheckCosmosExpectedSecretProcess(string subParam, string domainParam)
         {
             await _fixture.DeleteAllSecretsAcrossRegions();
 
             //set up dummy secrets
             foreach (var region in RegionHelper.DeploymentRegionsToList())
             {
-                await _fixture.SetSecret(region.ToRegionCode(), "Platform--dummy--dummy", "dummy");
+                await _fixture.SetSecret(region.ToRegionCode(), "Cosmos--dummy--dummy", "dummy");
+                //following secrets are not to be touched by the CLI
+                await _fixture.SetSecret(region.ToRegionCode(), "CosmosBlah", "dummy");
+                await _fixture.SetSecret(region.ToRegionCode(), "Prefix--blah", "dummy");
             }
 
             GetStandardOutput("azscan", "cosmosDb", subParam, AzScanCLITestsL2Fixture.SierraIntegrationSubscription,
@@ -38,7 +41,9 @@ namespace EshopWorld.Tools.Tests
 
             foreach (var region in RegionHelper.DeploymentRegionsToList())
             {
-                await CheckSecrets(await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode()));
+                var secrets = await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode());
+                await CheckSecrets(secrets);
+                CheckSideSecrets(secrets);
             }
         }
 
@@ -46,12 +51,23 @@ namespace EshopWorld.Tools.Tests
         public async Task CheckCosmosKeyRotation()
         {
             await _fixture.DeleteAllSecretsAcrossRegions();
+            //set up dummy secrets
+            foreach (var region in RegionHelper.DeploymentRegionsToList())
+            {
+                await _fixture.SetSecret(region.ToRegionCode(), "Cosmos--dummy--dummy", "dummy");
+                //following secrets are not to be touched by the CLI
+                await _fixture.SetSecret(region.ToRegionCode(), "CosmosBlah", "dummy");
+                await _fixture.SetSecret(region.ToRegionCode(), "Prefix--blah", "dummy");
+            }
+
             GetStandardOutput("azscan", "cosmosDb", "-s", AzScanCLITestsL2Fixture.SierraIntegrationSubscription,
                 "-d", AzScanCLITestsL2Fixture.TestDomain, "-2");
 
             foreach (var region in RegionHelper.DeploymentRegionsToList())
             {
-                await CheckSecrets(await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode()), true);
+                var secrets = await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode());
+                await CheckSecrets(secrets, true);
+                CheckSideSecrets(secrets);
             }
         }
 
@@ -68,6 +84,13 @@ namespace EshopWorld.Tools.Tests
                 s.Value.Equals(
                     $"AccountEndpoint=https://esw-a-integration.documents.azure.com:443/;AccountKey={(useSecondary?  cosmosKeys.SecondaryMasterKey : cosmosKeys.PrimaryMasterKey)}",
                     StringComparison.Ordinal));
+        }
+
+        private void CheckSideSecrets(IList<SecretBundle> secrets)
+        {
+            secrets.Should().HaveSecret("CosmosBlah", "dummy");
+            secrets.Should().HaveSecret("Prefix--blah", "dummy");
+
         }
     }
 }

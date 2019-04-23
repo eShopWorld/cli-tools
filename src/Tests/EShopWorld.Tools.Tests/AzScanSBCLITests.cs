@@ -24,7 +24,7 @@ namespace EshopWorld.Tools.Tests
         [InlineData("-s", "-d")]
         [Theory, IsLayer2]
         // ReSharper disable once InconsistentNaming
-        public async Task CheckSBResourcesProjected(string subParam, string domainParam)
+        public async Task CheckSBExpectedSecretProcess(string subParam, string domainParam)
         {
             await _fixture.DeleteAllSecretsAcrossRegions();
 
@@ -32,6 +32,7 @@ namespace EshopWorld.Tools.Tests
             foreach (var region in RegionHelper.DeploymentRegionsToList())
             {
                 await _fixture.SetSecret(region.ToRegionCode(), "SB--dummy--dummy", "dummy");
+                //following secrets are not to be touched by the CLI
                 await _fixture.SetSecret(region.ToRegionCode(), "SBBlah", "dummy");
                 await _fixture.SetSecret(region.ToRegionCode(), "Prefix--blah", "dummy");
             }
@@ -40,7 +41,9 @@ namespace EshopWorld.Tools.Tests
 
             foreach (var region in RegionHelper.DeploymentRegionsToList())
             {
-                await CheckSecrets(await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode()));
+                var secrets = await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode());
+                await CheckSecrets(secrets);
+                CheckSideSecrets(secrets);
             }
         }
 
@@ -53,6 +56,7 @@ namespace EshopWorld.Tools.Tests
             foreach (var region in RegionHelper.DeploymentRegionsToList())
             {
                 await _fixture.SetSecret(region.ToRegionCode(), "SB--dummy--dummy", "dummy");
+                //following secrets are not to be touched by the CLI
                 await _fixture.SetSecret(region.ToRegionCode(), "SBBlah", "dummy");
                 await _fixture.SetSecret(region.ToRegionCode(), "Prefix--blah", "dummy");
             }
@@ -61,7 +65,9 @@ namespace EshopWorld.Tools.Tests
 
             foreach (var region in RegionHelper.DeploymentRegionsToList())
             {
-                await CheckSecrets(await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode()), true);
+                var secrets = await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode());
+                await CheckSecrets(secrets, true);
+                CheckSideSecrets(secrets);
             }
         }
 
@@ -79,8 +85,11 @@ namespace EshopWorld.Tools.Tests
                     StringComparison.Ordinal) &&
                 s.Value.Equals(
                     useSecondary ? keys.SecondaryConnectionString : keys.PrimaryConnectionString,
-                    StringComparison.Ordinal));
+                    StringComparison.Ordinal));         
+        }
 
+        private void CheckSideSecrets(IList<SecretBundle> secrets)
+        {
             secrets.Should().HaveSecret("SBBlah", "dummy");
             secrets.Should().HaveSecret("Prefix--blah", "dummy");
         }

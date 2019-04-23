@@ -41,7 +41,9 @@ namespace EshopWorld.Tools.Tests
 
             foreach (var region in RegionHelper.DeploymentRegionsToList())
             {
-                CheckSecrets(await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode()));
+                var secrets = await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode());
+                CheckSecrets(secrets);
+                CheckSideSecrets(secrets);
             }
         }
 
@@ -54,9 +56,11 @@ namespace EshopWorld.Tools.Tests
                 s.SecretIdentifier.Name.Equals("AI--a--InstrumentationKey",
                     StringComparison.Ordinal) &&
                 Guid.Parse(s.Value) != default(Guid)); //check key existence and that it is guid (parse succeeds)
+        }
 
+        private void CheckSideSecrets(IList<SecretBundle> secrets)
+        {
             secrets.Should().HaveSecret("AIBLah", "dummy");
-
             secrets.Should().HaveSecret("Prefix--blah", "dummy");
         }
     }
