@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using EShopWorld.Tools.Common;
-using Kusto.Cloud.Platform.Utils;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.KeyVault.Models;
 
@@ -14,7 +13,7 @@ namespace EShopWorld.Tools.Commands.AzScan
     ///
     /// automatically detects value changing and tracks live secrets which allows for defunct secrets to be deleted
     /// </summary>
-    public class AzScanKeyVaultManager 
+    public class AzScanKeyVaultManager
     {
         private readonly KeyVaultClient _kvClient;
         private readonly Dictionary<string, IList<TrackedSecretBundle>> _kvInitialState = new Dictionary<string, IList<TrackedSecretBundle>>();
@@ -53,17 +52,23 @@ namespace EShopWorld.Tools.Commands.AzScan
         /// </summary>
         /// <param name="secretPrefix">target secret naming prefix (as in prefix--name--suffix)</param>
         /// <returns><see cref="Task"/></returns>
-        public void DetachKeyVaults(string secretPrefix)
+        public async Task DetachKeyVaults(string secretPrefix)
         {
-             if (!_kvInitialState.Any())
+            if (!_kvInitialState.Any())
             {
                 throw new ApplicationException($"No key vaults have been attached, this instance must be initialized via {nameof(AttachKeyVaults)} call first");
             }
 
             //cross check all matching prefix secrets that have not been touched
-            _kvInitialState.ForEach(k =>
-                k.Value.Where(s => s.Secret.SecretIdentifier.Name.StartsWith(GetSecretPrefixLevelToken(secretPrefix)) && !s.Touched)
-                    .ForEach(async i => await _kvClient.DeleteSecret(k.Key, i.Secret)));
+            foreach  (var kv in _kvInitialState)
+            {
+                var tasks = kv.Value
+                    .Where(s => !s.Touched &&
+                                s.Secret.SecretIdentifier.Name.StartsWith(GetSecretPrefixLevelToken(secretPrefix)))
+                    .Select(i => _kvClient.DisableSecret(kv.Key, i.Secret));
+
+                await Task.WhenAll(tasks);
+            }
         }
 
         private static string GetSecretPrefixLevelToken(string secretPrefix)
@@ -89,7 +94,7 @@ namespace EShopWorld.Tools.Commands.AzScan
         {
             var trimmedName = name.EswTrim(additionalSuffixes).ToCamelCase();
             var targetName = $"{prefix}{(!string.IsNullOrWhiteSpace(trimmedName) ? KeyVaultLevelSeparator + trimmedName : "")}{KeyVaultLevelSeparator}{suffix}";
-            
+
             //detect new vs change, otherwise just track visit
             var trackedSecret = LocateSecret(keyVaultName, targetName);
             if (trackedSecret == null)
@@ -142,7 +147,7 @@ namespace EShopWorld.Tools.Commands.AzScan
         private class TrackedSecretBundle
         {
             protected internal SecretBundle Secret { get; set; }
-            protected internal bool Touched  {get; set; }
+            protected internal bool Touched { get; set; }
 
             public TrackedSecretBundle(SecretBundle secret, bool touched)
             {

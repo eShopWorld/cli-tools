@@ -49,6 +49,14 @@ namespace EShopWorld.Tools.Common
             await client.DeleteSecretAsync(GetKeyVaultUrlFromName(keyVaultName), secret.SecretIdentifier.Name);
         }
 
+        internal static async Task DisableSecret(this KeyVaultClient client, string keyVaultName, SecretBundle secret)
+        {
+            secret.Attributes.Enabled = false;
+            //disable current version - no need to create new one with "set"
+            await client.UpdateSecretWithHttpMessagesAsync(GetKeyVaultUrlFromName(keyVaultName),
+                secret.SecretIdentifier.Name, secret.SecretIdentifier.Version, secretAttributes: secret.Attributes);
+        }
+
         internal static async Task<SecretBundle> SetKeyVaultSecretAsync(this KeyVaultClient client, string keyVaultName,
             string name, string value)
         {
