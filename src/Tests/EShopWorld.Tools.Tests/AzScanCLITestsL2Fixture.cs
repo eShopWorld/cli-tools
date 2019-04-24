@@ -251,6 +251,17 @@ namespace EshopWorld.Tools.Tests
             await _keyVaultClient.SetKeyVaultSecretAsync(GetRegionalKVName(regionCode), name, value);
         }
 
+        internal async Task<SecretBundle> GetDisabledSecret(string regionCode, string name)
+        {
+            var secret =  await _keyVaultClient.GetSecretAsync(GetRegionalKVName(regionCode), name);
+            if (secret != null && secret.Attributes.Enabled.GetValueOrDefault())
+            {
+                return null;
+            }
+
+            return secret;
+        }
+
         // ReSharper disable once InconsistentNaming
         private static string GetRegionalKVName([NotNull] string regionCode)
         {

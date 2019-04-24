@@ -41,11 +41,11 @@ namespace EshopWorld.Tools.Tests
             GetStandardOutput("azscan", "dns", subParam, AzScanCLITestsL2Fixture.SierraIntegrationSubscription, domainParam, AzScanCLITestsL2Fixture.TestDomain);
             var weSecrets = await _fixture.LoadAllKeyVaultSecretsAsync(DeploymentRegion.WestEurope.ToRegionCode());
             CheckSecretsWE(weSecrets);
-            CheckSideSecrets(weSecrets);
+            CheckSideSecrets(weSecrets, DeploymentRegion.WestEurope.ToRegionCode());
 
             var eusSecrets = await _fixture.LoadAllKeyVaultSecretsAsync(DeploymentRegion.EastUS.ToRegionCode());
             CheckSecretsEUS(eusSecrets);
-            CheckSideSecrets(eusSecrets);
+            CheckSideSecrets(eusSecrets, DeploymentRegion.EastUS.ToRegionCode());
         }
 
 
@@ -100,10 +100,11 @@ namespace EshopWorld.Tools.Tests
             secrets.Should().HaveSecret("Platform--testapi2--HTTP", $"http://{_fixture.EusIpAddress.IPAddress}:2223");         
         }
 
-        private void CheckSideSecrets(IList<SecretBundle> secrets)
+        private void CheckSideSecrets(IList<SecretBundle> secrets, string regionCode)
         {
             secrets.Should().HaveSecret("PlatformBlah", "dummy");
             secrets.Should().HaveSecret("Prefix--blah", "dummy");
+            _fixture.GetDisabledSecret(regionCode, "Platform--dummy--dummy").Should().NotBeNull();
         }
     }
 }

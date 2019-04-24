@@ -43,7 +43,7 @@ namespace EshopWorld.Tools.Tests
             {
                 var secrets = await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode());
                 CheckSecrets(secrets);
-                CheckSideSecrets(secrets);
+                CheckSideSecrets(secrets, region.ToRegionCode());
             }
         }
 
@@ -55,13 +55,14 @@ namespace EshopWorld.Tools.Tests
                 // ReSharper disable once StringLiteralTypo
                 s.SecretIdentifier.Name.Equals("AI--a--InstrumentationKey",
                     StringComparison.Ordinal) &&
-                Guid.Parse(s.Value) != default(Guid)); //check key existence and that it is guid (parse succeeds)
+                Guid.Parse(s.Value) != default); //check key existence and that it is guid (parse succeeds)
         }
 
-        private void CheckSideSecrets(IList<SecretBundle> secrets)
+        private void CheckSideSecrets(IList<SecretBundle> secrets, string regionCode)
         {
             secrets.Should().HaveSecret("AIBLah", "dummy");
             secrets.Should().HaveSecret("Prefix--blah", "dummy");
+            _fixture.GetDisabledSecret(regionCode, "AI--dummy--dummy").Should().NotBeNull();
         }
     }
 }

@@ -43,7 +43,7 @@ namespace EshopWorld.Tools.Tests
             {
                 var secrets = await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode());
                 await CheckSecrets(secrets);
-                CheckSideSecrets(secrets);
+                CheckSideSecrets(secrets, region.ToRegionCode());
             }
         }
 
@@ -67,7 +67,7 @@ namespace EshopWorld.Tools.Tests
             {
                 var secrets = await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode());
                 await CheckSecrets(secrets, true);
-                CheckSideSecrets(secrets);
+                CheckSideSecrets(secrets, region.ToRegionCode());
             }
         }
 
@@ -88,10 +88,12 @@ namespace EshopWorld.Tools.Tests
                     StringComparison.Ordinal));         
         }
 
-        private void CheckSideSecrets(IList<SecretBundle> secrets)
+        private void CheckSideSecrets(IList<SecretBundle> secrets, string regionCode)
         {
             secrets.Should().HaveSecret("SBBlah", "dummy");
             secrets.Should().HaveSecret("Prefix--blah", "dummy");
+            _fixture.GetDisabledSecret(regionCode, "SB--dummy--dummy").Should().NotBeNull();
+
         }
     }
 }
