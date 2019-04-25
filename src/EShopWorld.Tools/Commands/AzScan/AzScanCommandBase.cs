@@ -7,7 +7,6 @@ using Eshopworld.Core;
 using Eshopworld.DevOps;
 using EShopWorld.Tools.Common;
 using McMaster.Extensions.CommandLineUtils;
-using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.Management.Fluent;
 
 namespace EShopWorld.Tools.Commands.AzScan
@@ -18,20 +17,24 @@ namespace EShopWorld.Tools.Commands.AzScan
     public abstract class AzScanCommandBase
     {
         protected readonly Azure.IAuthenticated Authenticated;
-        protected readonly KeyVaultClient KeyVaultClient;
         protected readonly IBigBrother BigBrother;
+        protected readonly AzScanKeyVaultManager KeyVaultManager;
+
+        protected CommandLineApplication AppInstance;
+        protected readonly string SecretPrefix;
 
         protected AzScanCommandBase()
         {
 
         }
 
-        protected AzScanCommandBase(Azure.IAuthenticated authenticated, KeyVaultClient keyVaultClient,
-            IBigBrother bigBrother)
+        protected AzScanCommandBase(Azure.IAuthenticated authenticated, AzScanKeyVaultManager keyVaultManager,
+            IBigBrother bigBrother, string secretPrefix)
         {
             Authenticated = authenticated;
-            KeyVaultClient = keyVaultClient;
+            KeyVaultManager = keyVaultManager;
             BigBrother = bigBrother;
+            SecretPrefix = secretPrefix;
         }
 
         [Option(
@@ -49,6 +52,8 @@ namespace EShopWorld.Tools.Commands.AzScan
             ShowInHelpText = true)]
         [Required]
         public string Subscription { get; set; }
+
+        internal string PlatformResourceGroup => $"platform-{EnvironmentName}";
 
         internal IEnumerable<ResourceGroupDescriptor> RegionalPlatformResourceGroups => RegionList.Select(r =>
                 new ResourceGroupDescriptor
@@ -70,7 +75,7 @@ namespace EShopWorld.Tools.Commands.AzScan
         };
 
 
-        internal IList<DeploymentRegion> RegionList =>
+        private IEnumerable<DeploymentRegion> RegionList =>
             RegionHelper.DeploymentRegionsToList("ci".Equals(EnvironmentName, StringComparison.OrdinalIgnoreCase));
 
         protected string EnvironmentName
@@ -91,13 +96,33 @@ namespace EShopWorld.Tools.Commands.AzScan
             }
         }
 
+        /// <summary>
+        /// command execution logic
+        /// </summary>
+        /// <param name="app">application instance instance</param>
+        /// <param name="console">console object</param>
+        /// <returns><see cref="Task"/> with process result code</returns>
         public virtual async Task<int> OnExecuteAsync(CommandLineApplication app, IConsole console)
         {
+            AppInstance = app;
             var sub = await GetSubscriptionId(Subscription);
-
             var subClient = Authenticated.WithSubscription(sub);
 
-            return await RunScanAsync(subClient, console);
+            await KeyVaultManager.AttachKeyVaults(DomainResourceGroup.TargetKeyVaults, SecretPrefix);
+
+            var resultCode =  await RunScanAsync(subClient, console);
+
+            if (resultCode == 0)
+            {
+                //only run this when command succeeded (and no exception)
+                await KeyVaultManager.DetachKeyVaults(SecretPrefix);
+            }
+            else
+            {
+                console.EmitWarning(BigBrother, GetType(), app.Options, $"Command returned non zero code - code returned : {resultCode}");
+            }
+
+            return resultCode;
         }
 
         /// <summary>
@@ -124,12 +149,9 @@ namespace EShopWorld.Tools.Commands.AzScan
 
             return sub.SubscriptionId;
         }
-        
 
-        protected virtual Task<int> RunScanAsync(IAzure client, IConsole console)
-        {
-            return Task.FromResult(0);
-        }
+        protected abstract Task<int> RunScanAsync(IAzure client, IConsole console);
+       
 
         internal class ResourceGroupDescriptor
         {

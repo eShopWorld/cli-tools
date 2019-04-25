@@ -22,17 +22,28 @@ namespace EshopWorld.Tools.Tests
         }    
 
         [InlineData("-s", "-d")]
-        [InlineData("--subscription", "--domain")]
         [Theory, IsLayer2]
         // ReSharper disable once InconsistentNaming
-        public async Task CheckSBResourcesProjected(string subParam, string domainParam)
+        public async Task CheckSBExpectedSecretProcess(string subParam, string domainParam)
         {
             await _fixture.DeleteAllSecretsAcrossRegions();
+
+            //set up dummy secrets
+            foreach (var region in RegionHelper.DeploymentRegionsToList())
+            {
+                await _fixture.SetSecret(region.ToRegionCode(), "SB--dummy--dummy", "dummy");
+                //following secrets are not to be touched by the CLI
+                await _fixture.SetSecret(region.ToRegionCode(), "SBBlah", "dummy");
+                await _fixture.SetSecret(region.ToRegionCode(), "Prefix--blah", "dummy");
+            }
+
             GetStandardOutput("azscan", "serviceBus", subParam, AzScanCLITestsL2Fixture.SierraIntegrationSubscription, domainParam, AzScanCLITestsL2Fixture.TestDomain);
 
             foreach (var region in RegionHelper.DeploymentRegionsToList())
             {
-                await CheckSecrets(await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode()));
+                var secrets = await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode());
+                await CheckSecrets(secrets);
+                CheckSideSecrets(secrets, region.ToRegionCode());
             }
         }
 
@@ -41,11 +52,22 @@ namespace EshopWorld.Tools.Tests
         public async Task CheckSBKeyRotation()
         {
             await _fixture.DeleteAllSecretsAcrossRegions();
+            //set up dummy secrets
+            foreach (var region in RegionHelper.DeploymentRegionsToList())
+            {
+                await _fixture.SetSecret(region.ToRegionCode(), "SB--dummy--dummy", "dummy");
+                //following secrets are not to be touched by the CLI
+                await _fixture.SetSecret(region.ToRegionCode(), "SBBlah", "dummy");
+                await _fixture.SetSecret(region.ToRegionCode(), "Prefix--blah", "dummy");
+            }
+
             GetStandardOutput("azscan", "serviceBus", "-s", AzScanCLITestsL2Fixture.SierraIntegrationSubscription, "-d", AzScanCLITestsL2Fixture.TestDomain, "-2");
 
             foreach (var region in RegionHelper.DeploymentRegionsToList())
             {
-                await CheckSecrets(await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode()), true);
+                var secrets = await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode());
+                await CheckSecrets(secrets, true);
+                CheckSideSecrets(secrets, region.ToRegionCode());
             }
         }
 
@@ -63,7 +85,15 @@ namespace EshopWorld.Tools.Tests
                     StringComparison.Ordinal) &&
                 s.Value.Equals(
                     useSecondary ? keys.SecondaryConnectionString : keys.PrimaryConnectionString,
-                    StringComparison.Ordinal));
+                    StringComparison.Ordinal));         
+        }
+
+        private void CheckSideSecrets(IList<SecretBundle> secrets, string regionCode)
+        {
+            secrets.Should().HaveSecret("SBBlah", "dummy");
+            secrets.Should().HaveSecret("Prefix--blah", "dummy");
+            _fixture.GetDisabledSecret(regionCode, "SB--dummy--dummy").Should().NotBeNull();
+
         }
     }
 }

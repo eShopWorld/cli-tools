@@ -18,7 +18,6 @@ namespace EshopWorld.Tools.Tests
         }      
 
         [InlineData("-s", "-d")]
-        [InlineData("--subscription", "--domain")]
         [Theory, IsLayer2]
         public async Task CheckAllProjectedResourcesPerResourceGroup(string subParam, string domainParam)
         {

@@ -1,8 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Eshopworld.Core;
-using EShopWorld.Tools.Common;
 using McMaster.Extensions.CommandLineUtils;
-using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.Management.ApplicationInsights.Management;
 using Microsoft.Azure.Management.Fluent;
 
@@ -16,11 +14,13 @@ namespace EShopWorld.Tools.Commands.AzScan
     {
         private readonly ApplicationInsightsManagementClient _azClient;
 
-        public AzScanAppInsightsCommand(Azure.IAuthenticated authenticated, KeyVaultClient keyVaultClient, IBigBrother bigBrother, ApplicationInsightsManagementClient azClient) : base(authenticated, keyVaultClient, bigBrother)
+        /// <inheritdoc />
+        public AzScanAppInsightsCommand(Azure.IAuthenticated authenticated, AzScanKeyVaultManager keyVaultManager, IBigBrother bigBrother, ApplicationInsightsManagementClient azClient) : base(authenticated, keyVaultManager, bigBrother, "AI")
         {
             _azClient = azClient;
         }
 
+        /// <inheritdoc />
         protected override async Task<int> RunScanAsync(IAzure client, IConsole console)
         {
             _azClient.SubscriptionId = client.SubscriptionId;
@@ -40,7 +40,7 @@ namespace EShopWorld.Tools.Commands.AzScan
                 {
                     foreach (var keyVaultName in DomainResourceGroup.TargetKeyVaults)
                     {
-                        await KeyVaultClient.SetKeyVaultSecretAsync(keyVaultName, "AI", ai.Name,
+                        await KeyVaultManager.SetKeyVaultSecretAsync(keyVaultName, SecretPrefix, ai.Name,
                             "InstrumentationKey",
                             ai.InstrumentationKey);
                     }

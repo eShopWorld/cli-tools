@@ -1,19 +1,22 @@
 ﻿using System.Threading.Tasks;
 using Eshopworld.Core;
-using EShopWorld.Tools.Common;
 using McMaster.Extensions.CommandLineUtils;
-using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.Management.Fluent;
 
 namespace EShopWorld.Tools.Commands.AzScan
 {
+    /// <summary>
+    /// Azure Service Bus configuration management scan process
+    /// </summary>
     [Command("serviceBus", Description = "scan project service bus configuration into KV")]
     public class AzScanServiceBusCommand : AzScanKeyRotationCommandBase
     {
-        public AzScanServiceBusCommand(Azure.IAuthenticated authenticated, KeyVaultClient keyVaultClient, IBigBrother bigBrother) : base(authenticated, keyVaultClient, bigBrother)
+        /// <inheritdoc />
+        public AzScanServiceBusCommand(Azure.IAuthenticated authenticated, AzScanKeyVaultManager keyVaultManager, IBigBrother bigBrother) : base(authenticated, keyVaultManager, bigBrother, "SB")
         {
         }
 
+        /// <inheritdoc />
         protected override async Task<int> RunScanAsync(IAzure client, IConsole console)
         {
             //list sb namespaces
@@ -29,7 +32,7 @@ namespace EShopWorld.Tools.Commands.AzScan
 
                 foreach (var keyVaultName in DomainResourceGroup.TargetKeyVaults)
                 {
-                    await KeyVaultClient.SetKeyVaultSecretAsync(keyVaultName, "SB", name, "ConnectionString",
+                    await KeyVaultManager.SetKeyVaultSecretAsync(keyVaultName, SecretPrefix, name, "ConnectionString",
                         UseSecondaryKey ? keys.SecondaryConnectionString : keys.PrimaryConnectionString);
                 }
             }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Autofac;
@@ -11,7 +10,7 @@ using EShopWorld.Tools.Commands.AzScan;
 using EShopWorld.Tools.Commands.KeyVault;
 using EShopWorld.Tools.Commands.Security;
 using EShopWorld.Tools.Commands.Transform;
-using EShopWorld.Tools.Telemetry;
+using EShopWorld.Tools.Common;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace EShopWorld.Tools
@@ -46,9 +45,9 @@ namespace EShopWorld.Tools
         {
             CommandLineApplication app = new CommandLineApplication<Program>();
 
-            var commandParsed = string.Empty;
+            CommandLineApplication commandParsed=null;
 
-            app.OnParsingComplete(result => { commandParsed = result.SelectedCommand.GetType().ToString(); } );
+            app.OnParsingComplete(result => { commandParsed = result.SelectedCommand; } );
 
             app.Conventions
                 .UseDefaultConventions()
@@ -58,21 +57,18 @@ namespace EShopWorld.Tools
             {
                 _bigBrother = app.GetService<IBigBrother>();
                 _console = app.GetService<IConsole>();
-                return app.Execute(args);
+                int retCode;
+                if ((retCode = app.Execute(args)) != 0)
+                {
+                    _console.EmitWarning(_bigBrother, commandParsed?.GetType() ?? app.GetType(), commandParsed?.Options, $"Command returned non zero code - code returned : {retCode}");
+                }
+
+                return retCode;
             }
             catch (Exception e)
             {
-                var @event = e.ToExceptionEvent<CLIExceptionEvent>();
-                @event.CommandType = commandParsed;
-                @event.Arguments = string.Join(',', app.Options.Select(t => $"{t.LongName}-'{t.Value()}'"));
-
-                _console.ForegroundColor = ConsoleColor.Red;
-                _console.Error.WriteLine($"Command {commandParsed} produced an error {e.Message}");
-                _console.ResetColor();
-
-                _bigBrother?.Publish(@event);
-                _bigBrother?.Flush();
-
+                _console.EmitException(_bigBrother, e, commandParsed?.GetType() ?? app.GetType(), commandParsed?.Options);
+                
                 return -1;
             }
         }

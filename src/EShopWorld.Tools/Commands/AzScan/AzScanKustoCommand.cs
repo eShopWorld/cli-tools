@@ -4,25 +4,28 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Eshopworld.Core;
-using EShopWorld.Tools.Common;
 using JetBrains.Annotations;
 using McMaster.Extensions.CommandLineUtils;
-using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.Management.Fluent;
 using Microsoft.Azure.Management.Kusto;
 
 namespace EShopWorld.Tools.Commands.AzScan
 {
+    /// <summary>
+    /// Azure Kusto configuration management scan process
+    /// </summary>
     [Command("kusto", Description = "scans Kusto resources and projects their configuration to KV")]
     public class AzScanKustoCommand : AzScanCommandBase
     {
         private readonly KustoManagementClient _kustoClient;
 
-        public AzScanKustoCommand(Azure.IAuthenticated authenticated, KeyVaultClient keyVaultClient, IBigBrother bigBrother, KustoManagementClient kustoClient):base(authenticated, keyVaultClient, bigBrother)
+        /// <inheritdoc />
+        public AzScanKustoCommand(Azure.IAuthenticated authenticated, AzScanKeyVaultManager keyVaultManager, IBigBrother bigBrother, KustoManagementClient kustoClient):base(authenticated, keyVaultManager, bigBrother, "Kusto")
         {
             _kustoClient = kustoClient;
         }
 
+        /// <inheritdoc />
         protected override async Task<int> RunScanAsync(IAzure client, IConsole console)
         {
             //identify target subs to scan
@@ -34,37 +37,36 @@ namespace EShopWorld.Tools.Commands.AzScan
                 var kustos = await _kustoClient.Clusters.ListAsync();
                 
                 foreach (var kusto in kustos)
-                {                    
-                    var expectedDbName = $"{kusto.Name}/{Domain}-{EnvironmentName}";
+                {
+                    //forward looking (non catching) kusto name followed by the actual environmental db
+                    var expectedDbName = $"(?<={kusto.Name}/){Domain}-{EnvironmentName}"; 
                     var rgName = GetResourceGroupName(kusto.Id);
                     var dbs = await _kustoClient.Databases.ListByClusterAsync(rgName, kusto.Name);
 
                     Match match=null;
-                    var foundInstance = dbs.FirstOrDefault(db => (match = Regex.Match(db.Name, "(?<=/).+")).Success);
+                    var foundInstance = dbs.FirstOrDefault(db => (match = Regex.Match(db.Name, expectedDbName, RegexOptions.IgnoreCase)).Success);
 
-                    if (foundInstance != null)
+                    if (foundInstance == null) continue;
+
+                    //if appropriate db found, emit secrets - to all regional KVs
+                    foreach (var keyVault in DomainResourceGroup.TargetKeyVaults)
                     {
-                        
-                        //if appropriate db found, emit secrets - to all regional KVs
-                        foreach (var keyVault in DomainResourceGroup.TargetKeyVaults)
-                        {
-                            await KeyVaultClient.SetKeyVaultSecretAsync(keyVault, "Kusto",
-                                match.Value,
-                                "ClusterUri",
-                                kusto.Uri);
-                            await KeyVaultClient.SetKeyVaultSecretAsync(keyVault, "Kusto",
-                                match.Value,
-                                "ClusterIngestionUri",
-                                kusto.DataIngestionUri);
-                            await KeyVaultClient.SetKeyVaultSecretAsync(keyVault, "Kusto",
-                                match.Value,
-                                "TenantId",
-                                Authenticated.TenantId);
-                            await KeyVaultClient.SetKeyVaultSecretAsync(keyVault, "Kusto",
-                                match.Value,
-                                "DBName",
-                                match.Value);
-                        }
+                        await KeyVaultManager.SetKeyVaultSecretAsync(keyVault, SecretPrefix,
+                            match.Value,
+                            "ClusterUri",
+                            kusto.Uri);
+                        await KeyVaultManager.SetKeyVaultSecretAsync(keyVault, SecretPrefix,
+                            match.Value,
+                            "ClusterIngestionUri",
+                            kusto.DataIngestionUri);
+                        await KeyVaultManager.SetKeyVaultSecretAsync(keyVault, SecretPrefix,
+                            match.Value,
+                            "TenantId",
+                            Authenticated.TenantId);
+                        await KeyVaultManager.SetKeyVaultSecretAsync(keyVault, SecretPrefix,
+                            match.Value,
+                            "DBName",
+                            match.Value);
                     }
                 }
             }           
