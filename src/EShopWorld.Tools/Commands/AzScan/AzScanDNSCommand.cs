@@ -125,7 +125,7 @@ namespace EShopWorld.Tools.Commands.AzScan
                     lb.PublicIPAddressIds.Any(s => s.Equals(publicIp.Id, StringComparison.OrdinalIgnoreCase)))
                 : _loadBalancersCache.FirstOrDefault(lb =>
                     lb.Inner.FrontendIPConfigurations.Any(c => !string.IsNullOrEmpty(c.PrivateIPAddress) &&
-                        c.PrivateIPAddress.Equals(ipAddress, StringComparison.OrdinalIgnoreCase)));
+                        c.PrivateIPAddress==ipAddress));
 
             if (targetLb == null)
             {

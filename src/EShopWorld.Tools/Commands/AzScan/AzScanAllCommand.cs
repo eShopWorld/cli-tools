@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using McMaster.Extensions.CommandLineUtils;
+using Microsoft.Azure.Management.Fluent;
 
 namespace EShopWorld.Tools.Commands.AzScan
 {
@@ -35,6 +36,12 @@ namespace EShopWorld.Tools.Commands.AzScan
                 GetCompositeCommand<AzScanKustoCommand>().OnExecuteAsync(app, console));
 
             return 0;
+        }
+
+        /// <inheritdoc />
+        protected override Task<int> RunScanAsync(IAzure client, IConsole console)
+        {
+            throw new NotImplementedException();
         }
 
         private T GetCompositeCommand<T>() where T : AzScanCommandBase

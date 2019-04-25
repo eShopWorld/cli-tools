@@ -149,11 +149,9 @@ namespace EShopWorld.Tools.Commands.AzScan
 
             return sub.SubscriptionId;
         }
-        
-        protected virtual Task<int> RunScanAsync(IAzure client, IConsole console)
-        {
-            throw new InvalidOperationException("This method is not meant to be executed at base level. Override in specific command implementation");
-        }
+
+        protected abstract Task<int> RunScanAsync(IAzure client, IConsole console);
+       
 
         internal class ResourceGroupDescriptor
         {

@@ -103,7 +103,7 @@ dotnet esw azscan all ....
 
 ##### Secrets naming strategy
 
-Secrets will be naming using following formula - {resource prefix}--{resource name}--{configuration item suffix}. This is in line with the EswDevopsSdk configuration items separator(--) used to designate individual levels of configuration.
+Secrets will be named using following formula - {resource prefix}--{resource name}--{configuration item suffix}. This is in line with the EswDevopsSdk configuration items separator(--) used to designate individual levels of configuration.
 
 Each resource type has its reserved prefix for all secrets generated. The name of the resources is transformed into camel case with special characters removed as to meet key vault secret naming rules (a-z and 0-9 and dash allowed). Environmental (e.g. -prep) and other suffixes (-lb) are removed from the name (as they are represented by keyvault itself).
 
