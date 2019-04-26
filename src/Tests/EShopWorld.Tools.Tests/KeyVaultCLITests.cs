@@ -52,6 +52,18 @@ namespace EshopWorld.Tools.Tests
             set;
         }
 
+        public SomeDisabledType SomeDisabled
+        {
+            get;
+            set;
+        }
+
+        public AllDisabledType AllDisabled
+        {
+            get;
+            set;
+        }
+
         public class _eventType
         {
             public string _1secret
@@ -61,6 +73,32 @@ namespace EshopWorld.Tools.Tests
             }
 
             public string a_b
+            {
+                get;
+                set;
+            }
+        }
+
+        public class SomeDisabledType
+        {
+            public string EnabledSecretA
+            {
+                get;
+                set;
+            }
+
+            [System.Obsolete]
+            public string DisabledSecretB
+            {
+                get;
+                set;
+            }
+        }
+
+        public class AllDisabledType
+        {
+            [System.Obsolete]
+            public string DisabledSecret
             {
                 get;
                 set;

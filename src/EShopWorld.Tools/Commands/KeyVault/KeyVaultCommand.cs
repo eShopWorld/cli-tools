@@ -9,7 +9,6 @@ using EShopWorld.Tools.Common;
 using EShopWorld.Tools.Telemetry;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Azure.KeyVault;
-using Microsoft.Azure.KeyVault.Models;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -26,7 +25,7 @@ namespace EShopWorld.Tools.Commands.KeyVault
     public class KeyVaultCommand
     {
         /// <summary>
-        /// output appropriate message to denote subcommand is missing
+        /// output appropriate message to denote sub-command is missing
         /// </summary>
         /// <param name="app">app instance</param>
         /// <param name="console">console</param>
@@ -99,8 +98,12 @@ namespace EShopWorld.Tools.Commands.KeyVault
             public async Task<int> OnExecuteAsync(CommandLineApplication app, IConsole console)
             {
 
-                ////collect all secrets
-                var secrets =  await _kvClient.GetAllSecrets(KeyVaultName);
+                ////collect all secrets - enabled and disabled
+                var secrets =  (await _kvClient.GetAllSecrets(KeyVaultName))
+                    .Select(s=> new Secret(s.SecretIdentifier.Name)).ToList();
+
+                secrets.AddRange((await _kvClient.GetDisabledSecrets(KeyVaultName))
+                    .Select(s=>new Secret(s.Identifier.Name, false)));
 
                 Directory.CreateDirectory(OutputFolder);             
 
@@ -158,15 +161,24 @@ namespace EShopWorld.Tools.Commands.KeyVault
                         memberType = SyntaxFactory.ParseTypeName("string");
                     }
 
-                    innerMembers.Add(SyntaxFactory
+                    var member = SyntaxFactory
                         .PropertyDeclaration(memberType,
-                            subNode.Name)
+                            subNode.Name)                       
                         .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
                         .AddAccessorListAccessors(
                             SyntaxFactory.AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
                                 .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)),
                             SyntaxFactory.AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
-                                .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken))));
+                                .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)));
+
+                    if (!subNode.Enabled)
+                    {
+                        member = member.AddAttributeLists(SyntaxFactory.AttributeList(
+                            SyntaxFactory.SingletonSeparatedList(
+                                SyntaxFactory.Attribute(SyntaxFactory.ParseName("System.Obsolete")))));
+                    }
+
+                    innerMembers.Add(member);
                     
                 }
 
@@ -175,39 +187,51 @@ namespace EShopWorld.Tools.Commands.KeyVault
                     .AddMembers(innerClasses.ToArray());
             }
 
-            private ConfigurationNode BuildTree(IEnumerable<SecretBundle> secrets)
+            private ConfigurationNode BuildTree(IEnumerable<Secret> secrets)
             {
                 var topLevel = new ConfigurationNode {Name = AppName};
-
              
                 foreach (var secret in secrets)
                 {
-                    var tokens = secret.SecretIdentifier.Name.Split("--");
+                    var tokens = secret.Name.Split("--");
                     var valueNode = topLevel;
-                    foreach (var token in tokens)
+                    for (var x=0; x<tokens.Length; x++)
                     {
+                        var token = tokens[x];
                         if (token.IsUnsignedInt())
                         {
                             valueNode.IsArray = true; //skip this level but treat it as an index to array represented by level above
                             continue;
                         }
-                       
-                        valueNode = valueNode.AddChild(token.SanitizePropertyName());
+
+                        valueNode = valueNode.AddChild(token.SanitizePropertyName(),
+                            (x + 1) != tokens.Length || secret.Enabled); //enabled is considered only at leaf level
                     }                    
                 }
 
                 return topLevel;
             }
 
-          
+            private struct Secret
+            {
+                internal string Name { get; }
+                internal bool Enabled { get; }
+
+                internal Secret(string name, bool enabled = true)
+                {
+                    Name = name;
+                    Enabled = enabled;
+                }
+            }
 
             internal class ConfigurationNode
             {
                 internal string Name { get; set; }
                 internal bool IsArray { get; set; }
                 internal readonly List<ConfigurationNode> Children = new List<ConfigurationNode>();
+                internal bool Enabled { get; set; } = true;
 
-                internal ConfigurationNode AddChild(string name)
+                internal ConfigurationNode AddChild(string name, bool enabled = true)
                 {
                     ConfigurationNode existing;
 
@@ -216,7 +240,7 @@ namespace EShopWorld.Tools.Commands.KeyVault
                         return existing;
                     }
 
-                    var newNode = new ConfigurationNode {Name = name};
+                    var newNode = new ConfigurationNode {Name = name, Enabled = enabled};
                     Children.Add(newNode);
                     return newNode;
                 }
