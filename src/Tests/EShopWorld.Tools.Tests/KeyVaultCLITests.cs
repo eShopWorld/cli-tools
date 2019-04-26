@@ -87,7 +87,7 @@ namespace EshopWorld.Tools.Tests
                 set;
             }
 
-            [System.Obsolete]
+            [System.Obsolete(""The underlying platform resource is no longer provisioned"")]
             public string DisabledSecretB
             {
                 get;
@@ -97,7 +97,7 @@ namespace EshopWorld.Tools.Tests
 
         public class AllDisabledType
         {
-            [System.Obsolete]
+            [System.Obsolete(""The underlying platform resource is no longer provisioned"")]
             public string DisabledSecret
             {
                 get;

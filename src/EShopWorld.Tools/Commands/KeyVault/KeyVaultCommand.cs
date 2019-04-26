@@ -175,7 +175,13 @@ namespace EShopWorld.Tools.Commands.KeyVault
                     {
                         member = member.AddAttributeLists(SyntaxFactory.AttributeList(
                             SyntaxFactory.SingletonSeparatedList(
-                                SyntaxFactory.Attribute(SyntaxFactory.ParseName("System.Obsolete")))));
+                                SyntaxFactory.Attribute(SyntaxFactory.ParseName("System.Obsolete"),
+                                    SyntaxFactory.AttributeArgumentList(SyntaxFactory.Token(SyntaxKind.OpenParenToken),
+                                        SyntaxFactory.SingletonSeparatedList(
+                                            SyntaxFactory.AttributeArgument(
+                                                SyntaxFactory.ParseExpression(
+                                                    "\"The underlying platform resource is no longer provisioned\""))),
+                                        SyntaxFactory.Token(SyntaxKind.CloseParenToken ))))));
                     }
 
                     innerMembers.Add(member);
