@@ -91,10 +91,18 @@ namespace EShopWorld.Tools.Commands.AzScan
 
                         foreach (var keyVault in regionalDef.TargetKeyVaults)
                         {
-                            await KeyVaultManager.SetKeyVaultSecretAsync(keyVault,
-                                SecretPrefix, aName.Name,
-                                isLb ? "HTTP" : "HTTPS",
-                                $"{(isLb ? "http" : "https")}://{aName.IPv4Addresses.First()}{(isLb ? ":" + port.Value.ToString(CultureInfo.InvariantCulture) : "")}", "-lb");
+                            if (isLb)
+                            {
+                                await KeyVaultManager.SetKeyVaultSecretAsync(keyVault,
+                                    SecretPrefix, aName.Name, "HTTP",
+                                    $"http://{aName.IPv4Addresses.First()}:{port.Value.ToString(CultureInfo.InvariantCulture)}",
+                                    "-lb");
+                            }
+                            else
+                            {
+                                await KeyVaultManager.SetKeyVaultSecretAsync(keyVault,
+                                    SecretPrefix, aName.Name, "HTTPS", $"https://{aName.Fqdn.TrimEnd('.')}");
+                            }
                         }
                     }
                 }
