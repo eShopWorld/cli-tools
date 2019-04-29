@@ -12,6 +12,7 @@ using Microsoft.Azure.KeyVault;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 
 namespace EShopWorld.Tools.Commands.KeyVault
@@ -126,8 +127,8 @@ namespace EShopWorld.Tools.Commands.KeyVault
             // ReSharper disable once IdentifierTypo
             private SyntaxNode GeneratePOCOSyntaxTree(ConfigurationNode tree)
             {
-                var @namespace = SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName(Namespace))
-                    .AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System")));
+                var @namespace = NamespaceDeclaration(ParseName(Namespace))
+                    .AddUsings(UsingDirective(ParseName("System")));
 
                 var topClass = BuildClassHierarchy(tree);
 
@@ -138,7 +139,7 @@ namespace EShopWorld.Tools.Commands.KeyVault
 
             private ClassDeclarationSyntax BuildClassHierarchy(ConfigurationNode node)
             {                
-                var currentClass = SyntaxFactory.ClassDeclaration($"{node.Name}Type").AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword));
+                var currentClass = ClassDeclaration($"{node.Name}Type").AddModifiers(Token(SyntaxKind.PublicKeyword));
 
                 var innerMembers = new List<MemberDeclarationSyntax>();
                 var innerClasses = new List<MemberDeclarationSyntax>();
@@ -153,35 +154,34 @@ namespace EShopWorld.Tools.Commands.KeyVault
                         var subclass = BuildClassHierarchy(subNode);
                         innerClasses.Add(subclass);
                         memberType = subNode.IsArray
-                            ? SyntaxFactory.ArrayType(SyntaxFactory.ParseTypeName(subclass.Identifier.Text), new SyntaxList<ArrayRankSpecifierSyntax>(SyntaxFactory.ArrayRankSpecifier()))
-                            : SyntaxFactory.ParseTypeName(subclass.Identifier.Text);
+                            ? ArrayType(ParseTypeName(subclass.Identifier.Text), new SyntaxList<ArrayRankSpecifierSyntax>(ArrayRankSpecifier()))
+                            : ParseTypeName(subclass.Identifier.Text);
                     }
                     else
                     {
-                        memberType = SyntaxFactory.ParseTypeName("string");
+                        memberType = ParseTypeName("string");
                     }
 
-                    var member = SyntaxFactory
-                        .PropertyDeclaration(memberType,
+                    var member = PropertyDeclaration(memberType,
                             subNode.Name)                       
-                        .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
+                        .AddModifiers(Token(SyntaxKind.PublicKeyword))
                         .AddAccessorListAccessors(
-                            SyntaxFactory.AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
-                                .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)),
-                            SyntaxFactory.AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
-                                .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)));
+                            AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
+                                .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)),
+                            AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
+                                .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)));
 
                     if (!subNode.Enabled)
                     {
-                        member = member.AddAttributeLists(SyntaxFactory.AttributeList(
-                            SyntaxFactory.SingletonSeparatedList(
-                                SyntaxFactory.Attribute(SyntaxFactory.ParseName("System.Obsolete"),
-                                    SyntaxFactory.AttributeArgumentList(SyntaxFactory.Token(SyntaxKind.OpenParenToken),
-                                        SyntaxFactory.SingletonSeparatedList(
-                                            SyntaxFactory.AttributeArgument(
-                                                SyntaxFactory.ParseExpression(
+                        member = member.AddAttributeLists(AttributeList(
+                            SingletonSeparatedList(
+                                Attribute(IdentifierName(typeof(ObsoleteAttribute).FullName),
+                                    AttributeArgumentList(Token(SyntaxKind.OpenParenToken),
+                                        SingletonSeparatedList(
+                                            AttributeArgument(
+                                                ParseExpression(
                                                     "\"The underlying platform resource is no longer provisioned\""))),
-                                        SyntaxFactory.Token(SyntaxKind.CloseParenToken ))))));
+                                        Token(SyntaxKind.CloseParenToken ))))));
                     }
 
                     innerMembers.Add(member);
