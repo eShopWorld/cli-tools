@@ -35,6 +35,21 @@ namespace EShopWorld.Tools.Common
             return allSecrets;
         }
 
+        internal static async Task<IList<SecretItem>> GetDisabledSecrets(this KeyVaultClient client, string keyVaultName)
+        {
+            //iterate via secret pages
+            var allSecrets = new List<SecretItem>();
+            IPage<SecretItem> secrets = null;
+            do
+            {
+                secrets = !string.IsNullOrWhiteSpace(secrets?.NextPageLink) ? await client.GetSecretsNextAsync(secrets.NextPageLink) : await client.GetSecretsAsync(GetKeyVaultUrlFromName(keyVaultName));
+
+                allSecrets.AddRange(secrets.Where(s => !s.Attributes.Enabled.GetValueOrDefault()));
+            } while (!string.IsNullOrWhiteSpace(secrets.NextPageLink));
+
+            return allSecrets;
+        }
+
         internal static async Task DeleteAllSecrets(this KeyVaultClient client, string keyVaultName)
         {
             var list = await client.GetAllSecrets(keyVaultName);
