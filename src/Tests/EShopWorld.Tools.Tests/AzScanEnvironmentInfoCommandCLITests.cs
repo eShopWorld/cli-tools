@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Eshopworld.DevOps;
 using Eshopworld.Tests.Core;
+using EShopWorld.Tools.Commands.AzScan;
 using EShopWorld.Tools.Common;
 using FluentAssertions;
 using Microsoft.Azure.KeyVault.Models;
@@ -10,16 +10,18 @@ using Xunit;
 
 namespace EshopWorld.Tools.Tests
 {
+    /// <summary>
+    /// secrets tests for <see cref="AzScanEnvironmentInfoCommand"/>
+    /// </summary>
     [Collection(nameof(AzScanCLITestsL2Collection))]
-    // ReSharper disable once InconsistentNaming
-    public class AzScanAppInsightsCLITests :CLIInvokingTestsBase
+    public class AzScanEnvironmentInfoCommandCLITests : CLIInvokingTestsBase
     {
         private readonly AzScanCLITestsL2Fixture _fixture;
 
-        public AzScanAppInsightsCLITests(AzScanCLITestsL2Fixture fixture)
+        public AzScanEnvironmentInfoCommandCLITests(AzScanCLITestsL2Fixture fixture)
         {
             _fixture = fixture;
-        }      
+        }
 
         [InlineData("-s", "-d")]
         [Theory, IsLayer2]
@@ -30,14 +32,14 @@ namespace EshopWorld.Tools.Tests
             //set up dummy secrets
             foreach (var region in RegionHelper.DeploymentRegionsToList())
             {
-                await _fixture.SetSecret(region.ToRegionCode(), "ApplicationInsights--dummy--dummy", "dummy");
+                await _fixture.SetSecret(region.ToRegionCode(), "Environment--dummy--dummy", "dummy");
                 //following secrets are not to be touched by the CLI
-                await _fixture.SetSecret(region.ToRegionCode(), "ApplicationInsightsBLah", "dummy");
+                await _fixture.SetSecret(region.ToRegionCode(), "EnvironmentBlah", "dummy");
                 await _fixture.SetSecret(region.ToRegionCode(), "Prefix--blah", "dummy");
             }
 
             // ReSharper disable once StringLiteralTypo
-            GetStandardOutput("azscan", "ai", subParam, AzScanCLITestsL2Fixture.SierraIntegrationSubscription, domainParam, AzScanCLITestsL2Fixture.TestDomain);
+            GetStandardOutput("azscan", "environmentInfo", subParam, AzScanCLITestsL2Fixture.SierraIntegrationSubscription, domainParam, AzScanCLITestsL2Fixture.TestDomain);
 
             foreach (var region in RegionHelper.DeploymentRegionsToList())
             {
@@ -49,20 +51,17 @@ namespace EshopWorld.Tools.Tests
 
         internal static void CheckSecrets(IList<SecretBundle> secrets)
         {
-            //check the KV
-            secrets.Should().ContainSingle(s => s.SecretIdentifier.Name.StartsWith("ApplicationInsights--", StringComparison.Ordinal));
-            secrets.Should().ContainSingle(s =>
-                // ReSharper disable once StringLiteralTypo
-                s.SecretIdentifier.Name.Equals("ApplicationInsights--InstrumentationKey",
-                    StringComparison.Ordinal) &&
-                Guid.Parse(s.Value) != default); //check key existence and that it is guid (parse succeeds)
+            //check the KV        
+            secrets.Should().HaveSecret("Environment--subscription--Id", EswDevOpsSdk.SierraIntegrationSubscriptionId);
+            secrets.Should().HaveSecret("Environment--subscription--Name", "sierra-integration");
         }
 
         private void CheckSideSecrets(IList<SecretBundle> secrets, string regionCode)
         {
-            secrets.Should().HaveSecret("ApplicationInsightsBLah", "dummy");
+            secrets.Should().HaveSecret("EnvironmentBlah", "dummy");
             secrets.Should().HaveSecret("Prefix--blah", "dummy");
-            _fixture.GetDisabledSecret(regionCode, "ApplicationInsights--dummy--dummy").Should().NotBeNull();
+            _fixture.GetDisabledSecret(regionCode, "Environment--dummy--dummy").Should().NotBeNull();
+
         }
     }
 }

@@ -19,6 +19,7 @@ namespace EShopWorld.Tools.Commands.AzScan
             builder.RegisterType<AzScanDNSCommand>();
             builder.RegisterType<AzScanKustoCommand>();
             builder.RegisterType<AzScanKeyVaultManager>();
+            builder.RegisterType<AzScanEnvironmentInfoCommand>();
         }
     }
 }

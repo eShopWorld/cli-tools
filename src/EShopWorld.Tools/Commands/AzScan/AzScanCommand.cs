@@ -15,8 +15,17 @@ namespace EShopWorld.Tools.Commands.AzScan
     [Subcommand(typeof(AzScanAppInsightsCommand))]
     [Subcommand(typeof(AzScanDNSCommand))]
     [Subcommand(typeof(AzScanKustoCommand))]
+    [Subcommand(typeof(AzScanEnvironmentInfoCommand))]
     public class AzScanCommand
     {
+        /// <summary>
+        /// bare azscan command logic
+        ///
+        /// note that sub-command is required
+        /// </summary>
+        /// <param name="app">app instance</param>
+        /// <param name="console">console instance</param>
+        /// <returns></returns>
         public Task<int> OnExecuteAsync(CommandLineApplication app, IConsole console)
         {
             console.Error.WriteLine("You must specify a sub-command");

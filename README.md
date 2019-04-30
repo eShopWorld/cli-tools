@@ -27,6 +27,7 @@ corresponding to Traffic Manager, App Gateway and Load balancers
     * serviceBus - scans service bus namespaces
     * SQL - scans SQL databases
     * Kusto - scans Kusto engines
+	* environmentInfo - projects basic environmental/subscription information
     * all - runs scans for all above mentioned Azure resources
 
 ## Usage Examples
@@ -114,13 +115,15 @@ As an example, __esw-checkout-prep__ resource will be named __eswCheckout__.
 Secrets are only projected to keyvault  when changed/added/disabled. Secrets are disabled when no longer matching underlying platform resource. Disabling allows *keyvault* command to mark appropriate fields as *obsolete*
 so that developer gets appropriate warning.
 
-##### App insights scan - AI prefix
+##### App insights scan - ApplicationInsights prefix
 
 Scans applicable App Insights resources and projects following keyvault secrets
 
 ```
-AI--{resourceName}--InstrumentationKey
+ApplicationInsights--InstrumentationKey
 ```
+
+Note that this secret is in line with ApplicationInsights SDK.
 
 ##### CosmosDB scan - CosmosDb prefix
 
@@ -193,6 +196,17 @@ Kusto--{domain}--DBName
 ```
 
 Note that due to financial implications, there will not be a kusto cluster per subscription. Instead, single cluster is reserved for non-PROD databases and another cluster reserved for PROD. Non-PROD cluster will host multiple databases per domain and environment e.g. tooling-ci, tooling-sand.
+
+#### EnvironmentInfo - Environment prefix
+
+Projects environment/subscription information. The primary use case is to enable authentication.
+
+```
+Environment--Subscription--Id - id (guid) of the subscription as specified by CLI input parameter
+Environment--Subscription--Name - display name of the subscription as specified by CLI input parameter
+```
+
+Note that since this is not a resource the Subscription token starts with upper case letter (otherwise camel case is used)
 
 #### Security key rotation process
 

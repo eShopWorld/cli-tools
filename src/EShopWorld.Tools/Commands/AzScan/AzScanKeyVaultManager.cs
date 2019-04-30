@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using EShopWorld.Tools.Common;
 using Microsoft.Azure.KeyVault;
@@ -81,19 +82,46 @@ namespace EShopWorld.Tools.Commands.AzScan
         /// <summary>
         /// implements secret workflow
         /// if new or changed, set in the underlying key vault
+        ///
+        /// <see cref="prefix"/> is required, followed by either processed/trimmed <see cref="name"/> or <see cref="suffix"/> or both
         /// </summary>
         /// <param name="keyVaultName">name of target key vault</param>
-        /// <param name="prefix">secret name prefix</param>
-        /// <param name="name">secret core name</param>
-        /// <param name="suffix">secret name suffix</param>
+        /// <param name="prefix">secret name prefix - required</param>
+        /// <param name="name">secret core name - optional</param>
+        /// <param name="suffix">secret name suffix - optional</param>
         /// <param name="value">actual secret value</param>
         /// <param name="additionalSuffixes">additional suffixes to apply</param>
         /// <returns><see cref="Task"/></returns>
         public async Task SetKeyVaultSecretAsync(string keyVaultName,
             string prefix, string name, string suffix, string value, params string[] additionalSuffixes)
         {
-            var trimmedName = name.EswTrim(additionalSuffixes).ToCamelCase();
-            var targetName = $"{prefix}{(!string.IsNullOrWhiteSpace(trimmedName) ? KeyVaultLevelSeparator + trimmedName : "")}{KeyVaultLevelSeparator}{suffix}";
+            //prefix must always be specified
+            if (string.IsNullOrWhiteSpace(prefix))
+            {
+                throw new ArgumentException("value required", nameof(prefix));
+            }
+
+            var trimmedName = !string.IsNullOrWhiteSpace(name) ? name.EswTrim(additionalSuffixes).ToCamelCase() : null;
+
+            if (string.IsNullOrWhiteSpace(trimmedName) && string.IsNullOrWhiteSpace(suffix))
+            {
+                throw new ArgumentException($"both processed {nameof(name)} and {nameof(suffix)} cannot be empty");
+            }
+
+            var sb = new StringBuilder(prefix);
+            if (!string.IsNullOrWhiteSpace(trimmedName))
+            {
+                sb.Append(KeyVaultLevelSeparator);
+                sb.Append(trimmedName);
+            }
+
+            if (!string.IsNullOrWhiteSpace(suffix))
+            {
+                sb.Append(KeyVaultLevelSeparator);
+                sb.Append(suffix);
+            }
+
+            var targetName = sb.ToString();
 
             //detect new vs change, otherwise just track visit
             var trackedSecret = LocateSecret(keyVaultName, targetName);
