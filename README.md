@@ -202,11 +202,9 @@ Note that due to financial implications, there will not be a kusto cluster per s
 Projects environment/subscription information. The primary use case is to enable authentication.
 
 ```
-Environment--Subscription--Id - id (guid) of the subscription as specified by CLI input parameter
-Environment--Subscription--Name - display name of the subscription as specified by CLI input parameter
+Environment--SubscriptionId - id (guid) of the subscription as specified by CLI input parameter
+Environment--SubscriptionName - display name of the subscription as specified by CLI input parameter
 ```
-
-Note that since this is not a resource the Subscription token starts with upper case letter (otherwise camel case is used)
 
 #### Security key rotation process
 

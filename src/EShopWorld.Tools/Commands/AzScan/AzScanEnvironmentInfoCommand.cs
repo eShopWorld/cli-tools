@@ -23,8 +23,8 @@ namespace EShopWorld.Tools.Commands.AzScan
         {
             foreach (var kv in DomainResourceGroup.TargetKeyVaults)
             {
-                await _kvManager.SetKeyVaultSecretAsync(kv, SecretPrefix, "Subscription", "Id", SubscriptionId);
-                await _kvManager.SetKeyVaultSecretAsync(kv, SecretPrefix, "Subscription", "Name", Subscription);
+                await _kvManager.SetKeyVaultSecretAsync(kv, SecretPrefix, string.Empty, "SubscriptionId", SubscriptionId);
+                await _kvManager.SetKeyVaultSecretAsync(kv, SecretPrefix, string.Empty, "SubscriptionName", Subscription);
             }
 
             return 0;

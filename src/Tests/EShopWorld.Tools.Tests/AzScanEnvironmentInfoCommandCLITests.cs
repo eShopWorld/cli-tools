@@ -52,8 +52,8 @@ namespace EshopWorld.Tools.Tests
         internal static void CheckSecrets(IList<SecretBundle> secrets)
         {
             //check the KV        
-            secrets.Should().HaveSecret("Environment--subscription--Id", EswDevOpsSdk.SierraIntegrationSubscriptionId);
-            secrets.Should().HaveSecret("Environment--subscription--Name", "sierra-integration");
+            secrets.Should().HaveSecret("Environment--SubscriptionId", EswDevOpsSdk.SierraIntegrationSubscriptionId);
+            secrets.Should().HaveSecret("Environment--SubscriptionName", "sierra-integration");
         }
 
         private void CheckSideSecrets(IList<SecretBundle> secrets, string regionCode)
