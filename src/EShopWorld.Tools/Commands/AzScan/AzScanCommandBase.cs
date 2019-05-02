@@ -131,7 +131,7 @@ namespace EShopWorld.Tools.Commands.AzScan
         /// </summary>
         /// <param name="name">subscription name</param>
         /// <returns>subscription id, subscription name</returns>
-        protected async Task<(string, string)> GetSubscriptionDetails(string name)
+        protected async Task<(string subName, string subId)> GetSubscriptionDetails(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
