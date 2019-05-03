@@ -15,7 +15,7 @@ namespace EShopWorld.Tools.Commands.AzScan
         private readonly ApplicationInsightsManagementClient _azClient;
 
         /// <inheritdoc />
-        public AzScanAppInsightsCommand(Azure.IAuthenticated authenticated, AzScanKeyVaultManager keyVaultManager, IBigBrother bigBrother, ApplicationInsightsManagementClient azClient) : base(authenticated, keyVaultManager, bigBrother, "AI")
+        public AzScanAppInsightsCommand(Azure.IAuthenticated authenticated, AzScanKeyVaultManager keyVaultManager, IBigBrother bigBrother, ApplicationInsightsManagementClient azClient) : base(authenticated, keyVaultManager, bigBrother, "ApplicationInsights")
         {
             _azClient = azClient;
         }
@@ -40,7 +40,7 @@ namespace EShopWorld.Tools.Commands.AzScan
                 {
                     foreach (var keyVaultName in DomainResourceGroup.TargetKeyVaults)
                     {
-                        await KeyVaultManager.SetKeyVaultSecretAsync(keyVaultName, SecretPrefix, ai.Name,
+                        await KeyVaultManager.SetKeyVaultSecretAsync(keyVaultName, SecretPrefix, string.Empty,
                             "InstrumentationKey",
                             ai.InstrumentationKey);
                     }

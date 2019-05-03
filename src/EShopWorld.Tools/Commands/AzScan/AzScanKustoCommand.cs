@@ -96,7 +96,7 @@ namespace EShopWorld.Tools.Commands.AzScan
                     .Select(s => s.SubscriptionId);
             }
 
-            return new[] {await GetSubscriptionId(Subscription)};
+            return new[] {(await GetSubscriptionDetails(Subscription)).subscriptionName};
         }
     }
 }

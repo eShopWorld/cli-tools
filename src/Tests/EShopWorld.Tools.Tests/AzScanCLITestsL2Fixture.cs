@@ -160,33 +160,34 @@ namespace EshopWorld.Tools.Tests
         private async Task SetupNetwork(IResourceGroup rg)
         {
             var camelRgName = rg.Name.ToCamelCase();
-            string testAPI1 = "TestAPI1", testAPI2 = "TestAPI2";            
+            const string testApi1 = "TestAPI1";
+            const string testApi2 = "TestAPI2";
 
             WeIpAddress= await _azClient.PublicIPAddresses.Define($"{camelRgName}.wepip").WithRegion(Region.EuropeNorth)
                 .WithExistingResourceGroup(rg).WithStaticIP().WithSku(PublicIPSkuType.Basic).CreateAsync();
 
             _azClient.LoadBalancers.Define($"{camelRgName}.welb").WithRegion(Region.EuropeNorth)
                 .WithExistingResourceGroup(rg)
-                .DefineLoadBalancingRule(testAPI1)
+                .DefineLoadBalancingRule(testApi1)
                     .WithProtocol(TransportProtocol.Tcp)
                     .FromExistingPublicIPAddress(WeIpAddress)
                     .FromFrontendPort(1111)
-                    .ToBackend(testAPI1)
-                    .WithProbe($"{testAPI1}-probe")
+                    .ToBackend(testApi1)
+                    .WithProbe($"{testApi1}-probe")
                     .Attach()
-                .DefineLoadBalancingRule(testAPI2)
+                .DefineLoadBalancingRule(testApi2)
                     .WithProtocol(TransportProtocol.Tcp)
                     .FromExistingPublicIPAddress(WeIpAddress)
                     .FromFrontendPort(1112)
-                    .ToBackend(testAPI2)
-                    .WithProbe($"{testAPI2}-probe")
+                    .ToBackend(testApi2)
+                    .WithProbe($"{testApi2}-probe")
                     .Attach()
                 .WithSku(LoadBalancerSkuType.Basic)
-                .DefineHttpProbe($"{testAPI1}-probe")
+                .DefineHttpProbe($"{testApi1}-probe")
                     .WithRequestPath("/Probe")
                     .WithPort(1111)
                     .Attach()
-                .DefineHttpProbe($"{testAPI2}-probe")
+                .DefineHttpProbe($"{testApi2}-probe")
                     .WithRequestPath("/Probe")
                     .WithPort(1112)
                     .Attach()
@@ -197,39 +198,39 @@ namespace EshopWorld.Tools.Tests
 
             _azClient.LoadBalancers.Define($"{camelRgName}.euslb").WithRegion(Region.EuropeNorth)
                 .WithExistingResourceGroup(rg)
-                .DefineLoadBalancingRule(testAPI1)
+                .DefineLoadBalancingRule(testApi1)
                     .WithProtocol(TransportProtocol.Tcp)
                     .FromExistingPublicIPAddress(EusIpAddress)
                     .FromFrontendPort(2222)
-                    .ToBackend(testAPI1)
-                    .WithProbe($"{testAPI1}-probe")
+                    .ToBackend(testApi1)
+                    .WithProbe($"{testApi1}-probe")
                     .Attach()
-                .DefineLoadBalancingRule(testAPI2)
+                .DefineLoadBalancingRule(testApi2)
                     .WithProtocol(TransportProtocol.Tcp)
                     .FromExistingPublicIPAddress(EusIpAddress)
                     .FromFrontendPort(2223)
-                    .ToBackend(testAPI2)
-                    .WithProbe($"{testAPI2}-probe")
+                    .ToBackend(testApi2)
+                    .WithProbe($"{testApi2}-probe")
                     .Attach()
                 .WithSku(LoadBalancerSkuType.Basic)
-                .DefineHttpProbe($"{testAPI1}-probe")
+                .DefineHttpProbe($"{testApi1}-probe")
                     .WithRequestPath("/Probe")
                     .WithPort(2222)
                     .Attach()
-                .DefineHttpProbe($"{testAPI2}-probe")
+                .DefineHttpProbe($"{testApi2}-probe")
                     .WithRequestPath("/Probe")
                     .WithPort(2223)
                     .Attach()
                 .Create();
 
             await _azClient.DnsZones.Define($"{camelRgName}.dns".ToLowerInvariant()).WithExistingResourceGroup(rg)
-                .DefineCNameRecordSet("TestAPI1").WithAlias($"{camelRgName}-api.azureedge.net").Attach() //Global record
-                .DefineARecordSet("TestAPI1-we-lb").WithIPv4Address(WeIpAddress.IPAddress).Attach() //test api 1 LB -WE
-                .DefineARecordSet("TestAPI1-eus-lb").WithIPv4Address(EusIpAddress.IPAddress).Attach() //test api 1 LB - EUS
-                .DefineARecordSet("TestAPI1-we").WithIPv4Address("3.3.3.3").Attach() //test api 1 AG - WE
-                .DefineARecordSet("TestAPI1-eus").WithIPv4Address("4.4.4.4").Attach() //test api 1 AG - EUS
-                .DefineARecordSet("TestAPI2-we").WithIPv4Address(WeIpAddress.IPAddress).Attach() //test api 2 - internal API - LB only - WE
-                .DefineARecordSet("TestAPI2-eus").WithIPv4Address(EusIpAddress.IPAddress).Attach() //test api 2 - internal API - LB only - EUS
+                .DefineCNameRecordSet(testApi1).WithAlias($"{camelRgName}-api.azureedge.net").Attach() //Global record
+                .DefineARecordSet($"{testApi1}-we-lb").WithIPv4Address(WeIpAddress.IPAddress).Attach() //test api 1 LB -WE
+                .DefineARecordSet($"{testApi1}-eus-lb").WithIPv4Address(EusIpAddress.IPAddress).Attach() //test api 1 LB - EUS
+                .DefineARecordSet($"{testApi1}-we").WithIPv4Address("3.3.3.3").Attach() //test api 1 AG - WE
+                .DefineARecordSet($"{testApi1}-eus").WithIPv4Address("4.4.4.4").Attach() //test api 1 AG - EUS
+                .DefineARecordSet($"{testApi2}-we").WithIPv4Address(WeIpAddress.IPAddress).Attach() //test api 2 - internal API - LB only - WE
+                .DefineARecordSet($"{testApi2}-eus").WithIPv4Address(EusIpAddress.IPAddress).Attach() //test api 2 - internal API - LB only - EUS
                 .CreateAsync();
         }
 

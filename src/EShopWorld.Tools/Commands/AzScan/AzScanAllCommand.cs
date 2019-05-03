@@ -33,7 +33,8 @@ namespace EShopWorld.Tools.Commands.AzScan
                 GetCompositeCommand<AzScanServiceBusCommand>().OnExecuteAsync(app, console),
                 GetCompositeCommand<AzScanAppInsightsCommand>().OnExecuteAsync(app, console),
                 GetCompositeCommand<AzScanDNSCommand>().OnExecuteAsync(app, console),
-                GetCompositeCommand<AzScanKustoCommand>().OnExecuteAsync(app, console));
+                GetCompositeCommand<AzScanKustoCommand>().OnExecuteAsync(app, console),
+                GetCompositeCommand<AzScanEnvironmentInfoCommand>().OnExecuteAsync(app, console));
 
             return 0;
         }

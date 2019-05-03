@@ -52,6 +52,7 @@ namespace EShopWorld.Tools.Commands.AzScan
             ShowInHelpText = true)]
         [Required]
         public string Subscription { get; set; }
+        protected string SubscriptionId { get; set; }
 
         internal string PlatformResourceGroup => $"platform-{EnvironmentName}";
 
@@ -105,8 +106,8 @@ namespace EShopWorld.Tools.Commands.AzScan
         public virtual async Task<int> OnExecuteAsync(CommandLineApplication app, IConsole console)
         {
             AppInstance = app;
-            var sub = await GetSubscriptionId(Subscription);
-            var subClient = Authenticated.WithSubscription(sub);
+            (SubscriptionId, Subscription) = await GetSubscriptionDetails(Subscription);
+            var subClient = Authenticated.WithSubscription(SubscriptionId);
 
             await KeyVaultManager.AttachKeyVaults(DomainResourceGroup.TargetKeyVaults, SecretPrefix);
 
@@ -126,11 +127,11 @@ namespace EShopWorld.Tools.Commands.AzScan
         }
 
         /// <summary>
-        /// get subscription id for a given sub name
+        /// get subscription details for a given sub name - clean up (casing) of passed subscription name
         /// </summary>
         /// <param name="name">subscription name</param>
-        /// <returns>subscription id</returns>
-        protected async Task<string> GetSubscriptionId(string name)
+        /// <returns>subscription id, subscription name</returns>
+        protected async Task<(string subscriptionName, string subscriptionId)> GetSubscriptionDetails(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
@@ -147,7 +148,7 @@ namespace EShopWorld.Tools.Commands.AzScan
                 throw new ApplicationException($"Subscription {Subscription} not found. Check the account role setup.");
             }
 
-            return sub.SubscriptionId;
+            return (sub.SubscriptionId, sub.DisplayName);
         }
 
         protected abstract Task<int> RunScanAsync(IAzure client, IConsole console);
