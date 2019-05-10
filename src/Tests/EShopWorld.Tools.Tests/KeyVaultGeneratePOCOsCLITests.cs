@@ -9,7 +9,7 @@ namespace EshopWorld.Tools.Tests
     /// <summary>
     /// tests for keyvault CLI command
     /// </summary>
-    public class KeyVaultCLITests : CLIInvokingTestsBase
+    public class KeyVaultGeneratePOCOsCLITests : CLIInvokingTestsBase
     {
         [Fact, IsLayer2]
         public void CheckOptions()
