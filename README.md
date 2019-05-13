@@ -51,12 +51,30 @@ Usage
 dotnet esw transform  resx2json -s <source project> -o <output>
 ```
 
-### KeyVault Generate POCOs Command
+### KeyVault master command
+
+aggregates key vault centric commands
+
+#### generatePOCOs
+
+generates POCO classes matching the secrets in the target KV and matching project file so that it can be packaged, this respects hierarchies defined in secrets names
 
 Usage
 
 ```console
 dotnet esw keyvault generatePOCOs -aid 123 -as secret -t esw -k maxmara -an maxmara -n Esw.MaxMara -v 1.2.3 -o .
+```
+
+#### export
+
+exports KV content to a JSON file representing file based configuration (~ appsettings.json)
+
+this gives a developer full control over local development experience and allows for various scenarios to be debugged by adjusting the secrets, an example being low level DNS records redirected to further up the DNS stack if the underlyign resource is not available locally such as load balancer entry to application gateway (or indeed the opposite - Application Gateway to localhost)
+
+Usage
+
+```
+dotnet esw keyvault export -k esw-domain-env-region -o c:\temp\a.json 
 ```
 
 ### Scanning Azure resources - AzScan commands
