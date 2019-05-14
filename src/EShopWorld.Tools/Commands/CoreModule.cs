@@ -1,7 +1,7 @@
-﻿using System;
+﻿using System.IO;
+using System.Reflection;
 using Autofac;
 using Eshopworld.Core;
-using Eshopworld.DevOps;
 using Eshopworld.Telemetry;
 using EShopWorld.Tools.Common;
 using Microsoft.Azure.KeyVault;
@@ -12,7 +12,9 @@ using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Azure.Services.AppAuthentication;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Rest;
+using Module = Autofac.Module;
 
 namespace EShopWorld.Tools.Commands
 {
@@ -42,7 +44,10 @@ namespace EShopWorld.Tools.Commands
             builder.RegisterInstance(new ApplicationInsightsManagementClient(tokenCredentials));
             builder.RegisterInstance(new KustoManagementClient(tokenCredentials));
 
-            var config = EswDevOpsSdk.BuildConfiguration();
+            var configBuilder = new ConfigurationBuilder().SetBasePath(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+            configBuilder.AddJsonFile("appsettings.json");
+
+            var config = configBuilder.Build();
             builder.RegisterInstance(config);
             builder.RegisterInstance<IBigBrother>(new BigBrother(config["AIKey"], config["InternalAIKey"]));
         }
