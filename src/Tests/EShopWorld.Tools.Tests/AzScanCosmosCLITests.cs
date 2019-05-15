@@ -79,7 +79,7 @@ namespace EshopWorld.Tools.Tests
             var cosmosKeys = await _fixture.TestCosmosDbAccount.ListKeysAsync();
 
             secrets.Should().ContainSingle(s =>
-                s.SecretIdentifier.Name.Equals("CosmosDB--a--ConnectionString",
+                s.SecretIdentifier.Name.Equals("CosmosDB--A--ConnectionString",
                     StringComparison.Ordinal) &&
                 s.Value.Equals(
                     $"AccountEndpoint=https://esw-a-integration.documents.azure.com:443/;AccountKey={(useSecondary?  cosmosKeys.SecondaryMasterKey : cosmosKeys.PrimaryMasterKey)}",

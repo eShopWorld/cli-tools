@@ -101,7 +101,7 @@ namespace EShopWorld.Tools.Commands.AzScan
                 throw new ArgumentException("value required", nameof(prefix));
             }
 
-            var trimmedName = !string.IsNullOrWhiteSpace(name) ? name.EswTrim(additionalSuffixes).ToCamelCase() : null;
+            var trimmedName = !string.IsNullOrWhiteSpace(name) ? name.EswTrim(additionalSuffixes).ToPascalCase() : null;
 
             if (string.IsNullOrWhiteSpace(trimmedName) && string.IsNullOrWhiteSpace(suffix))
             {

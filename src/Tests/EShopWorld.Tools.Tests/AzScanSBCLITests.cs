@@ -81,7 +81,7 @@ namespace EshopWorld.Tools.Tests
 
             secrets.Should().ContainSingle(s =>
                 // ReSharper disable once StringLiteralTypo
-                s.SecretIdentifier.Name.Equals("SB--a--ConnectionString",
+                s.SecretIdentifier.Name.Equals("SB--A--ConnectionString",
                     StringComparison.Ordinal) &&
                 s.Value.Equals(
                     useSecondary ? keys.SecondaryConnectionString : keys.PrimaryConnectionString,
