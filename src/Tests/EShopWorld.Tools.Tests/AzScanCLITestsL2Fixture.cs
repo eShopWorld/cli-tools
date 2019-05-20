@@ -132,7 +132,7 @@ namespace EshopWorld.Tools.Tests
         // ReSharper disable once InconsistentNaming
         private async Task<IVault> SetupOutputKV(IResourceGroup rg)
         {
-            var vault =  await _azClient.Vaults
+            return await _azClient.Vaults
                 .Define($"esw-{rg.Name}")
                     .WithRegion(rg.RegionName)
                 .WithExistingResourceGroup(rg)
@@ -141,19 +141,6 @@ namespace EshopWorld.Tools.Tests
                     .AllowSecretPermissions(SecretPermissions.Get, SecretPermissions.List, SecretPermissions.Set, SecretPermissions.Delete, SecretPermissions.Recover)
                 .Attach()
                 .CreateAsync();
-
-            var credentials = _container.Resolve<TokenCredentials>();
-            var httpClient = new HttpClient();
-            
-            var request = new HttpRequestMessage(HttpMethod.Patch,
-                $"https://management.azure.com/subscriptions/{EswDevOpsSdk.SierraIntegrationSubscriptionId}/resourceGroups/{rg.Name}/providers/Microsoft.KeyVault/vaults/{vault.Name}?api-version=2018-02-14");
-            request.Content = new StringContent("{\"properties\":{\"enableSoftDelete\":true}}", Encoding.UTF8, "application/json");
-            await credentials.ProcessHttpRequestAsync(request, CancellationToken.None);
-
-            (await httpClient.SendAsync(request)).EnsureSuccessStatusCode();
-
-
-            return vault;
         }
 
         private async Task<ApplicationInsightsComponent> SetupAzureMonitor(IResourceGroup rg)
@@ -270,19 +257,19 @@ namespace EshopWorld.Tools.Tests
 
         internal async Task SetSecret(string regionCode, string name, string value)
         {
-            if (await CheckIsSoftDeleted(regionCode, name))
-            {
-                await _keyVaultClient.RecoverSecret(GetRegionalKVName(regionCode), name);
-            }
-
             await _keyVaultClient.SetKeyVaultSecretAsync(GetRegionalKVName(regionCode), name, value);
         }
 
-
-        internal async Task<bool> CheckIsSoftDeleted(string regionCode, string name)
+        internal async Task<SecretBundle> GetDisabledSecret(string regionCode, string name)
         {
-            var secret =  await _keyVaultClient.GetDeletedSecrets(GetRegionalKVName(regionCode));
-            return secret.Any(s => s.Identifier.Name.Equals(name, StringComparison.Ordinal));
+            var secret = await _keyVaultClient.GetSecretAsync(GetRegionalKVName(regionCode), name);
+            if (secret != null && secret.Attributes.Enabled.GetValueOrDefault())
+            {
+                return null;
+            }
+
+
+            return secret;
         }
 
         // ReSharper disable once InconsistentNaming

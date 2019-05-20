@@ -90,7 +90,7 @@ namespace EshopWorld.Tools.Tests
         {
             secrets.Should().HaveSecret("CosmosBlah", "dummy");
             secrets.Should().HaveSecret("Prefix--blah", "dummy");
-            (await _fixture.CheckIsSoftDeleted(regionCode, "Cosmos--dummy--dummy")).Should().BeTrue();
+            (await _fixture.GetDisabledSecret(regionCode, "Cosmos--dummy--dummy")).Should().NotBeNull();
 
         }
     }

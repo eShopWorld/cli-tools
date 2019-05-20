@@ -110,7 +110,7 @@ namespace EshopWorld.Tools.Tests
         {
             secrets.Should().HaveSecret("PlatformBlah", "dummy");
             secrets.Should().HaveSecret("Prefix--blah", "dummy");
-            (await _fixture.CheckIsSoftDeleted(regionCode, "Platform--dummy--dummy")).Should().BeTrue();
+            (await _fixture.GetDisabledSecret(regionCode, "Platform--dummy--dummy")).Should().NotBeNull();
         }
     }
 }

@@ -19,9 +19,7 @@ namespace EShopWorld.Tools.Commands.AzScan
     {
         private readonly KeyVaultClient _kvClient;
         private readonly Dictionary<string, IList<TrackedSecretBundle>> _kvInitialState = new Dictionary<string, IList<TrackedSecretBundle>>();
-        private readonly Dictionary<string, IList<string>> _deletedSecretNames = new Dictionary<string, IList<string>>();
         private const string KeyVaultLevelSeparator = "--";
-        private IEnumerable<string> _attachedKeyVaults;
 
         /// <summary>
         /// ctor
@@ -41,18 +39,12 @@ namespace EShopWorld.Tools.Commands.AzScan
         [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
         public async Task AttachKeyVaults(IEnumerable<string> kvNames, string secretPrefix)
         {
-            _attachedKeyVaults = kvNames;
             var prefix = GetSecretPrefixLevelToken(secretPrefix);
             foreach (var kv in kvNames)
             {
                 _kvInitialState.Add(kv,
                     (await _kvClient.GetAllSecrets(kv, prefix ))
                     .Select(i => new TrackedSecretBundle(i, false))
-                    .ToList());
-
-                _deletedSecretNames.Add(kv,
-                    (await _kvClient.GetDeletedSecrets(kv, prefix))
-                    .Select(s => s.Identifier.Name)
                     .ToList());
             }
         }
@@ -72,23 +64,12 @@ namespace EShopWorld.Tools.Commands.AzScan
             }
 
             //cross check all matching prefix secrets that have not been touched
-            foreach  (var kv in _kvInitialState)
+            foreach  (var (key, value) in _kvInitialState)
             {
-                var tasks = kv.Value
+                var tasks = value
                     .Where(s => !s.Touched &&
                                 s.Secret.SecretIdentifier.Name.StartsWith(GetSecretPrefixLevelToken(secretPrefix)))
-                    .Select(i => _kvClient.DeleteSecret(kv.Key, i.Secret));
-
-                await Task.WhenAll(tasks);
-            }
-
-            foreach (var kv in _attachedKeyVaults)
-            {
-                //for transition, (soft) delete all disabled secrets
-                var disabledSecrets = await _kvClient.GetDisabledSecrets(kv);
-                var tasks = disabledSecrets
-                    .Where(i=>i.Identifier.Name.StartsWith(GetSecretPrefixLevelToken(secretPrefix)))
-                    .Select(s => _kvClient.DeleteSecret(kv, s));
+                    .Select(i => _kvClient.DisableSecret(key, i.Secret));
 
                 await Task.WhenAll(tasks);
             }
@@ -146,7 +127,7 @@ namespace EShopWorld.Tools.Commands.AzScan
             var targetName = sb.ToString();
 
             //detect new vs change, otherwise just track visit
-            var trackedSecret = await LocateSecret(keyVaultName, targetName);
+            var trackedSecret = LocateSecret(keyVaultName, targetName);
             if (trackedSecret == null)
             {
                 //new secret
@@ -185,19 +166,10 @@ namespace EShopWorld.Tools.Commands.AzScan
             _kvInitialState[keyVaultName].Add(new TrackedSecretBundle(newSecret, true)); //mark as refreshed
         }
 
-        private async Task<TrackedSecretBundle> LocateSecret(string keyVaultName, string targetName)
+        private TrackedSecretBundle LocateSecret(string keyVaultName, string targetName)
         {
-            if (string.IsNullOrWhiteSpace(keyVaultName) || !_kvInitialState.ContainsKey(keyVaultName) || !_deletedSecretNames.ContainsKey(keyVaultName))
+            if (string.IsNullOrWhiteSpace(keyVaultName) || !_kvInitialState.ContainsKey(keyVaultName))
                 throw new ApplicationException($"Attempt to use unattached key vault {keyVaultName}");
-
-            //was soft-deleted?
-            if (_deletedSecretNames[keyVaultName].Contains(targetName, StringComparer.Ordinal))
-            {
-                //recover
-                var recovered = await _kvClient.RecoverSecret(keyVaultName, targetName);
-                _kvInitialState[keyVaultName].Add(new TrackedSecretBundle(recovered, true));
-                _deletedSecretNames[keyVaultName].Remove(targetName);
-            }
 
             return _kvInitialState[keyVaultName].FirstOrDefault(i =>
                 i.Secret.SecretIdentifier.Name.Equals(targetName, StringComparison.OrdinalIgnoreCase));

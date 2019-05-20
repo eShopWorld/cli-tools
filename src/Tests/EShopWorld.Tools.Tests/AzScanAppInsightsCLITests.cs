@@ -62,7 +62,7 @@ namespace EshopWorld.Tools.Tests
         {
             secrets.Should().HaveSecret("ApplicationInsightsBLah", "dummy");
             secrets.Should().HaveSecret("Prefix--blah", "dummy");
-            (await _fixture.CheckIsSoftDeleted(regionCode, "ApplicationInsights--dummy--dummy")).Should().BeTrue();
+            (await _fixture.GetDisabledSecret(regionCode, "ApplicationInsights--dummy--dummy")).Should().NotBeNull();
         }
     }
 }

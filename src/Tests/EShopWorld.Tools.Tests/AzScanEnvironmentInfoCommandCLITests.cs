@@ -60,7 +60,7 @@ namespace EshopWorld.Tools.Tests
         {
             secrets.Should().HaveSecret("EnvironmentBlah", "dummy");
             secrets.Should().HaveSecret("Prefix--blah", "dummy");
-            (await _fixture.CheckIsSoftDeleted(regionCode, "Environment--dummy--dummy")).Should().BeTrue();
+            (await _fixture.GetDisabledSecret(regionCode, "Environment--dummy--dummy")).Should().NotBeNull();
 
         }
     }
