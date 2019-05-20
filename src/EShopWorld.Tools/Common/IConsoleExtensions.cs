@@ -27,14 +27,15 @@ namespace EShopWorld.Tools.Common
             var @event = new AzCLIWarningEvent()
             {
                 CommandType = command.ToString(),
-                Arguments = string.Join(',', args.Select(t => $"{t.LongName}-'{t.Value()}'")),
+                Arguments = args!=null && args.Any() ? string.Join(',', args.Select(t => $"{t.LongName}-'{t.Value()}'")) : String.Empty,
                 Warning = warning
             };
 
             bb?.Publish(@event);
             bb?.Flush();
 
-            console.EmitMessage(console.Out, ConsoleColor.Yellow, $"Command {@event.CommandType}, Arguments {@event.Arguments} produced warning - {warning}");
+            var argsMessage = string.IsNullOrWhiteSpace(@event.Arguments) ? "" : $",Arguments '{@event.Arguments}'";
+            console.EmitMessage(console.Out, ConsoleColor.Yellow, $"Command {@event.CommandType}{argsMessage} produced warning - {warning}");
         }
 
         private static void EmitMessage(this IConsole console, TextWriter tw, ConsoleColor color, string text)

@@ -54,25 +54,22 @@ namespace EShopWorld.Tools.Commands.AzScan
         public string Subscription { get; set; }
         protected string SubscriptionId { get; set; }
 
-        internal string PlatformResourceGroup => $"platform-{EnvironmentName}";
-
         internal IEnumerable<ResourceGroupDescriptor> RegionalPlatformResourceGroups => RegionList.Select(r =>
                 new ResourceGroupDescriptor
                 {
-                    Name =
-                        $"platform-{EnvironmentName}-{r.ToRegionCode()}".ToLowerInvariant(),
+                    Name = NameGenerator.GetRegionalPlatformRGName(EnvironmentName, r),
                     TargetKeyVaults = new[]
                     {
-                        $"esw-{Domain}-{EnvironmentName}-{r.ToRegionCode()}".ToLowerInvariant()
+                       NameGenerator.GetDomainRegionalKVName(Domain, EnvironmentName, r)
                     },
                     Region = r
                 });
 
         internal ResourceGroupDescriptor DomainResourceGroup => new ResourceGroupDescriptor
         {
-            Name = $"{Domain}-{EnvironmentName}".ToLowerInvariant(),
+            Name = NameGenerator.GetDomainRGName(Domain, EnvironmentName),
             TargetKeyVaults = RegionList.Select(r =>
-                $"esw-{Domain}-{EnvironmentName}-{r.ToRegionCode()}".ToLowerInvariant())
+                NameGenerator.GetDomainRegionalKVName(Domain, EnvironmentName, r))
         };
 
 

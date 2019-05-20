@@ -43,7 +43,7 @@ namespace EshopWorld.Tools.Tests
             {
                 var secrets = await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode());
                 await CheckSecrets(secrets);
-                CheckSideSecrets(secrets, region.ToRegionCode());
+                await CheckSideSecrets(secrets, region.ToRegionCode());
             }
         }
 
@@ -67,7 +67,7 @@ namespace EshopWorld.Tools.Tests
             {
                 var secrets = await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode());
                 await CheckSecrets(secrets, true);
-                CheckSideSecrets(secrets, region.ToRegionCode());
+                await CheckSideSecrets(secrets, region.ToRegionCode());
             }
         }
 
@@ -86,11 +86,11 @@ namespace EshopWorld.Tools.Tests
                     StringComparison.Ordinal));
         }
 
-        private void CheckSideSecrets(IList<SecretBundle> secrets, string regionCode)
+        private async Task CheckSideSecrets(IList<SecretBundle> secrets, string regionCode)
         {
             secrets.Should().HaveSecret("CosmosBlah", "dummy");
             secrets.Should().HaveSecret("Prefix--blah", "dummy");
-            _fixture.GetDisabledSecret(regionCode, "Cosmos--dummy--dummy").Should().NotBeNull();
+            (await _fixture.CheckIsSoftDeleted(regionCode, "Cosmos--dummy--dummy")).Should().BeTrue();
 
         }
     }

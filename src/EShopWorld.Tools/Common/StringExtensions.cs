@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Eshopworld.DevOps;
+using static System.String;
 
 namespace EShopWorld.Tools.Common
 {
@@ -22,7 +23,7 @@ namespace EShopWorld.Tools.Common
         {
             var pascal = ToPascalCase(input);
 
-            return  !string.IsNullOrWhiteSpace(pascal) ? pascal.Substring(0, 1).ToLowerInvariant() + pascal.Substring(1) : pascal;
+            return  !IsNullOrWhiteSpace(pascal) ? pascal.Substring(0, 1).ToLowerInvariant() + pascal.Substring(1) : pascal;
         }
 
         /// <summary>
@@ -34,7 +35,7 @@ namespace EShopWorld.Tools.Common
         /// <returns>pascal case string</returns>
         public static string ToPascalCase(this string input)
         {
-            return string.IsNullOrWhiteSpace(input) ? input : Regex.Replace(input.ToLowerInvariant(), "(?:^|-|_|\\s|\\.)(.)", match => match.Groups[1].Value.ToUpperInvariant());
+            return IsNullOrWhiteSpace(input) ? input : Regex.Replace(input.ToLowerInvariant(), "(?:^|-|_|\\s|\\.)(.)", match => match.Groups[1].Value.ToUpperInvariant());
         }
 
         /// <summary>
@@ -44,7 +45,7 @@ namespace EShopWorld.Tools.Common
         /// <returns>true if unsigned int</returns>
         public static bool IsUnsignedInt(this string input)
         {
-            return !string.IsNullOrWhiteSpace(input) && Regex.IsMatch(input, "^\\d+$");
+            return !IsNullOrWhiteSpace(input) && Regex.IsMatch(input, "^\\d+$");
         }
 
         /// <summary>
@@ -57,7 +58,7 @@ namespace EShopWorld.Tools.Common
         /// <returns>trimmed string - core name</returns>
         public static string EswTrim(this string input, params string[] suffixes)
         {
-            if (string.IsNullOrWhiteSpace(input))
+            if (IsNullOrWhiteSpace(input))
                 return input;
 
 
@@ -127,7 +128,7 @@ namespace EShopWorld.Tools.Common
 
             var regionValueToCheck = conversionLogic(targetRegion);
 
-            if (string.IsNullOrWhiteSpace(name) ||
+            if (IsNullOrWhiteSpace(name) ||
                 !regionList.Any(r => name.EndsWith($"{regionPrefix}{conversionLogic(r)}", StringComparison.OrdinalIgnoreCase) || name.EndsWith($"{regionPrefix}{conversionLogic(r)}-lb", StringComparison.OrdinalIgnoreCase))) //not suffixed with known region, "global resource"
                 return true;
 
@@ -148,7 +149,7 @@ namespace EShopWorld.Tools.Common
         public static string SanitizePropertyName(this string value)
         {
             var ret = value;
-            if (string.IsNullOrWhiteSpace(ret))
+            if (IsNullOrWhiteSpace(ret))
             {
                 return ret;
             }
@@ -159,6 +160,24 @@ namespace EShopWorld.Tools.Common
             }
 
             return ret.Replace('-', '_');
+        }
+
+        /// <summary>
+        /// removes fabric scheme prefix from service instance name
+        ///
+        /// e.g. fabric:/CaptainHook.ServiceFabric/EndpointDispatcherActorService -> CaptainHook.ServiceFabric/EndpointDispatcherActorService
+        /// </summary>
+        /// <param name="value">full service instance name</param>
+        /// <returns>processed string</returns>
+        public static string RemoveFabricScheme(this string value)
+        {
+            if (IsNullOrWhiteSpace(value))
+            {
+                return value;
+            }
+
+            var regexp = new Regex("^fabric:/");
+            return regexp.Replace(value, "");
         }
 
         private static readonly List<string> KeywordList = new List<string>(new[]

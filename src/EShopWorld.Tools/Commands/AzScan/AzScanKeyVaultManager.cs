@@ -19,6 +19,7 @@ namespace EShopWorld.Tools.Commands.AzScan
         private readonly KeyVaultClient _kvClient;
         private readonly Dictionary<string, IList<TrackedSecretBundle>> _kvInitialState = new Dictionary<string, IList<TrackedSecretBundle>>();
         private const string KeyVaultLevelSeparator = "--";
+        private IEnumerable<string> _attachedKeyVaults;
 
         /// <summary>
         /// ctor
@@ -37,6 +38,7 @@ namespace EShopWorld.Tools.Commands.AzScan
         /// <returns>task result</returns>
         public async Task AttachKeyVaults(IEnumerable<string> kvNames, string secretPrefix)
         {
+            _attachedKeyVaults = kvNames;
             foreach (var kv in kvNames)
             {
                 _kvInitialState.Add(kv,
@@ -66,7 +68,18 @@ namespace EShopWorld.Tools.Commands.AzScan
                 var tasks = kv.Value
                     .Where(s => !s.Touched &&
                                 s.Secret.SecretIdentifier.Name.StartsWith(GetSecretPrefixLevelToken(secretPrefix)))
-                    .Select(i => _kvClient.DisableSecret(kv.Key, i.Secret));
+                    .Select(i => _kvClient.DeleteSecret(kv.Key, i.Secret));
+
+                await Task.WhenAll(tasks);
+            }
+
+            foreach (var kv in _attachedKeyVaults)
+            {
+                //for transition, (soft) delete all disabled secrets
+                var disabledSecrets = await _kvClient.GetDisabledSecrets(kv);
+                var tasks = disabledSecrets
+                    .Where(i=>i.Identifier.Name.StartsWith(GetSecretPrefixLevelToken(secretPrefix)))
+                    .Select(s => _kvClient.DeleteSecret(kv, s));
 
                 await Task.WhenAll(tasks);
             }

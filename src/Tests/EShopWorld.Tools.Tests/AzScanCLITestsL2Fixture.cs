@@ -252,15 +252,11 @@ namespace EshopWorld.Tools.Tests
             await _keyVaultClient.SetKeyVaultSecretAsync(GetRegionalKVName(regionCode), name, value);
         }
 
-        internal async Task<SecretBundle> GetDisabledSecret(string regionCode, string name)
-        {
-            var secret =  await _keyVaultClient.GetSecretAsync(GetRegionalKVName(regionCode), name);
-            if (secret != null && secret.Attributes.Enabled.GetValueOrDefault())
-            {
-                return null;
-            }
 
-            return secret;
+        internal async Task<bool> CheckIsSoftDeleted(string regionCode, string name)
+        {
+            var secret =  await _keyVaultClient.GetDeletedSecretAsync(GetRegionalKVName(regionCode), name);
+            return secret != null;
         }
 
         // ReSharper disable once InconsistentNaming

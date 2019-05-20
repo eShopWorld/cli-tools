@@ -35,6 +35,12 @@ namespace EShopWorld.Tools.Common
             return allSecrets;
         }
 
+        internal static async Task<SecretBundle> GetSecret(this KeyVaultClient client, string keyVaultName,
+            string secretName)
+        {
+            return await client.GetSecretAsync(GetKeyVaultUrlFromName(keyVaultName), secretName);
+        }
+
         internal static async Task<IList<SecretItem>> GetDisabledSecrets(this KeyVaultClient client, string keyVaultName)
         {
             //iterate via secret pages
@@ -64,12 +70,9 @@ namespace EShopWorld.Tools.Common
             await client.DeleteSecretAsync(GetKeyVaultUrlFromName(keyVaultName), secret.SecretIdentifier.Name);
         }
 
-        internal static async Task DisableSecret(this KeyVaultClient client, string keyVaultName, SecretBundle secret)
+        internal static async Task DeleteSecret(this KeyVaultClient client, string keyVaultName, SecretItem secret)
         {
-            secret.Attributes.Enabled = false;
-            //disable current version - no need to create new one with "set"
-            await client.UpdateSecretWithHttpMessagesAsync(GetKeyVaultUrlFromName(keyVaultName),
-                secret.SecretIdentifier.Name, secret.SecretIdentifier.Version, secretAttributes: secret.Attributes);
+            await client.DeleteSecretAsync(GetKeyVaultUrlFromName(keyVaultName), secret.Identifier.Name);
         }
 
         internal static async Task<SecretBundle> SetKeyVaultSecretAsync(this KeyVaultClient client, string keyVaultName,

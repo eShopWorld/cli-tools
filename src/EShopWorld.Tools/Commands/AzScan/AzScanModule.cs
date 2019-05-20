@@ -20,6 +20,7 @@ namespace EShopWorld.Tools.Commands.AzScan
             builder.RegisterType<AzScanKustoCommand>();
             builder.RegisterType<AzScanKeyVaultManager>();
             builder.RegisterType<AzScanEnvironmentInfoCommand>();
+            builder.RegisterType<ServiceFabricDiscovery>();
         }
     }
 }

@@ -45,7 +45,7 @@ namespace EshopWorld.Tools.Tests
             {
                 var secrets = await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode());
                 CheckSecrets(secrets);
-                CheckSideSecrets(secrets, region.ToRegionCode());
+                await CheckSideSecrets(secrets, region.ToRegionCode());
             }
         }
 
@@ -56,11 +56,11 @@ namespace EshopWorld.Tools.Tests
             secrets.Should().HaveSecret("Environment--SubscriptionName", "sierra-integration");
         }
 
-        private void CheckSideSecrets(IList<SecretBundle> secrets, string regionCode)
+        private async Task CheckSideSecrets(IList<SecretBundle> secrets, string regionCode)
         {
             secrets.Should().HaveSecret("EnvironmentBlah", "dummy");
             secrets.Should().HaveSecret("Prefix--blah", "dummy");
-            _fixture.GetDisabledSecret(regionCode, "Environment--dummy--dummy").Should().NotBeNull();
+            (await _fixture.CheckIsSoftDeleted(regionCode, "Environment--dummy--dummy")).Should().BeTrue();
 
         }
     }
