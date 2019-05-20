@@ -67,6 +67,7 @@ namespace EShopWorld.Tools.Commands.AzScan
             }
 
             await CheckConnectionStatus(azClient, env, reg);
+
             return (_connectedClusterProxyScheme, _connectedClusterProxyPort);
         }
 
@@ -116,8 +117,15 @@ namespace EShopWorld.Tools.Commands.AzScan
         private async Task Connect(IAzure azClient, string env, DeploymentRegion region, int clientEndpointPort = 19000)
         {
             _azClient = azClient;
+            //check that platform KV exists
+            var regionalPlatformKvName = NameGenerator.GetRegionalKVName(env, region);
+            if (!(await _azClient.Vaults.ListByResourceGroupAsync(NameGenerator.GetRegionalPlatformRGName(env, region)))
+                .Any(v => v.Name.Equals(regionalPlatformKvName, StringComparison.OrdinalIgnoreCase)))
+            {
+                return;
+            }
             //hook up to platform KV
-            var certSecret = await _kvClient.GetSecret(NameGenerator.GetRegionalKVName(env, region), NameGenerator.ServiceFabricPlatformKVCertSecretName);
+            var certSecret = await _kvClient.GetSecret(regionalPlatformKvName, NameGenerator.ServiceFabricPlatformKVCertSecretName);
             //extract cert
             var cert = ExtractCert(certSecret);
             if (cert == null)

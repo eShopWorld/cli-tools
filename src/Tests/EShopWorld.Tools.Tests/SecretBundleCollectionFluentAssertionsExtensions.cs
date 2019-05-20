@@ -30,6 +30,20 @@ namespace EshopWorld.Tools.Tests
         }
 
         /// <summary>
+        /// ensure secret by given name does not exist in the loaded collection
+        /// </summary>
+        /// <param name="assert">assertion chain</param>
+        /// <param name="name">expected name</param>
+        /// <param name="nameComparison">string comparison for name</param>
+        /// <returns>constraint instance</returns>
+        public static AndConstraint<GenericCollectionAssertions<SecretBundle>> NotHaveSecretByName(this GenericCollectionAssertions<SecretBundle> assert, string name, StringComparison nameComparison = StringComparison.Ordinal)
+        {
+            return assert.NotContain(s =>
+                s.SecretIdentifier.Name.Equals(name,
+                    nameComparison));
+        }
+
+        /// <summary>
         /// check number of secrets with certain prefix
         /// </summary>
         /// <param name="assert">assertion chain</param>

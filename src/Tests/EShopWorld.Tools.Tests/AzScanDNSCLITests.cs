@@ -71,16 +71,19 @@ namespace EshopWorld.Tools.Tests
 
             //CNAME check
             secrets.Should().HaveSecret("Platform--Testapi1--Global", "https://testapi1.platformintegration.dns");
-
             //API 1 - AG check
-            secrets.Should().HaveSecret("Platform--Testapi1--HTTPS", "https://testapi1-we.platformintegration.dns");
-
+            secrets.Should().HaveSecret("Platform--Testapi1--Gateway", "https://testapi1-we.platformintegration.dns");
             //API 1 - LB check
-            secrets.Should().HaveSecret("Platform--Testapi1--HTTP", $"http://{_fixture.WeIpAddress.IPAddress}:1111");
-
+            secrets.Should().HaveSecret("Platform--Testapi1--Cluster", $"http://{_fixture.WeIpAddress.IPAddress}:1111");
+            //API 1 - no proxy
+            secrets.Should().NotHaveSecretByName("Platform--Testapi1--Proxy");
             //API 2 - Internal - LB check
-            secrets.Should().HaveSecret("Platform--Testapi2--HTTP", $"http://{_fixture.WeIpAddress.IPAddress}:1112");          
-          }
+            secrets.Should().HaveSecret("Platform--Testapi2--Cluster", $"http://{_fixture.WeIpAddress.IPAddress}:1112");
+            //API 2 - no gateway
+            secrets.Should().NotHaveSecretByName("Platform--Testapi2--Gateway");
+            //API 2 - no proxy
+            secrets.Should().NotHaveSecretByName("Platform--Testapi2--Proxy");
+        }
 
         // ReSharper disable once InconsistentNaming
         private void CheckSecretsEUS(IList<SecretBundle> secrets)
@@ -89,15 +92,18 @@ namespace EshopWorld.Tools.Tests
 
             //CNAME check
             secrets.Should().HaveSecret("Platform--Testapi1--Global", "https://testapi1.platformintegration.dns");
-
             //API 1 - AG check
-            secrets.Should().HaveSecret("Platform--Testapi1--HTTPS", "https://testapi1-eus.platformintegration.dns");
-
+            secrets.Should().HaveSecret("Platform--Testapi1--Gateway", "https://testapi1-eus.platformintegration.dns");
             //API 1 - LB check
-            secrets.Should().HaveSecret("Platform--Testapi1--HTTP", $"http://{_fixture.EusIpAddress.IPAddress}:2222");
-
+            secrets.Should().HaveSecret("Platform--Testapi1--Cluster", $"http://{_fixture.EusIpAddress.IPAddress}:2222");
+            //API 1 - no proxy
+            secrets.Should().NotHaveSecretByName("Platform--Testapi1--Proxy");
             //API 2 - Internal - LB check
-            secrets.Should().HaveSecret("Platform--Testapi2--HTTP", $"http://{_fixture.EusIpAddress.IPAddress}:2223");         
+            secrets.Should().HaveSecret("Platform--Testapi2--Cluster", $"http://{_fixture.EusIpAddress.IPAddress}:2223");
+            //API 2 - no gateway
+            secrets.Should().NotHaveSecretByName("Platform--Testapi2--Gateway");
+            //API 2 - no proxy
+            secrets.Should().NotHaveSecretByName("Platform--Testapi2--Proxy");
         }
 
         private async Task CheckSideSecrets(IList<SecretBundle> secrets, string regionCode)
