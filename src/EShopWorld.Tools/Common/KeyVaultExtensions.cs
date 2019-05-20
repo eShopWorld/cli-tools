@@ -83,6 +83,12 @@ namespace EShopWorld.Tools.Common
             return result.Body;
         }
 
+        internal static async Task<DeletedSecretBundle> GetDeletedSecret(this KeyVaultClient client,
+            string keyVaultName, string secretName)
+        {
+            return await client.GetDeletedSecretAsync(GetKeyVaultUrlFromName(keyVaultName), secretName);
+        }
+
         private static string GetKeyVaultUrlFromName(string name)
         {
             return $"https://{name}.vault.azure.net/";

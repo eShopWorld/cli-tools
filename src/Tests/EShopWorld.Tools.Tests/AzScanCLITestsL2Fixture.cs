@@ -255,7 +255,7 @@ namespace EshopWorld.Tools.Tests
 
         internal async Task<bool> CheckIsSoftDeleted(string regionCode, string name)
         {
-            var secret =  await _keyVaultClient.GetDeletedSecretAsync(GetRegionalKVName(regionCode), name);
+            var secret =  await _keyVaultClient.GetDeletedSecret(GetRegionalKVName(regionCode), name);
             return secret != null;
         }
 
