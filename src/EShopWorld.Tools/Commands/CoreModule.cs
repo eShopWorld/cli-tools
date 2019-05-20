@@ -30,6 +30,7 @@ namespace EShopWorld.Tools.Commands
             var atp = new AzureServiceTokenProvider();
             var token = atp.GetAccessTokenAsync("https://management.core.windows.net/").Result;
             var tokenCredentials = new TokenCredentials(token);
+            builder.RegisterInstance(tokenCredentials);
 
             var client = RestClient.Configure()
                 .WithEnvironment(AzureEnvironment.AzureGlobalCloud)

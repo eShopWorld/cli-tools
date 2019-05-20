@@ -1,5 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
 using Eshopworld.DevOps;
@@ -20,6 +25,9 @@ using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Azure.Management.ServiceBus.Fluent;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Rest;
+using Microsoft.WindowsAzure.Storage.Auth;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace EshopWorld.Tools.Tests
@@ -124,7 +132,7 @@ namespace EshopWorld.Tools.Tests
         // ReSharper disable once InconsistentNaming
         private async Task<IVault> SetupOutputKV(IResourceGroup rg)
         {
-            return await _azClient.Vaults
+            var vault =  await _azClient.Vaults
                 .Define($"esw-{rg.Name}")
                     .WithRegion(rg.RegionName)
                 .WithExistingResourceGroup(rg)
@@ -133,6 +141,19 @@ namespace EshopWorld.Tools.Tests
                     .AllowSecretPermissions(SecretPermissions.Get, SecretPermissions.List, SecretPermissions.Set, SecretPermissions.Delete)
                 .Attach()
                 .CreateAsync();
+
+            var credentials = _container.Resolve<TokenCredentials>();
+            var httpClient = new HttpClient();
+            
+            var request = new HttpRequestMessage(HttpMethod.Patch,
+                $"https://management.azure.com/subscriptions/{EswDevOpsSdk.SierraIntegrationSubscriptionId}/resourceGroups/{rg.Name}/providers/Microsoft.KeyVault/vaults/{vault.Name}?api-version=2018-02-14");
+            request.Content = new StringContent("{\"properties\":{\"enableSoftDelete\":true}}", Encoding.UTF8, "application/json");
+            await credentials.ProcessHttpRequestAsync(request, CancellationToken.None);
+
+            (await httpClient.SendAsync(request)).EnsureSuccessStatusCode();
+
+
+            return vault;
         }
 
         private async Task<ApplicationInsightsComponent> SetupAzureMonitor(IResourceGroup rg)
@@ -247,16 +268,21 @@ namespace EshopWorld.Tools.Tests
             }
         }
 
-        internal async Task SetSecret(string regionCode, string name, string @value)
+        internal async Task SetSecret(string regionCode, string name, string value)
         {
+            if (await CheckIsSoftDeleted(regionCode, name))
+            {
+                await _keyVaultClient.RecoverSecret(GetRegionalKVName(regionCode), name);
+            }
+
             await _keyVaultClient.SetKeyVaultSecretAsync(GetRegionalKVName(regionCode), name, value);
         }
 
 
         internal async Task<bool> CheckIsSoftDeleted(string regionCode, string name)
         {
-            var secret =  await _keyVaultClient.GetDeletedSecret(GetRegionalKVName(regionCode), name);
-            return secret != null;
+            var secret =  await _keyVaultClient.GetDeletedSecrets(GetRegionalKVName(regionCode));
+            return secret.Any(s => s.Identifier.Name.Equals(name, StringComparison.Ordinal));
         }
 
         // ReSharper disable once InconsistentNaming
@@ -267,7 +293,7 @@ namespace EshopWorld.Tools.Tests
 
         public void Dispose()
         {
-            //DeleteResources().GetAwaiter().GetResult(); 
+            DeleteResources().GetAwaiter().GetResult(); 
             _container.Dispose();
         }
 

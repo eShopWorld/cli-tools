@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,6 +19,7 @@ namespace EShopWorld.Tools.Commands.AzScan
     {
         private readonly KeyVaultClient _kvClient;
         private readonly Dictionary<string, IList<TrackedSecretBundle>> _kvInitialState = new Dictionary<string, IList<TrackedSecretBundle>>();
+        private readonly Dictionary<string, IList<string>> _deletedSecretNames = new Dictionary<string, IList<string>>();
         private const string KeyVaultLevelSeparator = "--";
         private IEnumerable<string> _attachedKeyVaults;
 
@@ -36,14 +38,21 @@ namespace EShopWorld.Tools.Commands.AzScan
         /// <param name="kvNames">list of tracked key (regional) vaults</param>
         /// <param name="secretPrefix">prefix for secrets to narrow loaded secrets</param>
         /// <returns>task result</returns>
+        [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
         public async Task AttachKeyVaults(IEnumerable<string> kvNames, string secretPrefix)
         {
             _attachedKeyVaults = kvNames;
+            var prefix = GetSecretPrefixLevelToken(secretPrefix);
             foreach (var kv in kvNames)
             {
                 _kvInitialState.Add(kv,
-                    (await _kvClient.GetAllSecrets(kv, GetSecretPrefixLevelToken(secretPrefix)))
+                    (await _kvClient.GetAllSecrets(kv, prefix ))
                     .Select(i => new TrackedSecretBundle(i, false))
+                    .ToList());
+
+                _deletedSecretNames.Add(kv,
+                    (await _kvClient.GetDeletedSecrets(kv, prefix))
+                    .Select(s => s.Identifier.Name)
                     .ToList());
             }
         }
@@ -137,7 +146,7 @@ namespace EShopWorld.Tools.Commands.AzScan
             var targetName = sb.ToString();
 
             //detect new vs change, otherwise just track visit
-            var trackedSecret = LocateSecret(keyVaultName, targetName);
+            var trackedSecret = await LocateSecret(keyVaultName, targetName);
             if (trackedSecret == null)
             {
                 //new secret
@@ -146,7 +155,7 @@ namespace EShopWorld.Tools.Commands.AzScan
             }
             else
             {
-                if (!trackedSecret.Secret.Value.Equals(value, StringComparison.Ordinal))
+                if (string.IsNullOrWhiteSpace(trackedSecret.Secret.Value) || !trackedSecret.Secret.Value.Equals(value, StringComparison.Ordinal))
                 {
                     //secret value changed
                     var newSecret = await _kvClient.SetKeyVaultSecretAsync(keyVaultName, targetName, value);
@@ -176,10 +185,19 @@ namespace EShopWorld.Tools.Commands.AzScan
             _kvInitialState[keyVaultName].Add(new TrackedSecretBundle(newSecret, true)); //mark as refreshed
         }
 
-        private TrackedSecretBundle LocateSecret(string keyVaultName, string targetName)
+        private async Task<TrackedSecretBundle> LocateSecret(string keyVaultName, string targetName)
         {
-            if (string.IsNullOrWhiteSpace(keyVaultName) || !_kvInitialState.ContainsKey(keyVaultName))
+            if (string.IsNullOrWhiteSpace(keyVaultName) || !_kvInitialState.ContainsKey(keyVaultName) || !_deletedSecretNames.ContainsKey(keyVaultName))
                 throw new ApplicationException($"Attempt to use unattached key vault {keyVaultName}");
+
+            //was soft-deleted?
+            if (_deletedSecretNames[keyVaultName].Contains(targetName, StringComparer.Ordinal))
+            {
+                //recover
+                var recovered = await _kvClient.RecoverSecret(keyVaultName, targetName);
+                _kvInitialState[keyVaultName].Add(new TrackedSecretBundle(recovered, true));
+                _deletedSecretNames[keyVaultName].Remove(targetName);
+            }
 
             return _kvInitialState[keyVaultName].FirstOrDefault(i =>
                 i.Secret.SecretIdentifier.Name.Equals(targetName, StringComparison.OrdinalIgnoreCase));
