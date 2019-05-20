@@ -262,7 +262,7 @@ namespace EshopWorld.Tools.Tests
 
         internal async Task<SecretBundle> GetDisabledSecret(string regionCode, string name)
         {
-            var secret = await _keyVaultClient.GetSecretAsync(GetRegionalKVName(regionCode), name);
+            var secret = await _keyVaultClient.GetSecret(GetRegionalKVName(regionCode), name);
             if (secret != null && secret.Attributes.Enabled.GetValueOrDefault())
             {
                 return null;
