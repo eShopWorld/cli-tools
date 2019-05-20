@@ -138,7 +138,7 @@ namespace EshopWorld.Tools.Tests
                 .WithExistingResourceGroup(rg)
                 .DefineAccessPolicy()
                     .ForObjectId(_testConfig.TargetIdentityObjectId) //so that CLI can write and test                
-                    .AllowSecretPermissions(SecretPermissions.Get, SecretPermissions.List, SecretPermissions.Set, SecretPermissions.Delete)
+                    .AllowSecretPermissions(SecretPermissions.Get, SecretPermissions.List, SecretPermissions.Set, SecretPermissions.Delete, SecretPermissions.Recover)
                 .Attach()
                 .CreateAsync();
 
