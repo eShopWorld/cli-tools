@@ -30,9 +30,9 @@ namespace EshopWorld.Tools.Tests
             //set up dummy secrets
             foreach (var region in RegionHelper.DeploymentRegionsToList())
             {
-                await _fixture.SetSecret(region.ToRegionCode(), "Cosmos--dummy--dummy", "dummy");
+                await _fixture.SetSecret(region.ToRegionCode(), "CosmosDB--dummy--dummy", "dummy");
                 //following secrets are not to be touched by the CLI
-                await _fixture.SetSecret(region.ToRegionCode(), "CosmosBlah", "dummy");
+                await _fixture.SetSecret(region.ToRegionCode(), "CosmosDBBlah", "dummy");
                 await _fixture.SetSecret(region.ToRegionCode(), "Prefix--blah", "dummy");
             }
 
@@ -42,8 +42,9 @@ namespace EshopWorld.Tools.Tests
             foreach (var region in RegionHelper.DeploymentRegionsToList())
             {
                 var secrets = await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode());
+                var disabledSecrets = await _fixture.LoadAllDisabledKeyVaultSecretsAsync(region.ToRegionCode());
                 await CheckSecrets(secrets);
-                await CheckSideSecrets(secrets, region.ToRegionCode());
+                CheckSideSecrets(secrets, disabledSecrets);
             }
         }
 
@@ -54,9 +55,9 @@ namespace EshopWorld.Tools.Tests
             //set up dummy secrets
             foreach (var region in RegionHelper.DeploymentRegionsToList())
             {
-                await _fixture.SetSecret(region.ToRegionCode(), "Cosmos--dummy--dummy", "dummy");
+                await _fixture.SetSecret(region.ToRegionCode(), "CosmosDB--dummy--dummy", "dummy");
                 //following secrets are not to be touched by the CLI
-                await _fixture.SetSecret(region.ToRegionCode(), "CosmosBlah", "dummy");
+                await _fixture.SetSecret(region.ToRegionCode(), "CosmosDBBlah", "dummy");
                 await _fixture.SetSecret(region.ToRegionCode(), "Prefix--blah", "dummy");
             }
 
@@ -66,8 +67,9 @@ namespace EshopWorld.Tools.Tests
             foreach (var region in RegionHelper.DeploymentRegionsToList())
             {
                 var secrets = await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode());
+                var disabledSecrets = await _fixture.LoadAllDisabledKeyVaultSecretsAsync(region.ToRegionCode());
                 await CheckSecrets(secrets, true);
-                await CheckSideSecrets(secrets, region.ToRegionCode());
+                CheckSideSecrets(secrets, disabledSecrets);
             }
         }
 
@@ -86,12 +88,11 @@ namespace EshopWorld.Tools.Tests
                     StringComparison.Ordinal));
         }
 
-        private async Task CheckSideSecrets(IList<SecretBundle> secrets, string regionCode)
+        private void CheckSideSecrets(IList<SecretBundle> secrets, IList<SecretItem> disabledSecrets)
         {
-            secrets.Should().HaveSecret("CosmosBlah", "dummy");
+            secrets.Should().HaveSecret("CosmosDBBlah", "dummy");
             secrets.Should().HaveSecret("Prefix--blah", "dummy");
-            (await _fixture.GetDisabledSecret(regionCode, "Cosmos--dummy--dummy")).Should().NotBeNull();
-
+            disabledSecrets.Should().HaveDisabledSecret("CosmosDB--dummy--dummy");
         }
     }
 }

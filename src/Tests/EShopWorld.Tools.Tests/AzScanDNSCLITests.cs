@@ -40,12 +40,18 @@ namespace EshopWorld.Tools.Tests
 
             GetStandardOutput("azscan", "dns", subParam, AzScanCLITestsL2Fixture.SierraIntegrationSubscription, domainParam, AzScanCLITestsL2Fixture.TestDomain);
             var weSecrets = await _fixture.LoadAllKeyVaultSecretsAsync(DeploymentRegion.WestEurope.ToRegionCode());
+            var disabledWeSecrets =
+                await _fixture.LoadAllDisabledKeyVaultSecretsAsync(DeploymentRegion.WestEurope.ToRegionCode());
+
             CheckSecretsWE(weSecrets);
-            await CheckSideSecrets(weSecrets, DeploymentRegion.WestEurope.ToRegionCode());
+            CheckSideSecrets(weSecrets, disabledWeSecrets);
 
             var eusSecrets = await _fixture.LoadAllKeyVaultSecretsAsync(DeploymentRegion.EastUS.ToRegionCode());
+            var disabledEusSecrets =
+                await _fixture.LoadAllDisabledKeyVaultSecretsAsync(DeploymentRegion.EastUS.ToRegionCode());
+
             CheckSecretsEUS(eusSecrets);
-            await CheckSideSecrets(eusSecrets, DeploymentRegion.EastUS.ToRegionCode());
+            CheckSideSecrets(eusSecrets, disabledEusSecrets);
         }
 
 
@@ -106,11 +112,11 @@ namespace EshopWorld.Tools.Tests
             secrets.Should().NotHaveSecretByName("Platform--Testapi2--Proxy");
         }
 
-        private async Task CheckSideSecrets(IList<SecretBundle> secrets, string regionCode)
+        private void CheckSideSecrets(IList<SecretBundle> secrets, IList<SecretItem> disabledSecrets)
         {
             secrets.Should().HaveSecret("PlatformBlah", "dummy");
             secrets.Should().HaveSecret("Prefix--blah", "dummy");
-            (await _fixture.GetDisabledSecret(regionCode, "Platform--dummy--dummy")).Should().NotBeNull();
+            disabledSecrets.Should().HaveDisabledSecret("Platform--dummy--dummy");
         }
     }
 }

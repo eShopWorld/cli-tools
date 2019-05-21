@@ -30,6 +30,46 @@ namespace EshopWorld.Tools.Tests
         }
 
         /// <summary>
+        /// ensure name defined secret assertion is met
+        /// </summary>
+        /// <param name="assert">assertion chain</param>
+        /// <param name="name">expected name</param>
+        /// <param name="nameComparison">string comparison for name</param>
+        /// <returns>constraint instance</returns>
+        public static AndWhichConstraint<GenericCollectionAssertions<SecretItem>, SecretItem> HaveSecret(this GenericCollectionAssertions<SecretItem> assert, string name, StringComparison nameComparison = StringComparison.Ordinal)
+        {
+            return assert.Contain(s =>
+                s.Identifier.Name.Equals(name,
+                    nameComparison));
+        }
+
+
+        /// <summary>
+        /// ensure name defined secret assertion is met and the secret is disabled
+        /// </summary>
+        /// <param name="assert">assertion chain</param>
+        /// <param name="name">expected name</param>
+        /// <param name="nameComparison">string comparison for name</param>
+        /// <returns>constraint instance</returns>
+        public static AndWhichConstraint<GenericCollectionAssertions<SecretItem>, SecretItem> HaveDisabledSecret(this GenericCollectionAssertions<SecretItem> assert, string name, StringComparison nameComparison = StringComparison.Ordinal)
+        {
+            return assert.Contain(s =>
+                s.Identifier.Name.Equals(name,
+                    nameComparison) && !s.Attributes.Enabled.GetValueOrDefault());
+        }
+
+        /// <summary>
+        /// ensure name and value defined secret assertion is met
+        /// </summary>
+        /// <param name="assert">assertion chain</param>
+        /// <param name="check">function to test secret</param>
+        /// <returns>constraint instance</returns>
+        public static AndWhichConstraint<GenericCollectionAssertions<SecretBundle>, SecretBundle> HaveSecret(this GenericCollectionAssertions<SecretBundle> assert, Func<SecretBundle, bool> check)
+        {
+            return assert.Contain(s => check.Invoke(s));
+        }
+
+        /// <summary>
         /// ensure secret by given name does not exist in the loaded collection
         /// </summary>
         /// <param name="assert">assertion chain</param>

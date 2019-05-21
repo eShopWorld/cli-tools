@@ -22,7 +22,7 @@ namespace EShopWorld.Tools.Common
             do
             {
                 secrets = !string.IsNullOrWhiteSpace(secrets?.NextPageLink) ? await client.GetSecretsNextAsync(secrets.NextPageLink) : await client.GetSecretsAsync(GetKeyVaultUrlFromName(keyVaultName));
-                foreach (var secretItem in secrets.Where(s=>s.Attributes.Enabled.GetValueOrDefault()))
+                foreach (var secretItem in secrets.Where(s=> s.Attributes.Enabled.GetValueOrDefault()))
                 {
                     if (!string.IsNullOrWhiteSpace(prefix) && !secretItem.Identifier.Name.StartsWith(prefix)) //if prefix is specified, only load those
                     {

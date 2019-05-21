@@ -1,10 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
 using Eshopworld.DevOps;
@@ -25,9 +20,6 @@ using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Azure.Management.ServiceBus.Fluent;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Rest;
-using Microsoft.WindowsAzure.Storage.Auth;
-using Newtonsoft.Json;
 using Xunit;
 
 namespace EshopWorld.Tools.Tests
@@ -247,6 +239,11 @@ namespace EshopWorld.Tools.Tests
             return _keyVaultClient.GetAllSecrets(GetRegionalKVName(regionCode));
         }
 
+        internal Task<IList<SecretItem>> LoadAllDisabledKeyVaultSecretsAsync([NotNull] string regionCode)
+        {
+            return _keyVaultClient.GetDisabledSecrets(GetRegionalKVName(regionCode));
+        }
+
         internal async Task DeleteAllSecretsAcrossRegions()
         {
             foreach (var region in RegionHelper.DeploymentRegionsToList())
@@ -258,18 +255,6 @@ namespace EshopWorld.Tools.Tests
         internal async Task SetSecret(string regionCode, string name, string value)
         {
             await _keyVaultClient.SetKeyVaultSecretAsync(GetRegionalKVName(regionCode), name, value);
-        }
-
-        internal async Task<SecretBundle> GetDisabledSecret(string regionCode, string name)
-        {
-            var secret = await _keyVaultClient.GetSecretAsync(GetRegionalKVName(regionCode), name);
-            if (secret != null && secret.Attributes.Enabled.GetValueOrDefault())
-            {
-                return null;
-            }
-
-
-            return secret;
         }
 
         // ReSharper disable once InconsistentNaming

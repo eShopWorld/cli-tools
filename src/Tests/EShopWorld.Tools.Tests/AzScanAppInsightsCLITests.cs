@@ -5,6 +5,7 @@ using Eshopworld.DevOps;
 using Eshopworld.Tests.Core;
 using EShopWorld.Tools.Common;
 using FluentAssertions;
+using JetBrains.Annotations;
 using Microsoft.Azure.KeyVault.Models;
 using Xunit;
 
@@ -42,8 +43,9 @@ namespace EshopWorld.Tools.Tests
             foreach (var region in RegionHelper.DeploymentRegionsToList())
             {
                 var secrets = await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode());
+                var disabledSecrets = await _fixture.LoadAllDisabledKeyVaultSecretsAsync(region.ToRegionCode());
                 CheckSecrets(secrets);
-                await CheckSideSecrets(secrets, region.ToRegionCode());
+                CheckSideSecrets(secrets, disabledSecrets);
             }
         }
 
@@ -58,11 +60,11 @@ namespace EshopWorld.Tools.Tests
                 Guid.Parse(s.Value) != default); //check key existence and that it is guid (parse succeeds)
         }
 
-        private async Task CheckSideSecrets(IList<SecretBundle> secrets, string regionCode)
+        private void CheckSideSecrets(IList<SecretBundle> secrets, IList<SecretItem> disabledSecrets)
         {
             secrets.Should().HaveSecret("ApplicationInsightsBLah", "dummy");
             secrets.Should().HaveSecret("Prefix--blah", "dummy");
-            (await _fixture.GetDisabledSecret(regionCode, "ApplicationInsights--dummy--dummy")).Should().NotBeNull();
+            disabledSecrets.Should().HaveDisabledSecret("ApplicationInsights--dummy--dummy");
         }
     }
 }
