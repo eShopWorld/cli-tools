@@ -39,7 +39,7 @@ namespace EshopWorld.Tools.Tests
             }
 
             // ReSharper disable once StringLiteralTypo
-            GetStandardOutput("azscan", "environmentInfo", subParam, AzScanCLITestsL2Fixture.SierraIntegrationSubscription, domainParam, AzScanCLITestsL2Fixture.TestDomain);
+            InvokeCLI("azscan", "environmentInfo", subParam, AzScanCLITestsL2Fixture.SierraIntegrationSubscription, domainParam, AzScanCLITestsL2Fixture.TestDomain);
 
             foreach (var region in RegionHelper.DeploymentRegionsToList())
             {

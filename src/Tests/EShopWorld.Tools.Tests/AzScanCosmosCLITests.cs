@@ -36,7 +36,7 @@ namespace EshopWorld.Tools.Tests
                 await _fixture.SetSecret(region.ToRegionCode(), "Prefix--blah", "dummy");
             }
 
-            GetStandardOutput("azscan", "cosmosDb", subParam, AzScanCLITestsL2Fixture.SierraIntegrationSubscription,
+            InvokeCLI("azscan", "cosmosDb", subParam, AzScanCLITestsL2Fixture.SierraIntegrationSubscription,
                 domainParam, AzScanCLITestsL2Fixture.TestDomain);
 
             foreach (var region in RegionHelper.DeploymentRegionsToList())
@@ -61,7 +61,7 @@ namespace EshopWorld.Tools.Tests
                 await _fixture.SetSecret(region.ToRegionCode(), "Prefix--blah", "dummy");
             }
 
-            GetStandardOutput("azscan", "cosmosDb", "-s", AzScanCLITestsL2Fixture.SierraIntegrationSubscription,
+            InvokeCLI("azscan", "cosmosDb", "-s", AzScanCLITestsL2Fixture.SierraIntegrationSubscription,
                 "-d", AzScanCLITestsL2Fixture.TestDomain, "-2");
 
             foreach (var region in RegionHelper.DeploymentRegionsToList())

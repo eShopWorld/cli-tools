@@ -24,7 +24,7 @@ namespace EshopWorld.Tools.Tests
             var output = Path.GetTempPath();
             var resxPath = Path.Combine(AppContext.BaseDirectory, "data");
             DeleteTestFiles(resxPath, "test.en.json");
-            GetStandardOutput("transform", "resx2json", "--resx-project", resxPath, "--json-project", output);
+            InvokeCLI("transform", "resx2json", "--resx-project", resxPath, "--json-project", output);
             File.Exists(Path.Combine(output, "test.en.json")).Should().BeTrue();
         }
 
@@ -34,7 +34,7 @@ namespace EshopWorld.Tools.Tests
             var output = Path.GetTempPath();
             var resxPath = Path.Combine(AppContext.BaseDirectory, "data");
             DeleteTestFiles(resxPath, "test.en.json");
-            GetStandardOutput("transform", "resx2json", "-r", resxPath, "-j", output);
+            InvokeCLI("transform", "resx2json", "-r", resxPath, "-j", output);
             File.Exists(Path.Combine(output, "test.en.json")).Should().BeTrue();
         }
     }

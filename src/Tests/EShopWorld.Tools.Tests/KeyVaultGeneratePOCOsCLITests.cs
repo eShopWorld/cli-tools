@@ -30,7 +30,7 @@ namespace EshopWorld.Tools.Tests
             var output = Path.GetTempPath();
 
             DeleteTestFiles(output, "Configuration.cs", "KeyVaultCLITest.csproj");
-            GetStandardOutput("keyvault", "generatePOCOs", keyVaultParam,
+            InvokeCLI("keyvault", "generatePOCOs", keyVaultParam,
                 config["POCOBindInputTestKeyVault"], appNameParam, "KeyVaultCLITest", outputParam, output, namespaceParam, "n", versionParam, "1.2");
 
             File.Exists(Path.Combine(output, "Configuration.cs")).Should().BeTrue();

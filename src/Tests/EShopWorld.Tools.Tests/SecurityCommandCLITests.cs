@@ -27,7 +27,7 @@ namespace EshopWorld.Tools.Tests
         {
             
             //do not use defaults
-            GetStandardOutput("security", "rotateSDSKeys", keyVaultParamName, SecurityCLITestsL2Fixture.KeyVaultName,
+            InvokeCLI("security", "rotateSDSKeys", keyVaultParamName, SecurityCLITestsL2Fixture.KeyVaultName,
                 masterKeyParamName, TestMasterKeyName, masterSecretParamName, TestMasterSecretName, masterKeyStrengthParamName, "2048", secretEncryptionAlgParamName,
                 JsonWebKeyEncryptionAlgorithm.RSAOAEP256);
 
@@ -43,7 +43,7 @@ namespace EshopWorld.Tools.Tests
             secret.Value.Should().NotBeNullOrWhiteSpace();
 
             //rotate
-            GetStandardOutput("security", "rotateSDSKeys", keyVaultParamName, SecurityCLITestsL2Fixture.KeyVaultName,
+            InvokeCLI("security", "rotateSDSKeys", keyVaultParamName, SecurityCLITestsL2Fixture.KeyVaultName,
                 masterKeyParamName, TestMasterKeyName, masterSecretParamName, TestMasterSecretName, masterKeyStrengthParamName, "2048", secretEncryptionAlgParamName,
                 JsonWebKeyEncryptionAlgorithm.RSAOAEP256);
 
