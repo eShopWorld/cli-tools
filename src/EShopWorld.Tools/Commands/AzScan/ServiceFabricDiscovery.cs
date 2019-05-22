@@ -244,7 +244,7 @@ namespace EShopWorld.Tools.Commands.AzScan
             }
         }
 
-        private X509Certificate2 ExtractCert(SecretBundle certSecret)
+        private static X509Certificate2 ExtractCert(SecretBundle certSecret)
         {
             if (certSecret == null || string.IsNullOrWhiteSpace(certSecret.Value))
             {
@@ -264,7 +264,7 @@ namespace EShopWorld.Tools.Commands.AzScan
                 return null;
             }
 
-            var x509Cert = new X509Certificate2(Convert.FromBase64String(cert.Value<string>()), password.Value<string>());
+            var x509Cert = new X509Certificate2(Convert.FromBase64String(cert.Value<string>()), password.Value<string>(), X509KeyStorageFlags.UserKeySet);
             return string.IsNullOrWhiteSpace(x509Cert.Thumbprint) ? null : x509Cert;
         }
     }

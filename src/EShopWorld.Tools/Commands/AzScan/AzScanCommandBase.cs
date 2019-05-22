@@ -115,10 +115,6 @@ namespace EShopWorld.Tools.Commands.AzScan
                 //only run this when command succeeded (and no exception)
                 await KeyVaultManager.DetachKeyVaults(SecretPrefix);
             }
-            else
-            {
-                console.EmitWarning(BigBrother, GetType(), app.Options, $"Command returned non zero code - code returned : {resultCode}");
-            }
 
             return resultCode;
         }
