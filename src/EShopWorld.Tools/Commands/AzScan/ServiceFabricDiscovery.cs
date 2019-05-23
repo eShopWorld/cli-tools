@@ -31,7 +31,6 @@ namespace EShopWorld.Tools.Commands.AzScan
         private readonly KeyVaultClient _kvClient;
         private readonly ServiceFabricManagementClient _sfClient;
         private FabricClient _fabricClient;
-        private DeploymentRegion _connectedClusterRegion;
         private string _connectedClusterProxyScheme;
         private int _connectedClusterProxyPort;
         private readonly Dictionary<int, string> _connectedClusterPortServiceMap = new Dictionary<int, string>();
@@ -83,24 +82,15 @@ namespace EShopWorld.Tools.Commands.AzScan
         /// <param name="region">region to scope to</param>
         /// <param name="servicePort">target port</param>
         /// <returns>service fabric uri or null</returns>
-        public async Task<string> LookupServiceNameByPort(IAzure azClient, string env, DeploymentRegion region,
+        public string LookupServiceNameByPort(IAzure azClient, string env, DeploymentRegion region,
             int servicePort)
         {
-            if (!_connectedClusterPortServiceMap.ContainsKey(servicePort))
-            {
-                //not in cache, have we switched region? (but it means apps are not consistent against regions)
-                if (_connectedClusterRegion!=region)
-                {
-                    await CheckConnectionStatus(azClient, env, region);
-                }
-            }
-
             return _connectedClusterPortServiceMap.ContainsKey(servicePort) ? _connectedClusterPortServiceMap[servicePort] : null;            
         }
 
         private async Task CheckConnectionStatus(IAzure azClient, string env, DeploymentRegion region)
         {
-            if (_fabricClient == null || region != _connectedClusterRegion)
+            if (_fabricClient == null)
             {
                 await Connect(azClient, env, region);
             }
@@ -168,7 +158,6 @@ namespace EShopWorld.Tools.Commands.AzScan
             };
 
             _fabricClient = new FabricClient(xc, uri.ToString());
-            _connectedClusterRegion = region;
 
             //pre-load app list, app and service manifests
             var appList = await _fabricClient.QueryManager.GetApplicationListAsync();
@@ -266,6 +255,36 @@ namespace EShopWorld.Tools.Commands.AzScan
 
             var x509Cert = new X509Certificate2(Convert.FromBase64String(cert.Value<string>()), password.Value<string>(), X509KeyStorageFlags.UserKeySet);
             return string.IsNullOrWhiteSpace(x509Cert.Thumbprint) ? null : x509Cert;
+        }
+    }
+
+    /// <summary>
+    /// factory class for <see cref="ServiceFabricDiscovery"/>
+    /// the idea being that that the factory is resolved via DI and instance requested per region (as this wraps cluster connection)
+    /// </summary>
+    public sealed class ServiceFabricDiscoveryFactory
+    {
+        private readonly KeyVaultClient _kvClient;
+        private readonly ServiceFabricManagementClient _sfClient;
+
+        /// <summary>
+        /// ctor
+        /// </summary>
+        /// <param name="kvClient">key vault client passed to <see cref="ServiceFabricDiscovery"/> instance</param>
+        /// <param name="sfClient">service fabric client passed to <see cref="ServiceFabricDiscovery"/> instance</param>
+        public ServiceFabricDiscoveryFactory(KeyVaultClient kvClient, ServiceFabricManagementClient sfClient)
+        {
+            _kvClient = kvClient;
+            _sfClient = sfClient;
+        }
+
+        /// <summary>
+        /// get instance 
+        /// </summary>
+        /// <returns>new instance of <see cref="ServiceFabricDiscovery"/></returns>
+        public ServiceFabricDiscovery GetInstance()
+        {
+            return new ServiceFabricDiscovery(_kvClient, _sfClient);
         }
     }
 }

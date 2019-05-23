@@ -9,7 +9,6 @@ using EShopWorld.Tools.Common;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Azure.Management.Fluent;
 using Microsoft.Azure.Management.Network.Fluent;
-using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 
 namespace EShopWorld.Tools.Commands.AzScan
 {
@@ -20,16 +19,16 @@ namespace EShopWorld.Tools.Commands.AzScan
     // ReSharper disable once InconsistentNaming
     public class AzScanDNSCommand : AzScanCommandBase
     {
-        private readonly ServiceFabricDiscovery _sfDiscovery;
+        private readonly ServiceFabricDiscoveryFactory _sfDiscoveryFactory;
 
         //as these are used against each and every LB targeting A-record, let's cache
-        private IPagedCollection<ILoadBalancer> _loadBalancersCache;
-        private IPagedCollection<IPublicIPAddress> _pipCache;
-
+        private IList<ILoadBalancer> _loadBalancersCache;
+        private IList<IPublicIPAddress> _pipCache;
+        
         /// <inheritdoc />
-        public AzScanDNSCommand(Azure.IAuthenticated authenticated, AzScanKeyVaultManager keyVaultManager, IBigBrother bigBrother, ServiceFabricDiscovery sfDiscovery) : base(authenticated, keyVaultManager, bigBrother, "Platform")
+        public AzScanDNSCommand(Azure.IAuthenticated authenticated, AzScanKeyVaultManager keyVaultManager, IBigBrother bigBrother, ServiceFabricDiscoveryFactory sfDiscoveryFactory) : base(authenticated, keyVaultManager, bigBrother, "Platform")
         {
-            _sfDiscovery = sfDiscovery;
+            _sfDiscoveryFactory = sfDiscoveryFactory;
         }
 
         /// <inheritdoc />
@@ -65,33 +64,36 @@ namespace EShopWorld.Tools.Commands.AzScan
 
                 var aNames = await zone.ARecordSets.ListAsync();
 
-                foreach (var regionalDef in RegionalPlatformResourceGroups) //match regional KV to the A record region (by name)
+                //hydrate LB, PIP cache
+                await PreloadLoadBalancerDetails(client);
+
+                //run regional scans in parallel
+                await Task.WhenAll(RegionalPlatformResourceGroups.Select(r => Task.Run(async () =>
                 {
-                    var regionCode = regionalDef.Region.ToRegionCode();
+                    var sfDiscovery = _sfDiscoveryFactory.GetInstance(); //region = separate cluster
+                    var regionCode = r.Region.ToRegionCode();
 
                     //scan A(Name)s - regional entries
-                    foreach (var aName in aNames)
+                    foreach (var aName in aNames.Where(a=> a.Name.RegionCodeCheck(regionCode)))
                     {
-                        if (!aName.Name.RegionCodeCheck(regionCode))
-                            continue;
-
                         var isLb = aName.Name.EndsWith("-lb") || !aNames.Any(a =>
                                        a.Name.Equals($"{aName.Name}-lb", StringComparison.OrdinalIgnoreCase));
 
                         if (!aName.IPv4Addresses.Any())
                         {
-                            console.EmitWarning(BigBrother, GetType(), AppInstance.Options, $"DNS entry {aName.Name} does not have any target IP address");
+                            console.EmitWarning(BigBrother, GetType(), AppInstance.Options,
+                                $"DNS entry {aName.Name} does not have any target IP address");
                             continue;
-                        }                       
+                        }
 
                         var ipAddress = aName.IPv4Addresses.First();
 
-                        foreach (var keyVault in regionalDef.TargetKeyVaults)
+                        foreach (var keyVault in r.TargetKeyVaults)
                         {
                             if (isLb)
                             {
                                 //lookup backend rule in IP matching LB instance - match the rule by name
-                                var port = await LookupLoadBalancerPort(client, console, aName.Name, ipAddress);
+                                var port = LookupLoadBalancerPort(console, aName.Name, ipAddress);
 
                                 if (!port.HasValue)
                                 {
@@ -99,29 +101,34 @@ namespace EShopWorld.Tools.Commands.AzScan
                                     continue;
                                 }
 
-                                var (proxyScheme, proxyPort) = await _sfDiscovery.GetReverseProxyDetails(client, EnvironmentName, regionalDef.Region);
+                                var (proxyScheme, proxyPort) =
+                                    await sfDiscovery.GetReverseProxyDetails(client, EnvironmentName,
+                                        r.Region);
 
                                 if (!string.IsNullOrWhiteSpace(proxyScheme))
                                 {
                                     //attempt to construct reverse proxy url too
                                     string serviceInstanceName;
                                     if (!string.IsNullOrWhiteSpace(serviceInstanceName =
-                                        await _sfDiscovery.LookupServiceNameByPort(client, EnvironmentName,
-                                            regionalDef.Region, port.Value)))
+                                        sfDiscovery.LookupServiceNameByPort(client, EnvironmentName,
+                                            r.Region, port.Value)))
                                     {
                                         await KeyVaultManager.SetKeyVaultSecretAsync(keyVault, SecretPrefix, aName.Name,
                                             "Proxy",
-                                            new UriBuilder(proxyScheme, "localhost", proxyPort, serviceInstanceName.RemoveFabricScheme())
+                                            new UriBuilder(proxyScheme, "localhost", proxyPort,
+                                                    serviceInstanceName.RemoveFabricScheme())
                                                 .ToString(), "-lb");
                                     }
                                     else
                                     {
-                                        console.EmitWarning(BigBrother, typeof(AzScanDNSCommand), AppInstance.Options, $"Unable to lookup service instance name for {aName.Name}:{port.Value} under {EnvironmentName} environment");
+                                        console.EmitWarning(BigBrother, typeof(AzScanDNSCommand), AppInstance.Options,
+                                            $"Unable to lookup service instance name for {aName.Name}:{port.Value} under {EnvironmentName} environment - Region - {r.Region.ToRegionCode().ToPascalCase()}");
                                     }
                                 }
                                 else
                                 {
-                                    console.EmitWarning(BigBrother, typeof(AzScanDNSCommand), AppInstance.Options, $"Unable to lookup reverse proxy details for Service Fabric cluster - Environment - {EnvironmentName} - Region - {regionalDef.Region.ToRegionCode()}");
+                                    console.EmitWarning(BigBrother, typeof(AzScanDNSCommand), AppInstance.Options,
+                                        $"Unable to lookup reverse proxy details for Service Fabric cluster - Environment - {EnvironmentName} - Region - {r.Region.ToRegionCode().ToPascalCase()}");
                                 }
 
                                 await KeyVaultManager.SetKeyVaultSecretAsync(keyVault,
@@ -136,24 +143,21 @@ namespace EShopWorld.Tools.Commands.AzScan
                             }
                         }
                     }
-                }
+                })));
             }
 
             return 0;
         }
 
-        private async Task<int?> LookupLoadBalancerPort(IAzure client, IConsole console, string aName, string ipAddress)
+        // ReSharper disable once IdentifierTypo
+        private async Task PreloadLoadBalancerDetails(IAzure client)
         {
-            //lookup LB instance using cache 
-            //note that "old" (v0/1) LBs are in "old" (v0/1) RGs so not filtering by RG
-            if (_loadBalancersCache == null || _pipCache == null)
-            {
-                //hydrate
-                _loadBalancersCache = await client.LoadBalancers.ListAsync(); //all pages
-                _pipCache = await client.PublicIPAddresses.ListAsync(); //all pages
-            }
+            _loadBalancersCache = (await client.LoadBalancers.ListAsync()).ToList(); //all pages
+            _pipCache = (await client.PublicIPAddresses.ListAsync()).ToList(); //all pages
+        }
 
-
+        private int? LookupLoadBalancerPort(IConsole console, string aName, string ipAddress)
+        {
             //public or private
             var publicIp =
                 _pipCache.FirstOrDefault(i => !string.IsNullOrWhiteSpace(i.IPAddress) && i.IPAddress.Equals(ipAddress, StringComparison.OrdinalIgnoreCase));

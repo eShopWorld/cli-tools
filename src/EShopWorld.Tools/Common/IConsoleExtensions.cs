@@ -35,14 +35,13 @@ namespace EShopWorld.Tools.Common
             bb?.Flush();
 
             var argsMessage = string.IsNullOrWhiteSpace(@event.Arguments) ? "" : $",Arguments '{@event.Arguments}'";
-            console.EmitMessage(console.Out, ConsoleColor.Yellow, $"Command {@event.CommandType}{argsMessage} produced warning - {warning}");
+            console.EmitMessage(console.Out, $"WARNING - Command {@event.CommandType}{argsMessage} - {warning}");
         }
 
-        private static void EmitMessage(this IConsole console, TextWriter tw, ConsoleColor color, string text)
+        // ReSharper disable once UnusedParameter.Local
+        private static void EmitMessage(this IConsole console, TextWriter tw, string text)
         {
-            console.ForegroundColor = color;
             tw.WriteLine(text);
-            console.ResetColor();
         }
 
         /// <summary>
@@ -63,7 +62,7 @@ namespace EShopWorld.Tools.Common
             bb?.Flush();
 
             var argsMessage = string.IsNullOrWhiteSpace(@event.Arguments) ? "" : $",Arguments '{@event.Arguments}'";
-            console.EmitMessage(console.Error, ConsoleColor.Red, $"Command {@event.CommandType}{argsMessage} produced an error - {e.Message}");
+            console.EmitMessage(console.Error, $"ERROR - Command {@event.CommandType}{argsMessage} - {e.Message}");
         }
     }
 }
