@@ -85,19 +85,20 @@ namespace EShopWorld.Tools.Commands.AzScan
                         }                       
 
                         var ipAddress = aName.IPv4Addresses.First();
-                        //lookup backend rule in IP matching LB instance - match the rule by name
-                        var port = isLb ? await LookupLoadBalancerPort(client, console, aName.Name, ipAddress) : -1;
-
-                        if (isLb && !port.HasValue)
-                        {
-                            //unable to process this record, warnings issued
-                            continue;
-                        }
 
                         foreach (var keyVault in regionalDef.TargetKeyVaults)
                         {
                             if (isLb)
                             {
+                                //lookup backend rule in IP matching LB instance - match the rule by name
+                                var port = await LookupLoadBalancerPort(client, console, aName.Name, ipAddress);
+
+                                if (!port.HasValue)
+                                {
+                                    //unable to process this record, warnings issued
+                                    continue;
+                                }
+
                                 var (proxyScheme, proxyPort) = await _sfDiscovery.GetReverseProxyDetails(client, EnvironmentName, regionalDef.Region);
 
                                 if (!string.IsNullOrWhiteSpace(proxyScheme))

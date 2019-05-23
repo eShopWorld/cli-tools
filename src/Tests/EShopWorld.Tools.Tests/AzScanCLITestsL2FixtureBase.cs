@@ -21,12 +21,24 @@ namespace EshopWorld.Tools.Tests
     {
         private readonly string _environment;
         protected IAzure AzClient;
-        protected IContainer Container;
+        protected static readonly IContainer Container; //there is an issue with BB and multiple instances being set up concurrently - there is probably no need to 
         private KeyVaultClient _keyVaultClient;
         private TestConfig _testConfig;
 
         private const string OutputKeyVaultNameFormat = "esw-{0}-{1}-{2}";
         internal const string TestDomain = "a";
+
+        static  AzScanCLITestsL2FixtureBase()
+        {
+            var builder = new ContainerBuilder();
+
+            builder.RegisterAssemblyModules(typeof(Program).Assembly);
+            builder.Register((ctx) => ctx.Resolve<Azure.IAuthenticated>()
+                    .WithSubscription(EswDevOpsSdk.SierraIntegrationSubscriptionId))
+                .SingleInstance();
+
+            Container = builder.Build();
+        }
 
         protected AzScanCLITestsL2FixtureBase(string environment)
         {
@@ -36,12 +48,6 @@ namespace EshopWorld.Tools.Tests
 
         private void SetupFixture()
         {
-            var builder = new ContainerBuilder();
-
-            builder.RegisterAssemblyModules(typeof(Program).Assembly);
-            builder.Register((ctx) => ctx.Resolve<Azure.IAuthenticated>().WithSubscription(EswDevOpsSdk.SierraIntegrationSubscriptionId)).SingleInstance();
-            Container = builder.Build();
-
             AzClient = Container.Resolve<IAzure>();
 
             _keyVaultClient = Container.Resolve<KeyVaultClient>();
@@ -49,6 +55,8 @@ namespace EshopWorld.Tools.Tests
 
             _testConfig = new TestConfig();
             testConfigRoot.GetSection("CLIToolingIntTest").Bind(_testConfig);
+
+            _testConfig.TargetIdentityObjectId = "26966d32-a588-4cc0-9078-d3718702a952"; //TODO: test only
 
             CreateResources().GetAwaiter().GetResult();
         }
