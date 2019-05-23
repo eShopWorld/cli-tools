@@ -56,8 +56,6 @@ namespace EshopWorld.Tools.Tests
             _testConfig = new TestConfig();
             testConfigRoot.GetSection("CLIToolingIntTest").Bind(_testConfig);
 
-            _testConfig.TargetIdentityObjectId = "26966d32-a588-4cc0-9078-d3718702a952"; //TODO: test only
-
             CreateResources().GetAwaiter().GetResult();
         }
 
