@@ -20,7 +20,7 @@ namespace EShopWorld.Tools.Common
         /// <param name="env">environment name</param>
         /// <param name="region">region code</param>
         /// <returns>regional platform level key vault</returns>
-        internal static string GetRegionalKVName(string env, DeploymentRegion region) => $"esw-platform-{env}-{region.ToRegionCode()}".ToLowerInvariant();
+        internal static string GetRegionalPlatformKVName(string env, DeploymentRegion region) => $"esw-platform-{env}-{region.ToRegionCode()}".ToLowerInvariant();
 
         /// <summary>
         /// get name of platform resource group

@@ -118,7 +118,7 @@ namespace EShopWorld.Tools.Commands.AzScan
         {
             _azClient = azClient;
             //check that platform KV exists
-            var regionalPlatformKvName = NameGenerator.GetRegionalKVName(env, region);
+            var regionalPlatformKvName = NameGenerator.GetRegionalPlatformKVName(env, region);
             if (!(await _azClient.Vaults.ListByResourceGroupAsync(NameGenerator.GetRegionalPlatformRGName(env, region)))
                 .Any(v => v.Name.Equals(regionalPlatformKvName, StringComparison.OrdinalIgnoreCase)))
             {

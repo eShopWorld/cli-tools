@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -18,7 +19,7 @@ namespace EShopWorld.Tools.Commands.AzScan
     public class AzScanKeyVaultManager
     {
         private readonly KeyVaultClient _kvClient;
-        private readonly Dictionary<string, IList<TrackedSecretBundle>> _kvInitialState = new Dictionary<string, IList<TrackedSecretBundle>>();
+        private readonly ConcurrentDictionary<string, IList<TrackedSecretBundle>> _kvInitialState = new ConcurrentDictionary<string, IList<TrackedSecretBundle>>();
         private const string KeyVaultLevelSeparator = "--";
 
         /// <summary>
@@ -40,13 +41,20 @@ namespace EShopWorld.Tools.Commands.AzScan
         public async Task AttachKeyVaults(IEnumerable<string> kvNames, string secretPrefix)
         {
             var prefix = GetSecretPrefixLevelToken(secretPrefix);
-            foreach (var kv in kvNames)
+            //foreach (var kv in kvNames)
+            //{
+            //    _kvInitialState.Add(kv,
+            //        (await _kvClient.GetAllSecrets(kv, prefix ))
+            //        .Select(i => new TrackedSecretBundle(i, false))
+            //        .ToList());
+            //}
+
+            await Task.WhenAll(kvNames.Select(k => Task.Run(async ()=>
             {
-                _kvInitialState.Add(kv,
-                    (await _kvClient.GetAllSecrets(kv, prefix ))
-                    .Select(i => new TrackedSecretBundle(i, false))
-                    .ToList());
-            }
+                var secrets = await _kvClient.GetAllSecrets(k, prefix);
+                _kvInitialState.TryAdd(k,
+                    secrets.Select(i => new TrackedSecretBundle(i, false)).ToList());
+            })));
         }
 
         /// <summary>
