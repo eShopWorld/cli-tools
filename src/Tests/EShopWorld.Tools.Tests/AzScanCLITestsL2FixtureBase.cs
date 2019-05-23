@@ -115,7 +115,6 @@ namespace EshopWorld.Tools.Tests
         public void Dispose()
         {
             DeleteResources().GetAwaiter().GetResult();
-            Container.Dispose();
         }
 
         protected abstract Task DeleteResources();
