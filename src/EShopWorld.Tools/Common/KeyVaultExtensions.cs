@@ -2,9 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using Eshopworld.DevOps;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.KeyVault.Models;
+using Microsoft.Rest;
 using Microsoft.Rest.Azure;
 using Polly;
 
@@ -73,14 +78,6 @@ namespace EShopWorld.Tools.Common
             await client.DeleteSecretAsync(GetKeyVaultUrlFromName(keyVaultName), secret.SecretIdentifier.Name);
         }
 
-        internal static async Task DisableSecret(this KeyVaultClient client, string keyVaultName, SecretBundle secret)
-        { 
-                secret.Attributes.Enabled = false;
-                //disable current version - no need to create new one with "set"
-                await client.UpdateSecretWithHttpMessagesAsync(GetKeyVaultUrlFromName(keyVaultName),
-                    secret.SecretIdentifier.Name, secret.SecretIdentifier.Version, secretAttributes: secret.Attributes);
-        }
-
         internal static async Task<SecretBundle> SetKeyVaultSecretAsync(this KeyVaultClient client, string keyVaultName,
             string name, string value)
         {
@@ -104,15 +101,7 @@ namespace EShopWorld.Tools.Common
             do
             {
                 secrets = !string.IsNullOrWhiteSpace(secrets?.NextPageLink) ? await client.GetDeletedSecretsNextAsync(secrets.NextPageLink) : await client.GetDeletedSecretsAsync(GetKeyVaultUrlFromName(keyVaultName));
-                foreach (var secret in secrets)
-                {
-                    if (!string.IsNullOrWhiteSpace(prefix) && !secret.Identifier.Name.StartsWith(prefix)) //if prefix is specified, only load those
-                    {
-                        continue;
-                    }
-
-                    allSecrets.Add(secret);
-                }
+                allSecrets.AddRange(secrets.Where(secret => string.IsNullOrWhiteSpace(prefix) || secret.Identifier.Name.StartsWith(prefix)));
             } while (!string.IsNullOrWhiteSpace(secrets.NextPageLink));
 
             return allSecrets;
@@ -123,7 +112,7 @@ namespace EShopWorld.Tools.Common
             var keyVaultUrl = GetKeyVaultUrlFromName(keyVaultName);
             var secret =  await client.RecoverDeletedSecretAsync(keyVaultUrl, secretName);
 
-            //wait for full recovery
+            //wait for full recovery - note that this is "forever" in the scope of the specific status codes
             var response = await Policy
                 .Handle<KeyVaultErrorException>(r =>
                     r.Response.StatusCode == HttpStatusCode.NotFound || r.Response.StatusCode == HttpStatusCode.Conflict)

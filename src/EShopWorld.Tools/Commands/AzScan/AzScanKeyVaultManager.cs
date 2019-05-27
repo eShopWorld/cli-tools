@@ -137,10 +137,9 @@ namespace EShopWorld.Tools.Commands.AzScan
 
             var targetName = sb.ToString();
             //soft-deleted? recover then
-            DeletedSecretItem deletedSecretItem;
-            if ((deletedSecretItem = IsDeleted(keyVaultName, targetName))!=null)
+            if (IsDeleted(keyVaultName, targetName))
             {
-                await ProcessSecretRecovery(keyVaultName, targetName, deletedSecretItem);
+                await ProcessSecretRecovery(keyVaultName, targetName);
                 //now it can located and processed as "regular" secret
             }
 
@@ -169,7 +168,7 @@ namespace EShopWorld.Tools.Commands.AzScan
             }
         }
 
-        private async Task ProcessSecretRecovery(string keyVaultName, string targetName, DeletedSecretItem deletedSecretItem)
+        private async Task ProcessSecretRecovery(string keyVaultName, string targetName)
         {
             var recovered= await _kvClient.RecoverSecret(keyVaultName, targetName);
             var header = new SecretHeader(keyVaultName, targetName);
@@ -179,17 +178,16 @@ namespace EShopWorld.Tools.Commands.AzScan
                     $"Failure adding new secret - {keyVaultName}:{targetName}"); //pure precautionary measure here
             }
 
-            // ReSharper disable once UnusedVariable
-            if (!_deletedSecrets.TryRemove(header, out var deleted))
+            if (!_deletedSecrets.TryRemove(header, out _))
             {
                 throw new ApplicationException(
                     $"Failure adding new secret - {keyVaultName}:{targetName}"); //pure precautionary measure here
             }
         }
 
-        private DeletedSecretItem IsDeleted(string keyVaultName, string targetName)
+        private bool IsDeleted(string keyVaultName, string targetName)
         {
-            return _deletedSecrets.TryGetValue(new SecretHeader(keyVaultName, targetName), out var value) ? value : null;
+            return _deletedSecrets.TryGetValue(new SecretHeader(keyVaultName, targetName), out _);
         }
 
         private void AddNewSecret(string keyVaultName, SecretBundle newSecret)
