@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.KeyVault.Models;
 using Microsoft.Rest.Azure;
+using Polly;
 
 namespace EShopWorld.Tools.Common
 {
@@ -117,25 +118,20 @@ namespace EShopWorld.Tools.Common
             return allSecrets;
         }
 
-        internal static async Task<SecretBundle> RecoverSecret(this KeyVaultClient client, string keyVaultName, string secretName)
+        internal static async Task<SecretBundle> RecoverSecret(this KeyVaultClient client, string keyVaultName, string secretName, double recoveryLoopWaitTime = 100)
         {
-            var secret =  await client.RecoverDeletedSecretAsync(GetKeyVaultUrlFromName(keyVaultName), secretName);
-            SecretBundle response;
-            do
-            {
-                try
-                {
-                    response = await client.GetSecretAsync(secret.SecretIdentifier.Identifier);
-                }
-                catch (KeyVaultErrorException e) when (e.Response.StatusCode==HttpStatusCode.NotFound)
-                {
-                    await Task.Delay(TimeSpan.FromMilliseconds(100));
-                    response = null;
-                }
-                
-            } while (response==null);
+            var keyVaultUrl = GetKeyVaultUrlFromName(keyVaultName);
+            var secret =  await client.RecoverDeletedSecretAsync(keyVaultUrl, secretName);
 
-            return response;
+            //wait for full recovery
+            var response = await Policy
+                .Handle<KeyVaultErrorException>(r =>
+                    r.Response.StatusCode == HttpStatusCode.NotFound || r.Response.StatusCode == HttpStatusCode.Conflict)
+                .WaitAndRetryForeverAsync(w => TimeSpan.FromMilliseconds(recoveryLoopWaitTime))
+                .ExecuteAsync(() => client.GetSecretWithHttpMessagesAsync(keyVaultUrl, secret.SecretIdentifier.Name,
+                    secret.SecretIdentifier.Version));
+
+            return response.Body;
         }
 
         private static string GetKeyVaultUrlFromName(string name)

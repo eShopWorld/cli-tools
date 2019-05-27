@@ -19,7 +19,13 @@ namespace EShopWorld.Tools.Commands.AzScan
     public class AzScanKeyVaultManager
     {
         private readonly KeyVaultClient _kvClient;
-        private readonly ConcurrentDictionary<string, IList<TrackedSecretBundle>> _kvInitialState = new ConcurrentDictionary<string, IList<TrackedSecretBundle>>();
+
+        private readonly ConcurrentDictionary<SecretHeader, TrackedSecretBundle> _kvState =
+            new ConcurrentDictionary<SecretHeader, TrackedSecretBundle>();
+
+        private readonly ConcurrentDictionary<SecretHeader, DeletedSecretItem> _deletedSecrets =
+            new ConcurrentDictionary<SecretHeader, DeletedSecretItem>();
+
         private const string KeyVaultLevelSeparator = "--";
 
         /// <summary>
@@ -41,19 +47,24 @@ namespace EShopWorld.Tools.Commands.AzScan
         public async Task AttachKeyVaults(IEnumerable<string> kvNames, string secretPrefix)
         {
             var prefix = GetSecretPrefixLevelToken(secretPrefix);
-            //foreach (var kv in kvNames)
-            //{
-            //    _kvInitialState.Add(kv,
-            //        (await _kvClient.GetAllSecrets(kv, prefix ))
-            //        .Select(i => new TrackedSecretBundle(i, false))
-            //        .ToList());
-            //}
 
             await Task.WhenAll(kvNames.Select(k => Task.Run(async ()=>
             {
                 var secrets = await _kvClient.GetAllSecrets(k, prefix);
-                _kvInitialState.TryAdd(k,
-                    secrets.Select(i => new TrackedSecretBundle(i, false)).ToList());
+                foreach (var secret in secrets)
+                {
+                    _kvState.TryAdd(new SecretHeader(k, secret.SecretIdentifier.Name), new TrackedSecretBundle(secret, false));
+                }
+            })));
+
+
+            await Task.WhenAll(kvNames.Select(k => Task.Run(async () =>
+            {
+                var secrets = await _kvClient.GetDeletedSecrets(k, prefix);
+                foreach (var secret in secrets)
+                {
+                    _deletedSecrets.TryAdd(new SecretHeader(k, secret.Identifier.Name), secret);
+                }
             })));
         }
 
@@ -66,21 +77,13 @@ namespace EShopWorld.Tools.Commands.AzScan
         /// <returns><see cref="Task"/></returns>
         public async Task DetachKeyVaults(string secretPrefix)
         {
-            if (!_kvInitialState.Any())
-            {
-                throw new ApplicationException($"No key vaults have been attached, this instance must be initialized via {nameof(AttachKeyVaults)} call first");
-            }
+            //delete unused secrets
+            var tasks = _kvState
+                    .Where(l => !l.Value.Touched &&
+                                l.Value.Secret.SecretIdentifier.Name.StartsWith(GetSecretPrefixLevelToken(secretPrefix)))
+                    .Select(i => _kvClient.DeleteSecret(i.Key.KeyVaultName, i.Value.Secret)); //soft-delete
 
-            //cross check all matching prefix secrets that have not been touched
-            foreach  (var (key, value) in _kvInitialState)
-            {
-                var tasks = value
-                    .Where(s => !s.Touched &&
-                                s.Secret.SecretIdentifier.Name.StartsWith(GetSecretPrefixLevelToken(secretPrefix)))
-                    .Select(i => _kvClient.DisableSecret(key, i.Secret));
-
-                await Task.WhenAll(tasks);
-            }
+            await Task.WhenAll(tasks);
         }
 
         private static string GetSecretPrefixLevelToken(string secretPrefix)
@@ -133,6 +136,13 @@ namespace EShopWorld.Tools.Commands.AzScan
             }
 
             var targetName = sb.ToString();
+            //soft-deleted? recover then
+            DeletedSecretItem deletedSecretItem;
+            if ((deletedSecretItem = IsDeleted(keyVaultName, targetName))!=null)
+            {
+                await ProcessSecretRecovery(keyVaultName, targetName, deletedSecretItem);
+                //now it can located and processed as "regular" secret
+            }
 
             //detect new vs change, otherwise just track visit
             var trackedSecret = LocateSecret(keyVaultName, targetName);
@@ -159,28 +169,49 @@ namespace EShopWorld.Tools.Commands.AzScan
             }
         }
 
-        private void AddNewSecret(string keyVaultName, SecretBundle newSecret)
+        private async Task ProcessSecretRecovery(string keyVaultName, string targetName, DeletedSecretItem deletedSecretItem)
         {
-            if (string.IsNullOrWhiteSpace(keyVaultName) || !_kvInitialState.ContainsKey(keyVaultName))
+            var recovered= await _kvClient.RecoverSecret(keyVaultName, targetName);
+            var header = new SecretHeader(keyVaultName, targetName);
+            if (!_kvState.TryAdd(header, new TrackedSecretBundle(recovered, false)))
             {
-                throw new ApplicationException($"Attempt to use unattached key vault {keyVaultName}");
+                throw new ApplicationException(
+                    $"Failure adding new secret - {keyVaultName}:{targetName}"); //pure precautionary measure here
             }
 
+            // ReSharper disable once UnusedVariable
+            if (!_deletedSecrets.TryRemove(header, out var deleted))
+            {
+                throw new ApplicationException(
+                    $"Failure adding new secret - {keyVaultName}:{targetName}"); //pure precautionary measure here
+            }
+        }
+
+        private DeletedSecretItem IsDeleted(string keyVaultName, string targetName)
+        {
+            return _deletedSecrets.TryGetValue(new SecretHeader(keyVaultName, targetName), out var value) ? value : null;
+        }
+
+        private void AddNewSecret(string keyVaultName, SecretBundle newSecret)
+        {
             if (newSecret == null)
             {
                 throw new ArgumentNullException(nameof(newSecret));
             }
 
-            _kvInitialState[keyVaultName].Add(new TrackedSecretBundle(newSecret, true)); //mark as refreshed
+            if (!_kvState.TryAdd(new SecretHeader(keyVaultName, newSecret.SecretIdentifier.Name),
+                new TrackedSecretBundle(newSecret, true))) //mark as refreshed
+            {
+                throw new ApplicationException(
+                    $"Failure adding new secret - {keyVaultName}:{newSecret.SecretIdentifier.Name}"); //pure precautionary measure here
+            }
         }
 
         private TrackedSecretBundle LocateSecret(string keyVaultName, string targetName)
         {
-            if (string.IsNullOrWhiteSpace(keyVaultName) || !_kvInitialState.ContainsKey(keyVaultName))
-                throw new ApplicationException($"Attempt to use unattached key vault {keyVaultName}");
-
-            return _kvInitialState[keyVaultName].FirstOrDefault(i =>
-                i.Secret.SecretIdentifier.Name.Equals(targetName, StringComparison.OrdinalIgnoreCase));
+            return _kvState.FirstOrDefault(i =>
+                i.Key.KeyVaultName.Equals(keyVaultName, StringComparison.OrdinalIgnoreCase) &&
+                i.Key.SecretName.Equals(targetName, StringComparison.OrdinalIgnoreCase)).Value;
         }
 
         private class TrackedSecretBundle
@@ -188,10 +219,34 @@ namespace EShopWorld.Tools.Commands.AzScan
             protected internal SecretBundle Secret { get; set; }
             protected internal bool Touched { get; set; }
 
-            public TrackedSecretBundle(SecretBundle secret, bool touched)
+            protected internal TrackedSecretBundle(SecretBundle secret, bool touched)
             {
                 Secret = secret;
                 Touched = touched;
+            }
+        }
+
+        private class SecretHeader : IEquatable<SecretHeader>
+        {
+            internal readonly string KeyVaultName;
+            internal readonly string SecretName;
+
+            protected internal SecretHeader(string keyVaultName, string secretName)
+            {
+                KeyVaultName = keyVaultName;
+                SecretName = secretName;
+            }
+
+            public bool Equals(SecretHeader other)
+            {
+                if (other is null) return false;
+                if (ReferenceEquals(this, other)) return true;
+                return string.Equals(KeyVaultName, other.KeyVaultName) && string.Equals(SecretName, other.SecretName);
+            }
+
+            public override int GetHashCode()
+            {
+                return $"{KeyVaultName}:{SecretName}".GetHashCode();
             }
         }
     }

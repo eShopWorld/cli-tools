@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Http;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
 using Eshopworld.DevOps;
@@ -13,6 +16,7 @@ using Microsoft.Azure.Management.KeyVault.Fluent;
 using Microsoft.Azure.Management.KeyVault.Fluent.Models;
 using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Rest;
 
 namespace EshopWorld.Tools.Tests
 {
@@ -65,7 +69,7 @@ namespace EshopWorld.Tools.Tests
         // ReSharper disable once InconsistentNaming
         protected async Task<IVault> SetupOutputKV(IResourceGroup rg)
         {
-            return await AzClient.Vaults
+            var vault =  await AzClient.Vaults
                 .Define($"esw-{rg.Name}")
                     .WithRegion(rg.RegionName)
                 .WithExistingResourceGroup(rg)
@@ -74,6 +78,22 @@ namespace EshopWorld.Tools.Tests
                     .AllowSecretPermissions(SecretPermissions.Get, SecretPermissions.List, SecretPermissions.Set, SecretPermissions.Delete, SecretPermissions.Recover)
                 .Attach()
                 .CreateAsync();
+
+            //enable soft-delete
+            var credentials = Container.Resolve<TokenCredentials>();
+            var httpClient = new HttpClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Patch,
+                $"https://management.azure.com/subscriptions/{EswDevOpsSdk.SierraIntegrationSubscriptionId}/resourceGroups/{rg.Name}/providers/Microsoft.KeyVault/vaults/{vault.Name}?api-version=2018-02-14")
+            {
+                Content = new StringContent("{\"properties\":{\"enableSoftDelete\":true}}", Encoding.UTF8,
+                    "application/json")
+            };
+
+            await credentials.ProcessHttpRequestAsync(request, CancellationToken.None);
+
+            (await httpClient.SendAsync(request)).EnsureSuccessStatusCode();
+            return vault;
         }
 
 
