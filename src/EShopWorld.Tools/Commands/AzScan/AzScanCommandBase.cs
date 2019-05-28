@@ -113,7 +113,7 @@ namespace EShopWorld.Tools.Commands.AzScan
             if (resultCode == 0)
             {
                 //only run this when command succeeded (and no exception)
-                await KeyVaultManager.DetachKeyVaults(SecretPrefix);
+                await KeyVaultManager.DetachKeyVaults();
             }
 
             return resultCode;

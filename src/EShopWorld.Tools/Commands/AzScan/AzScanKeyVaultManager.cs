@@ -28,6 +28,8 @@ namespace EShopWorld.Tools.Commands.AzScan
 
         private const string KeyVaultLevelSeparator = "--";
 
+        private string _attachedPrefix;
+
         /// <summary>
         /// ctor
         /// </summary>
@@ -46,6 +48,7 @@ namespace EShopWorld.Tools.Commands.AzScan
         [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
         public async Task AttachKeyVaults(IEnumerable<string> kvNames, string secretPrefix)
         {
+            _attachedPrefix = secretPrefix;
             var prefix = GetSecretPrefixLevelToken(secretPrefix);
 
             await Task.WhenAll(kvNames.Select(k => Task.Run(async ()=>
@@ -73,14 +76,18 @@ namespace EShopWorld.Tools.Commands.AzScan
         ///
         /// any secret marked as not refreshed within recognized prefixes will be deleted as consider no longer necessary
         /// </summary>
-        /// <param name="secretPrefix">target secret naming prefix (as in prefix--name--suffix)</param>
         /// <returns><see cref="Task"/></returns>
-        public async Task DetachKeyVaults(string secretPrefix)
+        public async Task DetachKeyVaults()
         {
+            if (string.IsNullOrWhiteSpace(_attachedPrefix))
+            {
+                throw new ApplicationException("No KV attached");
+            }
+
             //delete unused secrets
             var tasks = _kvState
                     .Where(l => !l.Value.Touched &&
-                                l.Value.Secret.SecretIdentifier.Name.StartsWith(GetSecretPrefixLevelToken(secretPrefix)))
+                                l.Value.Secret.SecretIdentifier.Name.StartsWith(GetSecretPrefixLevelToken(_attachedPrefix)))
                     .Select(i => _kvClient.DeleteSecret(i.Key.KeyVaultName, i.Value.Secret)); //soft-delete
 
             await Task.WhenAll(tasks);
