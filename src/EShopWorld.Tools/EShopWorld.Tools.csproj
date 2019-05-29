@@ -56,8 +56,8 @@
     <PackageReference Include="Microsoft.Azure.Management.ResourceManager.Fluent" Version="1.22.0" />
     <PackageReference Include="Microsoft.Azure.Management.ServiceFabric.Fluent" Version="1.9.1-beta" />
     <PackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.2.0-preview3" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Compilers" Version="3.1.0-beta3-final" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.1.0-beta3-final" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Compilers" Version="3.2.0-beta1-final" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.2.0-beta1-final" />
     <PackageReference Include="Microsoft.Extensions.PlatformAbstractions" Version="1.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
 	<PackageReference Include="Microsoft.ServiceFabric.Services.Remoting" Version="3.2.187" />
