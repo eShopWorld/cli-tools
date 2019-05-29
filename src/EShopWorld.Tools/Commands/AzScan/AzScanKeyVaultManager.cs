@@ -88,7 +88,7 @@ namespace EShopWorld.Tools.Commands.AzScan
             var tasks = _kvState
                     .Where(l => !l.Value.Touched &&
                                 l.Value.Secret.SecretIdentifier.Name.StartsWith(GetSecretPrefixLevelToken(_attachedPrefix)))
-                    .Select(i => _kvClient.DeleteSecret(i.Key.KeyVaultName, i.Value.Secret)); //soft-delete
+                    .Select(i => _kvClient.DeleteSecret(i.Key.KeyVaultName, i.Value.Secret.SecretIdentifier.Name)); //soft-delete
 
             await Task.WhenAll(tasks);
         }
@@ -246,7 +246,7 @@ namespace EShopWorld.Tools.Commands.AzScan
             {
                 if (other is null) return false;
                 if (ReferenceEquals(this, other)) return true;
-                return string.Equals(KeyVaultName, other.KeyVaultName) && string.Equals(SecretName, other.SecretName);
+                return string.Equals(KeyVaultName, other.KeyVaultName, StringComparison.OrdinalIgnoreCase) && string.Equals(SecretName, other.SecretName, StringComparison.OrdinalIgnoreCase);
             }
 
             public override int GetHashCode()

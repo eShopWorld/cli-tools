@@ -5,7 +5,6 @@ using Eshopworld.DevOps;
 using Eshopworld.Tests.Core;
 using EShopWorld.Tools.Common;
 using FluentAssertions;
-using JetBrains.Annotations;
 using Microsoft.Azure.KeyVault.Models;
 using Xunit;
 
@@ -38,14 +37,14 @@ namespace EshopWorld.Tools.Tests
             }
 
             // ReSharper disable once StringLiteralTypo
-            InvokeCLI("azscan", "ai", subParam, AzScanCLITestsL2Fixture.SierraIntegrationSubscription, domainParam, AzScanCLITestsL2Fixture.TestDomain);
+            InvokeCLI("azscan", "ai", subParam, AzScanCLITestsL2Fixture.SierraIntegrationSubscription, domainParam, AzScanCLITestsL2FixtureBase.TestDomain);
 
             foreach (var region in RegionHelper.DeploymentRegionsToList())
             {
-                var secrets = await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode());
-                var disabledSecrets = await _fixture.LoadAllDisabledKeyVaultSecretsAsync(region.ToRegionCode());
+                var secrets = await _fixture.LoadAllKeyVaultSecrets(region.ToRegionCode());
+                var deletedSecrets = await _fixture.LoadAllDeletedSecrets(region.ToRegionCode());
                 CheckSecrets(secrets);
-                CheckSideSecrets(secrets, disabledSecrets);
+                CheckSideSecrets(secrets, deletedSecrets);
             }
         }
 
@@ -60,11 +59,11 @@ namespace EshopWorld.Tools.Tests
                 Guid.Parse(s.Value) != default); //check key existence and that it is guid (parse succeeds)
         }
 
-        private void CheckSideSecrets(IList<SecretBundle> secrets, IList<SecretItem> disabledSecrets)
+        private static void CheckSideSecrets(IList<SecretBundle> secrets, IEnumerable<DeletedSecretItem> deletedSecrets)
         {
             secrets.Should().HaveSecret("ApplicationInsightsBLah", "dummy");
             secrets.Should().HaveSecret("Prefix--blah", "dummy");
-            disabledSecrets.Should().HaveDisabledSecret("ApplicationInsights--dummy--dummy");
+            deletedSecrets.Should().HaveDeletedSecret("ApplicationInsights--dummy--dummy");
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -96,16 +97,19 @@ namespace EshopWorld.Tools.Tests
             return vault;
         }
 
-
-
-        internal Task<IList<SecretBundle>> LoadAllKeyVaultSecretsAsync([NotNull] string regionCode)
+        internal async Task<IList<SecretBundle>> LoadAllKeyVaultSecrets(string regionCode)
         {
-            return _keyVaultClient.GetAllSecrets(GetRegionalKVName(regionCode));
+            return await _keyVaultClient.GetAllSecrets(GetRegionalKVName(regionCode));
         }
 
-        internal Task<IList<SecretItem>> LoadAllDisabledKeyVaultSecretsAsync([NotNull] string regionCode)
+        internal async Task<IList<SecretItem>> LoadAllDisabledKeyVaultSecrets( string regionCode)
         {
-            return _keyVaultClient.GetDisabledSecrets(GetRegionalKVName(regionCode));
+            return await _keyVaultClient.GetDisabledSecrets(GetRegionalKVName(regionCode));
+        }
+
+        internal async Task<IList<DeletedSecretItem>> LoadAllDeletedSecrets(string regionCode)
+        {
+            return await _keyVaultClient.GetDeletedSecrets(GetRegionalKVName(regionCode));
         }
 
         internal async Task DeleteAllSecretsAcrossRegions()
@@ -118,7 +122,19 @@ namespace EshopWorld.Tools.Tests
 
         internal async Task SetSecret(string regionCode, string name, string value)
         {
-            await _keyVaultClient.SetKeyVaultSecretAsync(GetRegionalKVName(regionCode), name, value);
+            var kvName = GetRegionalKVName(regionCode);
+            try
+            {
+                if (await _keyVaultClient.GetDeletedSecretWithHttpMessages(kvName, name) != null)
+                {
+                    await _keyVaultClient.RecoverSecret(kvName, name);
+                }
+            }
+            catch (KeyVaultErrorException e) when (e.Response.StatusCode == HttpStatusCode.NotFound)
+            {
+            }
+
+            await _keyVaultClient.SetKeyVaultSecretAsync(kvName, name, value);
         }
 
         // ReSharper disable once InconsistentNaming

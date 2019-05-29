@@ -58,6 +58,21 @@ namespace EshopWorld.Tools.Tests
                     nameComparison) && !s.Attributes.Enabled.GetValueOrDefault());
         }
 
+
+        /// <summary>
+        /// ensure name defined secret assertion is met and the secret is deleted
+        /// </summary>
+        /// <param name="assert">assertion chain</param>
+        /// <param name="name">expected name</param>
+        /// <param name="nameComparison">string comparison for name</param>
+        /// <returns>constraint instance</returns>
+        public static AndWhichConstraint<GenericCollectionAssertions<DeletedSecretItem>, DeletedSecretItem> HaveDeletedSecret(this GenericCollectionAssertions<DeletedSecretItem> assert, string name, StringComparison nameComparison = StringComparison.Ordinal)
+        {
+            return assert.Contain(s =>
+                s.Identifier.Name.Equals(name,
+                    nameComparison) && s.DeletedDate.HasValue);
+        }
+
         /// <summary>
         /// ensure name and value defined secret assertion is met
         /// </summary>

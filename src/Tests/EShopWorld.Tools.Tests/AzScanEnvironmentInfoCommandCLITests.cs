@@ -14,6 +14,7 @@ namespace EshopWorld.Tools.Tests
     /// secrets tests for <see cref="AzScanEnvironmentInfoCommand"/>
     /// </summary>
     [Collection(nameof(AzScanCLITestsL2Collection))]
+    // ReSharper disable once InconsistentNaming
     public class AzScanEnvironmentInfoCommandCLITests : CLIInvokingTestsBase
     {
         private readonly AzScanCLITestsL2Fixture _fixture;
@@ -39,15 +40,15 @@ namespace EshopWorld.Tools.Tests
             }
 
             // ReSharper disable once StringLiteralTypo
-            InvokeCLI("azscan", "environmentInfo", subParam, AzScanCLITestsL2Fixture.SierraIntegrationSubscription, domainParam, AzScanCLITestsL2Fixture.TestDomain);
+            InvokeCLI("azscan", "environmentInfo", subParam, AzScanCLITestsL2Fixture.SierraIntegrationSubscription, domainParam, AzScanCLITestsL2FixtureBase.TestDomain);
 
             foreach (var region in RegionHelper.DeploymentRegionsToList())
             {
-                var secrets = await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode());
-                var disabledSecrets = await _fixture.LoadAllDisabledKeyVaultSecretsAsync(region.ToRegionCode());
+                var secrets = await _fixture.LoadAllKeyVaultSecrets(region.ToRegionCode());
+                var deletedSecrets = await _fixture.LoadAllDeletedSecrets(region.ToRegionCode());
 
                 CheckSecrets(secrets);
-                CheckSideSecrets(secrets, disabledSecrets);
+                CheckSideSecrets(secrets, deletedSecrets);
             }
         }
 
@@ -58,11 +59,11 @@ namespace EshopWorld.Tools.Tests
             secrets.Should().HaveSecret("Environment--SubscriptionName", "sierra-integration");
         }
 
-        private void CheckSideSecrets(IList<SecretBundle> secrets, IList<SecretItem> disabledSecrets)
+        private void CheckSideSecrets(IList<SecretBundle> secrets, IList<DeletedSecretItem> deletedSecrets)
         {
             secrets.Should().HaveSecret("EnvironmentBlah", "dummy");
             secrets.Should().HaveSecret("Prefix--blah", "dummy");
-            disabledSecrets.Should().HaveDisabledSecret("Environment--dummy--dummy");
+            deletedSecrets.Should().HaveDeletedSecret("Environment--dummy--dummy");
         }
     }
 }

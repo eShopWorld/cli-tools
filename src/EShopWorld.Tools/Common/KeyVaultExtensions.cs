@@ -2,14 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using Eshopworld.DevOps;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.KeyVault.Models;
-using Microsoft.Rest;
 using Microsoft.Rest.Azure;
 using Polly;
 
@@ -21,7 +16,7 @@ namespace EShopWorld.Tools.Common
     internal static class KeyVaultExtensions
     {       
         internal static async Task<IList<SecretBundle>> GetAllSecrets(this KeyVaultClient client, string keyVaultName, string prefix=null)
-        {        
+        {
             //iterate via secret pages
             var allSecrets = new List<SecretBundle>();
             IPage<SecretItem> secrets = null;
@@ -69,13 +64,21 @@ namespace EShopWorld.Tools.Common
             var list = await client.GetAllSecrets(keyVaultName);
             foreach (var s in list)
             {
-                await client.DeleteSecretAsync(GetKeyVaultUrlFromName(keyVaultName), s.SecretIdentifier.Name);
+                await client.DeleteSecret(keyVaultName, s.SecretIdentifier.Name);
             }
         }
 
-        internal static async Task DeleteSecret(this KeyVaultClient client, string keyVaultName, SecretBundle secret)
+        internal static async Task DeleteSecret(this KeyVaultClient client, string keyVaultName, string secretName, double recoveryLoopWaitTime = 100)
         {
-            await client.DeleteSecretAsync(GetKeyVaultUrlFromName(keyVaultName), secret.SecretIdentifier.Name);
+            var keyVaultUrl = GetKeyVaultUrlFromName(keyVaultName);
+            await client.DeleteSecretAsync(keyVaultUrl, secretName);
+
+            //wait for full delete - note that this is "forever" in the scope of the specific status code
+            await Policy
+                .Handle<KeyVaultErrorException>(r =>
+                    r.Response.StatusCode == HttpStatusCode.NotFound)
+                .WaitAndRetryForeverAsync(w => TimeSpan.FromMilliseconds(recoveryLoopWaitTime))
+                .ExecuteAsync(() => client.GetDeletedSecretAsync(keyVaultUrl, secretName));
         }
 
         internal static async Task<SecretBundle> SetKeyVaultSecretAsync(this KeyVaultClient client, string keyVaultName,
@@ -90,6 +93,12 @@ namespace EShopWorld.Tools.Common
             string keyVaultName, string secretName)
         {
             return await client.GetDeletedSecretAsync(GetKeyVaultUrlFromName(keyVaultName), secretName);
+        }
+
+        internal static async Task<AzureOperationResponse<DeletedSecretBundle>>
+            GetDeletedSecretWithHttpMessages(this KeyVaultClient client, string keyVaultName, string secretName)
+        {
+            return await client.GetDeletedSecretWithHttpMessagesAsync(GetKeyVaultUrlFromName(keyVaultName), secretName);
         }
 
         internal static async Task<IList<DeletedSecretItem>> GetDeletedSecrets(this KeyVaultClient client,

@@ -38,20 +38,21 @@ namespace EshopWorld.Tools.Tests
                 await _fixture.SetSecret(region.ToRegionCode(), "Prefix--blah", "dummy");
             }
 
-            InvokeCLI("azscan", "dns", subParam, AzScanCLITestsL2Fixture.SierraIntegrationSubscription, domainParam, AzScanCLITestsL2Fixture.TestDomain);
-            var weSecrets = await _fixture.LoadAllKeyVaultSecretsAsync(DeploymentRegion.WestEurope.ToRegionCode());
-            var disabledWeSecrets =
-                await _fixture.LoadAllDisabledKeyVaultSecretsAsync(DeploymentRegion.WestEurope.ToRegionCode());
+            InvokeCLI("azscan", "dns", subParam, AzScanCLITestsL2Fixture.SierraIntegrationSubscription, domainParam,
+                AzScanCLITestsL2FixtureBase.TestDomain);
+            var weSecrets = await _fixture.LoadAllKeyVaultSecrets(DeploymentRegion.WestEurope.ToRegionCode());
+            var deletedWeSecrets =
+                await _fixture.LoadAllDeletedSecrets(DeploymentRegion.WestEurope.ToRegionCode());
 
             CheckSecretsWE(weSecrets);
-            CheckSideSecrets(weSecrets, disabledWeSecrets);
+            CheckSideSecrets(weSecrets, deletedWeSecrets);
 
-            var eusSecrets = await _fixture.LoadAllKeyVaultSecretsAsync(DeploymentRegion.EastUS.ToRegionCode());
-            var disabledEusSecrets =
-                await _fixture.LoadAllDisabledKeyVaultSecretsAsync(DeploymentRegion.EastUS.ToRegionCode());
+            var eusSecrets = await _fixture.LoadAllKeyVaultSecrets(DeploymentRegion.EastUS.ToRegionCode());
+            var deletedEusSecrets =
+                await _fixture.LoadAllDeletedSecrets(DeploymentRegion.EastUS.ToRegionCode());
 
             CheckSecretsEUS(eusSecrets);
-            CheckSideSecrets(eusSecrets, disabledEusSecrets);
+            CheckSideSecrets(eusSecrets, deletedEusSecrets);
         }
 
 
@@ -112,11 +113,11 @@ namespace EshopWorld.Tools.Tests
             secrets.Should().NotHaveSecretByName("Platform--Testapi2--Proxy");
         }
 
-        private void CheckSideSecrets(IList<SecretBundle> secrets, IList<SecretItem> disabledSecrets)
+        private void CheckSideSecrets(IList<SecretBundle> secrets, IEnumerable<DeletedSecretItem> deletedSecrets)
         {
             secrets.Should().HaveSecret("PlatformBlah", "dummy");
             secrets.Should().HaveSecret("Prefix--blah", "dummy");
-            disabledSecrets.Should().HaveDisabledSecret("Platform--dummy--dummy");
+            deletedSecrets.Should().HaveDeletedSecret("Platform--dummy--dummy");
         }
     }
 }

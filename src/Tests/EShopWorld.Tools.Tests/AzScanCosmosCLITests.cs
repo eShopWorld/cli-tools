@@ -37,14 +37,14 @@ namespace EshopWorld.Tools.Tests
             }
 
             InvokeCLI("azscan", "cosmosDb", subParam, AzScanCLITestsL2Fixture.SierraIntegrationSubscription,
-                domainParam, AzScanCLITestsL2Fixture.TestDomain);
+                domainParam, AzScanCLITestsL2FixtureBase.TestDomain);
 
             foreach (var region in RegionHelper.DeploymentRegionsToList())
             {
-                var secrets = await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode());
-                var disabledSecrets = await _fixture.LoadAllDisabledKeyVaultSecretsAsync(region.ToRegionCode());
+                var secrets = await _fixture.LoadAllKeyVaultSecrets(region.ToRegionCode());
+                var deletedSecrets = await _fixture.LoadAllDeletedSecrets(region.ToRegionCode());
                 await CheckSecrets(secrets);
-                CheckSideSecrets(secrets, disabledSecrets);
+                CheckSideSecrets(secrets, deletedSecrets);
             }
         }
 
@@ -62,14 +62,14 @@ namespace EshopWorld.Tools.Tests
             }
 
             InvokeCLI("azscan", "cosmosDb", "-s", AzScanCLITestsL2Fixture.SierraIntegrationSubscription,
-                "-d", AzScanCLITestsL2Fixture.TestDomain, "-2");
+                "-d", AzScanCLITestsL2FixtureBase.TestDomain, "-2");
 
             foreach (var region in RegionHelper.DeploymentRegionsToList())
             {
-                var secrets = await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode());
-                var disabledSecrets = await _fixture.LoadAllDisabledKeyVaultSecretsAsync(region.ToRegionCode());
+                var secrets = await _fixture.LoadAllKeyVaultSecrets(region.ToRegionCode());
+                var deletedSecrets = await _fixture.LoadAllDeletedSecrets(region.ToRegionCode());
                 await CheckSecrets(secrets, true);
-                CheckSideSecrets(secrets, disabledSecrets);
+                CheckSideSecrets(secrets, deletedSecrets);
             }
         }
 
@@ -88,11 +88,11 @@ namespace EshopWorld.Tools.Tests
                     StringComparison.Ordinal));
         }
 
-        private void CheckSideSecrets(IList<SecretBundle> secrets, IList<SecretItem> disabledSecrets)
+        private void CheckSideSecrets(IList<SecretBundle> secrets, IEnumerable<DeletedSecretItem> deletedSecrets)
         {
             secrets.Should().HaveSecret("CosmosDBBlah", "dummy");
             secrets.Should().HaveSecret("Prefix--blah", "dummy");
-            disabledSecrets.Should().HaveDisabledSecret("CosmosDB--dummy--dummy");
+            deletedSecrets.Should().HaveDeletedSecret("CosmosDB--dummy--dummy");
         }
     }
 }

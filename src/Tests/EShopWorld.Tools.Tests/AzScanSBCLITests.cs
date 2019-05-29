@@ -37,14 +37,14 @@ namespace EshopWorld.Tools.Tests
                 await _fixture.SetSecret(region.ToRegionCode(), "Prefix--blah", "dummy");
             }
 
-            InvokeCLI("azscan", "serviceBus", subParam, AzScanCLITestsL2Fixture.SierraIntegrationSubscription, domainParam, AzScanCLITestsL2Fixture.TestDomain);
+            InvokeCLI("azscan", "serviceBus", subParam, AzScanCLITestsL2Fixture.SierraIntegrationSubscription, domainParam, AzScanCLITestsL2FixtureBase.TestDomain);
 
             foreach (var region in RegionHelper.DeploymentRegionsToList())
             {
-                var secrets = await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode());
-                var disabledSecrets = await _fixture.LoadAllDisabledKeyVaultSecretsAsync(region.ToRegionCode());
+                var secrets = await _fixture.LoadAllKeyVaultSecrets(region.ToRegionCode());
+                var deletedSecrets = await _fixture.LoadAllDeletedSecrets(region.ToRegionCode());
                 await CheckSecrets(secrets);
-                CheckSideSecrets(secrets, disabledSecrets);
+                CheckSideSecrets(secrets, deletedSecrets);
             }
         }
 
@@ -62,14 +62,14 @@ namespace EshopWorld.Tools.Tests
                 await _fixture.SetSecret(region.ToRegionCode(), "Prefix--blah", "dummy");
             }
 
-            InvokeCLI("azscan", "serviceBus", "-s", AzScanCLITestsL2Fixture.SierraIntegrationSubscription, "-d", AzScanCLITestsL2Fixture.TestDomain, "-2");
+            InvokeCLI("azscan", "serviceBus", "-s", AzScanCLITestsL2Fixture.SierraIntegrationSubscription, "-d", AzScanCLITestsL2FixtureBase.TestDomain, "-2");
 
             foreach (var region in RegionHelper.DeploymentRegionsToList())
             {
-                var secrets = await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode());
-                var disabledSecrets = await _fixture.LoadAllDisabledKeyVaultSecretsAsync(region.ToRegionCode());
+                var secrets = await _fixture.LoadAllKeyVaultSecrets(region.ToRegionCode());
+                var deletedSecrets = await _fixture.LoadAllDeletedSecrets(region.ToRegionCode());
                 await CheckSecrets(secrets, true);
-                CheckSideSecrets(secrets, disabledSecrets);
+                CheckSideSecrets(secrets, deletedSecrets);
             }
         }
 
@@ -90,11 +90,11 @@ namespace EshopWorld.Tools.Tests
                     StringComparison.Ordinal));         
         }
 
-        private void CheckSideSecrets(IList<SecretBundle> secrets, IList<SecretItem> disabledSecrets)
+        private void CheckSideSecrets(IList<SecretBundle> secrets, IEnumerable<DeletedSecretItem> deletedSecrets)
         {
             secrets.Should().HaveSecret("SBBlah", "dummy");
             secrets.Should().HaveSecret("Prefix--blah", "dummy");
-            disabledSecrets.Should().HaveDisabledSecret("SB--dummy--dummy");
+            deletedSecrets.Should().HaveDeletedSecret("SB--dummy--dummy");
         }
     }
 }

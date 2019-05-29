@@ -22,11 +22,11 @@ namespace EshopWorld.Tools.Tests
         public async Task CheckAllProjectedResourcesPerResourceGroup(string subParam, string domainParam)
         {
             await _fixture.DeleteAllSecretsAcrossRegions();
-            InvokeCLI("azscan", "all", subParam, AzScanCLITestsL2Fixture.SierraIntegrationSubscription, domainParam, AzScanCLITestsL2Fixture.TestDomain);
+            InvokeCLI("azscan", "all", subParam, AzScanCLITestsL2Fixture.SierraIntegrationSubscription, domainParam, AzScanCLITestsL2FixtureBase.TestDomain);
 
             foreach (var region in RegionHelper.DeploymentRegionsToList())
             {
-                var secrets = await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode());
+                var secrets = await _fixture.LoadAllKeyVaultSecrets(region.ToRegionCode());
 
                 AzScanAppInsightsCLITests.CheckSecrets(secrets);
                 await new AzScanCosmosCLITests(_fixture).CheckSecrets(secrets);

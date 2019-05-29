@@ -19,6 +19,7 @@ namespace EshopWorld.Tools.Tests
         {
             _fixture = fixture;
         }
+
         [Fact, IsLayer2]
         public async Task TestProxyRecords()
         {
@@ -27,7 +28,7 @@ namespace EshopWorld.Tools.Tests
 
             foreach (var region in RegionHelper.DeploymentRegionsToList())
             {
-                var secrets = (await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode()))
+                var secrets = (await _fixture.LoadAllKeyVaultSecrets(region.ToRegionCode()))
                     .Where(s=>s.SecretIdentifier.Name.EndsWith("Proxy", StringComparison.Ordinal))
                     .ToList();
 
