@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Net.Http;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
 using Eshopworld.DevOps;
@@ -16,8 +13,9 @@ using Microsoft.Azure.Management.Fluent;
 using Microsoft.Azure.Management.KeyVault.Fluent;
 using Microsoft.Azure.Management.KeyVault.Fluent.Models;
 using Microsoft.Azure.Management.ResourceManager.Fluent;
+using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Rest;
+using Microsoft.Rest.Azure;
 
 namespace EshopWorld.Tools.Tests
 {
@@ -28,6 +26,7 @@ namespace EshopWorld.Tools.Tests
         protected IAzure AzClient;
         protected static readonly IContainer Container; //there is an issue with BB and multiple instances being set up concurrently - there is probably no need to 
         private KeyVaultClient _keyVaultClient;
+        private KeyVaultManagementClient _keyVaultManagementClient;
         private TestConfig _testConfig;
 
         private const string OutputKeyVaultNameFormat = "esw-{0}-{1}-{2}";
@@ -41,6 +40,8 @@ namespace EshopWorld.Tools.Tests
             builder.Register((ctx) => ctx.Resolve<Azure.IAuthenticated>()
                     .WithSubscription(EswDevOpsSdk.SierraIntegrationSubscriptionId))
                 .SingleInstance();
+
+            builder.Register(ctx=> new KeyVaultManagementClient(ctx.Resolve<RestClient>()) {SubscriptionId =  EswDevOpsSdk.SierraIntegrationSubscriptionId});
 
             Container = builder.Build();
         }
@@ -56,6 +57,8 @@ namespace EshopWorld.Tools.Tests
             AzClient = Container.Resolve<IAzure>();
 
             _keyVaultClient = Container.Resolve<KeyVaultClient>();
+            _keyVaultManagementClient = Container.Resolve<KeyVaultManagementClient>();
+
             var testConfigRoot = EswDevOpsSdk.BuildConfiguration();
 
             _testConfig = new TestConfig();
@@ -68,32 +71,39 @@ namespace EshopWorld.Tools.Tests
 
 
         // ReSharper disable once InconsistentNaming
-        protected async Task<IVault> SetupOutputKV(IResourceGroup rg)
+        protected async Task<VaultInner> SetupOutputKV(IResourceGroup rg)
         {
-            var vault =  await AzClient.Vaults
-                .Define($"esw-{rg.Name}")
-                    .WithRegion(rg.RegionName)
-                .WithExistingResourceGroup(rg)
-                .DefineAccessPolicy()
-                    .ForObjectId(_testConfig.TargetIdentityObjectId) //so that CLI can write and test                
-                    .AllowSecretPermissions(SecretPermissions.Get, SecretPermissions.List, SecretPermissions.Set, SecretPermissions.Delete, SecretPermissions.Recover)
-                .Attach()
-                .CreateAsync();
+            var vaultName = $"esw-{rg.Name}";
+            var exists = true;
+            var tenantGuid = Guid.Parse("3e14278f-8366-4dfd-bcc8-7e4e9d57f2c1");
 
-            //enable soft-delete
-            var credentials = Container.Resolve<TokenCredentials>();
-            var httpClient = new HttpClient();
-
-            var request = new HttpRequestMessage(HttpMethod.Patch,
-                $"https://management.azure.com/subscriptions/{EswDevOpsSdk.SierraIntegrationSubscriptionId}/resourceGroups/{rg.Name}/providers/Microsoft.KeyVault/vaults/{vault.Name}?api-version=2018-02-14")
+            try
             {
-                Content = new StringContent("{\"properties\":{\"enableSoftDelete\":true}}", Encoding.UTF8,
-                    "application/json")
-            };
+                await _keyVaultManagementClient.Vaults.GetDeletedWithHttpMessagesAsync(vaultName, rg.RegionName);
+            }
+            catch (CloudException e) when(e.Response.StatusCode==HttpStatusCode.NotFound)
+            {
+                exists = false;
+            }
 
-            await credentials.ProcessHttpRequestAsync(request, CancellationToken.None);
+            var vault = await _keyVaultManagementClient.Vaults.CreateOrUpdateAsync(rg.Name, vaultName,
+                new VaultCreateOrUpdateParametersInner
+                {
+                    Properties = new VaultProperties(tenantGuid, new Sku(SkuName.Standard),
+                        new List<AccessPolicyEntry>()
+                        {
+                            new AccessPolicyEntry(tenantGuid, _testConfig.TargetIdentityObjectId,
+                                new Permissions(secrets: new List<string>()
+                                {
+                                    SecretPermissions.Get.Value,
+                                    SecretPermissions.List.Value,
+                                    SecretPermissions.Set.Value,
+                                    SecretPermissions.Delete.Value,
+                                    SecretPermissions.Recover.Value
+                                }))
+                        }, enableSoftDelete: true, createMode: exists ? CreateMode.Recover: CreateMode.Default), Location = rg.RegionName
+                });
 
-            (await httpClient.SendAsync(request)).EnsureSuccessStatusCode();
             return vault;
         }
 
