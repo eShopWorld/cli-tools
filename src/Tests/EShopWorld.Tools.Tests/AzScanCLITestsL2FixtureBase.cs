@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Autofac;
@@ -124,10 +125,8 @@ namespace EshopWorld.Tools.Tests
 
         internal async Task DeleteAllSecretsAcrossRegions()
         {
-            foreach (var region in RegionHelper.DeploymentRegionsToList())
-            {
-                await _keyVaultClient.DeleteAllSecrets(GetRegionalKVName(region.ToRegionCode()));
-            }
+            await Task.WhenAll(RegionHelper.DeploymentRegionsToList()
+                .Select(r => _keyVaultClient.DeleteAllSecrets(GetRegionalKVName(r.ToRegionCode()))));
         }
 
         internal async Task SetSecret(string regionCode, string name, string value)
