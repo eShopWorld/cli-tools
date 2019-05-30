@@ -151,11 +151,13 @@ namespace EShopWorld.Tools.Commands.AzScan
                 throw new ApplicationException($"Unable to look up Service Fabric cluster under {region}-platform-{env} Resource Group");
             }
 
-            var uri = new UriBuilder(new Uri(cluster.ManagementEndpoint)) //client management endpoint does not seem to be exposed but can be derived
-            {
-                Port = clientEndpointPort,
-                Scheme = string.Empty
-            };
+            //var uri = new UriBuilder(new Uri(cluster.ManagementEndpoint)) //client management endpoint does not seem to be exposed but can be derived
+            //{
+            //    Port = clientEndpointPort,
+            //    Scheme = string.Empty
+            //};
+
+            var uri = new Uri($"fabric-{env}-{region.ToRegionCode()}.eshopworld.net:{clientEndpointPort}".ToLowerInvariant());
 
             _fabricClient = new FabricClient(xc, uri.ToString());
 
