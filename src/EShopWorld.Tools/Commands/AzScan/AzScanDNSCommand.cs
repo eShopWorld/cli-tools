@@ -59,20 +59,20 @@ namespace EShopWorld.Tools.Commands.AzScan
                  */
 
                 //scan CNAMEs - all global definitions
-                foreach (var cName in await zone.CNameRecordSets.ListAsync())
-                {
-                    foreach (var keyVaultName in DomainResourceGroup.TargetKeyVaults)
-                    {
-                        await KeyVaultManager.SetKeyVaultSecretAsync(keyVaultName, "Platform", cName.Name, "Global",
-                            $"https://{cName.Fqdn.TrimEnd('.')}");
-                    }
-                }
+                //foreach (var cName in await zone.CNameRecordSets.ListAsync())
+                //{
+                //    foreach (var keyVaultName in DomainResourceGroup.TargetKeyVaults)
+                //    {
+                //        await KeyVaultManager.SetKeyVaultSecretAsync(keyVaultName, "Platform", cName.Name, "Global",
+                //            $"https://{cName.Fqdn.TrimEnd('.')}");
+                //    }
+                //}
 
                 var aNames = await zone.ARecordSets.ListAsync();
 
                 //hydrate LB, PIP cache
                 await PreloadLoadBalancerDetails();
-
+                console.WriteLine("LB preloaded");
                 //run regional scans in parallel
                 await Task.WhenAll(RegionalPlatformResourceGroups.Select(r => Task.Run(async () =>
                 {
