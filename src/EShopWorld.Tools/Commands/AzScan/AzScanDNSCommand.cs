@@ -76,7 +76,7 @@ namespace EShopWorld.Tools.Commands.AzScan
                 await PreloadLoadBalancerDetails();
                 console.WriteLine("LB preloaded");
                 //run regional scans in parallel
-                await Task.WhenAll(RegionalPlatformResourceGroups.Where(r=>r.Region==DeploymentRegion.WestEurope).Select(r => Task.Run(async () =>
+                await Task.WhenAll(RegionalPlatformResourceGroups.Reverse().Select(r => Task.Run(async () =>
                 {
                     await ScanRegionalANames(r, aNames);
                 })));
