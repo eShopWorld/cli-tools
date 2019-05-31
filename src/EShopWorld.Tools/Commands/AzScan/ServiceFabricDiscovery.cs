@@ -277,7 +277,7 @@ namespace EShopWorld.Tools.Commands.AzScan
                 return null;
             }
 
-            var x509Cert = new X509Certificate2(Convert.FromBase64String(cert.Value<string>()), password.Value<string>(), X509KeyStorageFlags.UserKeySet | X509KeyStorageFlags.Exportable);
+            var x509Cert = new X509Certificate2(Convert.FromBase64String(cert.Value<string>()), password.Value<string>(), X509KeyStorageFlags.UserKeySet | X509KeyStorageFlags.Exportable | X509KeyStorageFlags.PersistKeySet);
             return string.IsNullOrWhiteSpace(x509Cert.Thumbprint) ? null : x509Cert;
         }
     }
