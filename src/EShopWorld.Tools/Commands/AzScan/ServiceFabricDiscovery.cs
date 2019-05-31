@@ -38,6 +38,8 @@ namespace EShopWorld.Tools.Commands.AzScan
         private static readonly XmlSerializer AppManifestSerializer = new XmlSerializer(typeof(ApplicationManifestType));
         private static readonly XmlSerializer ServiceManifestSerializer = new XmlSerializer(typeof(ServiceManifestType));
 
+        private static X509Store _x509Store;
+
         /// <summary>
         /// ctor
         /// </summary>
@@ -47,6 +49,12 @@ namespace EShopWorld.Tools.Commands.AzScan
         {
             _kvClient = kvClient;
             _sfClient = sfClient;
+        }
+
+        static ServiceFabricDiscovery()
+        {
+            _x509Store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
+            _x509Store.Open(OpenFlags.ReadWrite);
         }
 
         /// <summary>
@@ -85,7 +93,7 @@ namespace EShopWorld.Tools.Commands.AzScan
         public string LookupServiceNameByPort(IAzure azClient, string env, DeploymentRegion region,
             int servicePort)
         {
-            return _connectedClusterPortServiceMap.ContainsKey(servicePort) ? _connectedClusterPortServiceMap[servicePort] : null;            
+            return _connectedClusterPortServiceMap.ContainsKey(servicePort) ? _connectedClusterPortServiceMap[servicePort] : null;
         }
 
         private async Task CheckConnectionStatus(IAzure azClient, string env, DeploymentRegion region)
@@ -183,7 +191,7 @@ namespace EShopWorld.Tools.Commands.AzScan
                         app.ApplicationTypeVersion);
                 var appManifest =
                     (ApplicationManifestType)AppManifestSerializer.Deserialize(new StringReader(appManifestStr));
-               
+
                 var serviceList = await _fabricClient.QueryManager.GetServiceListAsync(app.ApplicationName);
 
                 foreach (var serviceManifestImport in appManifest.ServiceManifestImport)
@@ -198,7 +206,7 @@ namespace EShopWorld.Tools.Commands.AzScan
 
                     foreach (var endpoint in serviceManifest.Resources.Endpoints.Where(e =>
                         e.Protocol == EndpointTypeProtocol.http || e.Protocol == EndpointTypeProtocol.https))
-                    {                        
+                    {
                         //some expectations here for API- stateless only
                         var serviceInstance = serviceList.FirstOrDefault(s =>
                             serviceManifest.ServiceTypes.FirstOrDefault(t =>
@@ -233,20 +241,20 @@ namespace EShopWorld.Tools.Commands.AzScan
 
         private static void InstallCert([NotNull] X509Certificate2 cert)
         {
-            using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
+            //using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
+            //{
+            //    store.Open(OpenFlags.ReadWrite);
+            // ReSharper disable once AssignNullToNotNullAttribute
+            var col = _x509Store.Certificates.Find(X509FindType.FindByThumbprint, cert.Thumbprint, true);
+            if (col.Count == 0)
             {
-                store.Open(OpenFlags.ReadWrite);
-                // ReSharper disable once AssignNullToNotNullAttribute
-                var col = store.Certificates.Find(X509FindType.FindByThumbprint, cert.Thumbprint, true);
-                if (col.Count == 0)
-                {
-                    //install it
-                    store.Add(cert);
-                }
-
-             
-                
+                //install it
+                _x509Store.Add(cert);
             }
+
+
+
+            //}
         }
 
         private static X509Certificate2 ExtractCert(SecretBundle certSecret)
