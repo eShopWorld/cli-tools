@@ -123,9 +123,9 @@ namespace EShopWorld.Tools.Commands.AzScan
                 throw new ApplicationException($"Unable to obtain expected Service Fabric Cluster certificate for {env} environment and {region} region");
             }
             //install cert - if necessary
-            Console.WriteLine("pre installing cert");
+            Console.WriteLine($"pre installing cert - {region.ToRegionCode()}");
             InstallCert(cert);
-            Console.WriteLine("after installing cert");
+            Console.WriteLine($"after installing cert - {region.ToRegionCode()}");
             //connect and scan the SF cluster
             var xc = new X509Credentials
             {
@@ -161,20 +161,20 @@ namespace EShopWorld.Tools.Commands.AzScan
 
             var uri = new Uri($"fabric-{env}-{region.ToRegionCode()}.eshopworld.net:{clientEndpointPort}".ToLowerInvariant());
 
-            Console.WriteLine("pre cluster connect");
+            Console.WriteLine($"pre cluster connect - {region.ToRegionCode()}");
             try
             {
                 _fabricClient = new FabricClient(xc, uri.ToString());
             }
             catch (Exception e)
             {
-                Console.WriteLine($"{e.Message} - {e.StackTrace} - Region - {region.ToRegionCode()}");
+                Console.WriteLine($"{e.Message} - {e.StackTrace} - {region.ToRegionCode()}");
                 throw;
             }
 
             //pre-load app list, app and service manifests
             var appList = await _fabricClient.QueryManager.GetApplicationListAsync();
-            Console.WriteLine("after cluster connect");
+            Console.WriteLine($"after cluster connect - {region.ToRegionCode()}");
             foreach (var app in appList)
             {
                 //get the app manifest to iterate over services
@@ -238,16 +238,13 @@ namespace EShopWorld.Tools.Commands.AzScan
                 store.Open(OpenFlags.ReadWrite);
                 // ReSharper disable once AssignNullToNotNullAttribute
                 var col = store.Certificates.Find(X509FindType.FindByThumbprint, cert.Thumbprint, true);
-                if (col.Count != 0)
+                if (col.Count == 0)
                 {
-                    foreach (var foundCert in col)
-                    {
-                        store.Remove(foundCert);
-                    }
+                    //install it
+                    store.Add(cert);
                 }
 
-                //install it
-                store.Add(cert);
+             
                 
             }
         }
