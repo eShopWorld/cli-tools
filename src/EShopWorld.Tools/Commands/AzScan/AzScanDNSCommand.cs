@@ -11,6 +11,7 @@ using Microsoft.Azure.Management.Dns.Fluent;
 using Microsoft.Azure.Management.Fluent;
 using Microsoft.Azure.Management.Network.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
+using Microsoft.Azure.Services.AppAuthentication;
 
 namespace EShopWorld.Tools.Commands.AzScan
 {
@@ -38,6 +39,7 @@ namespace EShopWorld.Tools.Commands.AzScan
         /// <inheritdoc />
         protected override async Task<int> RunScanAsync(IAzure client, IConsole console)
         {
+            Console.WriteLine($"DNS Start - running under {Environment.UserName}");
             _azClient = client;
             _console = console;
             //filter out non V1 DNS zones
@@ -74,7 +76,7 @@ namespace EShopWorld.Tools.Commands.AzScan
                 await PreloadLoadBalancerDetails();
                 console.WriteLine("LB preloaded");
                 //run regional scans in parallel
-                await Task.WhenAll(RegionalPlatformResourceGroups.Select(r => Task.Run(async () =>
+                await Task.WhenAll(RegionalPlatformResourceGroups.Where(r=>r.Region==DeploymentRegion.WestEurope).Select(r => Task.Run(async () =>
                 {
                     await ScanRegionalANames(r, aNames);
                 })));

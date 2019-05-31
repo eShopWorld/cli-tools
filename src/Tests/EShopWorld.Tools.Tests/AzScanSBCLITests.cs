@@ -26,6 +26,10 @@ namespace EshopWorld.Tools.Tests
         // ReSharper disable once InconsistentNaming
         public async Task CheckSBExpectedSecretProcess(string subParam, string domainParam)
         {
+            try
+            {
+
+            
             await _fixture.DeleteAllSecretsAcrossRegions();
 
             //set up dummy secrets
@@ -46,12 +50,20 @@ namespace EshopWorld.Tools.Tests
                 await CheckSecrets(secrets);
                 CheckSideSecrets(secrets, deletedSecrets);
             }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
 
         [Fact, IsLayer2]
         // ReSharper disable once InconsistentNaming
         public async Task CheckSBKeyRotation()
         {
+            try
+            { 
             await _fixture.DeleteAllSecretsAcrossRegions();
             //set up dummy secrets
             foreach (var region in RegionHelper.DeploymentRegionsToList())
@@ -70,6 +82,12 @@ namespace EshopWorld.Tools.Tests
                 var deletedSecrets = await _fixture.LoadAllDeletedSecrets(region.ToRegionCode());
                 await CheckSecrets(secrets, true);
                 CheckSideSecrets(secrets, deletedSecrets);
+            }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
             }
         }
 
