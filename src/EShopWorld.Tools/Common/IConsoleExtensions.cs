@@ -62,7 +62,8 @@ namespace EShopWorld.Tools.Common
             bb?.Flush();
 
             var argsMessage = string.IsNullOrWhiteSpace(@event.Arguments) ? "" : $",Arguments '{@event.Arguments}'";
-            console.EmitMessage(console.Error, $"ERROR - Command {@event.CommandType}{argsMessage} - {e.Message}");
+            console.EmitMessage(console.Error, $"ERROR - Command {@event.CommandType}{argsMessage} -{e.GetType().FullName} -  {e.Message}");
+            console.WriteLine(e.StackTrace);
         }
     }
 }

@@ -162,7 +162,15 @@ namespace EShopWorld.Tools.Commands.AzScan
             var uri = new Uri($"fabric-{env}-{region.ToRegionCode()}.eshopworld.net:{clientEndpointPort}".ToLowerInvariant());
 
             Console.WriteLine("pre cluster connect");
-            _fabricClient = new FabricClient(xc, uri.ToString());
+            try
+            {
+                _fabricClient = new FabricClient(xc, uri.ToString());
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"{e.Message} - {e.StackTrace} - Region - {region.ToRegionCode()}");
+                throw;
+            }
 
             //pre-load app list, app and service manifests
             var appList = await _fabricClient.QueryManager.GetApplicationListAsync();
@@ -264,7 +272,7 @@ namespace EShopWorld.Tools.Commands.AzScan
                 return null;
             }
 
-            var x509Cert = new X509Certificate2(Convert.FromBase64String(cert.Value<string>()), password.Value<string>(), X509KeyStorageFlags.Exportable | X509KeyStorageFlags.UserKeySet);
+            var x509Cert = new X509Certificate2(Convert.FromBase64String(cert.Value<string>()), password.Value<string>(), X509KeyStorageFlags.UserKeySet | X509KeyStorageFlags.Exportable);
             return string.IsNullOrWhiteSpace(x509Cert.Thumbprint) ? null : x509Cert;
         }
     }

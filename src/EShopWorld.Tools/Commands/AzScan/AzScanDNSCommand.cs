@@ -80,6 +80,7 @@ namespace EShopWorld.Tools.Commands.AzScan
                 })));
             }
 
+            Console.WriteLine("DNS command finished");
             return 0;
         }
 
