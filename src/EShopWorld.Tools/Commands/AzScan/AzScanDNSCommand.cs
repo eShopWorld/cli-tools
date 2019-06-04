@@ -11,7 +11,6 @@ using Microsoft.Azure.Management.Dns.Fluent;
 using Microsoft.Azure.Management.Fluent;
 using Microsoft.Azure.Management.Network.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
-using Microsoft.Azure.Services.AppAuthentication;
 
 namespace EShopWorld.Tools.Commands.AzScan
 {
@@ -39,7 +38,6 @@ namespace EShopWorld.Tools.Commands.AzScan
         /// <inheritdoc />
         protected override async Task<int> RunScanAsync(IAzure client, IConsole console)
         {
-            Console.WriteLine($"DNS Start - running under {Environment.UserName}");
             _azClient = client;
             _console = console;
             //filter out non V1 DNS zones
@@ -60,29 +58,27 @@ namespace EShopWorld.Tools.Commands.AzScan
                  * this will change with FrontDoor/V2
                  */
 
-                //scan CNAMEs - all global definitions
-                //foreach (var cName in await zone.CNameRecordSets.ListAsync())
-                //{
-                //    foreach (var keyVaultName in DomainResourceGroup.TargetKeyVaults)
-                //    {
-                //        await KeyVaultManager.SetKeyVaultSecretAsync(keyVaultName, "Platform", cName.Name, "Global",
-                //            $"https://{cName.Fqdn.TrimEnd('.')}");
-                //    }
-                //}
+                //scan CNAMEs -all global definitions
+                foreach (var cName in await zone.CNameRecordSets.ListAsync())
+                {
+                    foreach (var keyVaultName in DomainResourceGroup.TargetKeyVaults)
+                    {
+                        await KeyVaultManager.SetKeyVaultSecretAsync(keyVaultName, "Platform", cName.Name, "Global",
+                            $"https://{cName.Fqdn.TrimEnd('.')}");
+                    }
+                }
 
                 var aNames = await zone.ARecordSets.ListAsync();
 
                 //hydrate LB, PIP cache
                 await PreloadLoadBalancerDetails();
-                console.WriteLine("LB preloaded");
                 //run regional scans in parallel
-                await Task.WhenAll(RegionalPlatformResourceGroups.Reverse().Select(r => Task.Run(async () =>
+                await Task.WhenAll(RegionalPlatformResourceGroups.Select(r => Task.Run(async () =>
                 {
                     await ScanRegionalANames(r, aNames);
                 })));
             }
 
-            Console.WriteLine("DNS command finished");
             return 0;
         }
 
@@ -129,8 +125,7 @@ namespace EShopWorld.Tools.Commands.AzScan
                             //attempt to construct reverse proxy url too
                             string serviceInstanceName;
                             if (!string.IsNullOrWhiteSpace(serviceInstanceName =
-                                sfDiscovery.LookupServiceNameByPort(_azClient, EnvironmentName,
-                                    r.Region, port.Value)))
+                                sfDiscovery.LookupServiceNameByPort(port.Value)))
                             {
                                 await KeyVaultManager.SetKeyVaultSecretAsync(keyVault, SecretPrefix, aName.Name,
                                     "Proxy",

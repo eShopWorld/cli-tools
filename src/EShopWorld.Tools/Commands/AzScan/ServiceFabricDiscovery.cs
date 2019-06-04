@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Eshopworld.DevOps;
 using EShopWorld.Tools.Common;
-using JetBrains.Annotations;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.KeyVault.Models;
 using Microsoft.Azure.Management.Fluent;
@@ -30,6 +29,7 @@ namespace EShopWorld.Tools.Commands.AzScan
         private IAzure _azClient;
         private readonly KeyVaultClient _kvClient;
         private readonly ServiceFabricManagementClient _sfClient;
+        private readonly X509Store _x509Store;
         private FabricClient _fabricClient;
         private string _connectedClusterProxyScheme;
         private int _connectedClusterProxyPort;
@@ -38,23 +38,17 @@ namespace EShopWorld.Tools.Commands.AzScan
         private static readonly XmlSerializer AppManifestSerializer = new XmlSerializer(typeof(ApplicationManifestType));
         private static readonly XmlSerializer ServiceManifestSerializer = new XmlSerializer(typeof(ServiceManifestType));
 
-        private static X509Store _x509Store;
-
         /// <summary>
         /// ctor
         /// </summary>
         /// <param name="kvClient">key vault client</param>
         /// <param name="sfClient">service fabric management client</param>
-        public ServiceFabricDiscovery(KeyVaultClient kvClient, ServiceFabricManagementClient sfClient)
+        /// <param name="x509Store">x509 store</param>
+        public ServiceFabricDiscovery(KeyVaultClient kvClient, ServiceFabricManagementClient sfClient, X509Store x509Store)
         {
             _kvClient = kvClient;
             _sfClient = sfClient;
-        }
-
-        static ServiceFabricDiscovery()
-        {
-            _x509Store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
-            _x509Store.Open(OpenFlags.ReadWrite);
+            _x509Store = x509Store;
         }
 
         /// <summary>
@@ -84,14 +78,10 @@ namespace EShopWorld.Tools.Commands.AzScan
         /// use cache if possible, definitions consistent across regions
         /// 
         /// if not found, empty uri is returned
-        /// </summary>
-        /// <param name="azClient">azure fluent client</param>
-        /// <param name="env">environment to scope to</param>
-        /// <param name="region">region to scope to</param>
+        /// </summary>   
         /// <param name="servicePort">target port</param>
         /// <returns>service fabric uri or null</returns>
-        public string LookupServiceNameByPort(IAzure azClient, string env, DeploymentRegion region,
-            int servicePort)
+        public string LookupServiceNameByPort(int servicePort)
         {
             return _connectedClusterPortServiceMap.ContainsKey(servicePort) ? _connectedClusterPortServiceMap[servicePort] : null;
         }
@@ -131,9 +121,7 @@ namespace EShopWorld.Tools.Commands.AzScan
                 throw new ApplicationException($"Unable to obtain expected Service Fabric Cluster certificate for {env} environment and {region} region");
             }
             //install cert - if necessary
-            Console.WriteLine($"pre installing cert - {region.ToRegionCode()}");
             InstallCert(cert);
-            Console.WriteLine($"after installing cert - {region.ToRegionCode()}");
             //connect and scan the SF cluster
             var xc = new X509Credentials
             {
@@ -161,28 +149,13 @@ namespace EShopWorld.Tools.Commands.AzScan
                 throw new ApplicationException($"Unable to look up Service Fabric cluster under {region}-platform-{env} Resource Group");
             }
 
-            //var uri = new UriBuilder(new Uri(cluster.ManagementEndpoint)) //client management endpoint does not seem to be exposed but can be derived
-            //{
-            //    Port = clientEndpointPort,
-            //    Scheme = string.Empty
-            //};
-
+            //use custom dns entries instead of having to lookup the actual instance 
             var uri = new Uri($"fabric-{env}-{region.ToRegionCode()}.eshopworld.net:{clientEndpointPort}".ToLowerInvariant());
 
-            Console.WriteLine($"pre cluster connect - {region.ToRegionCode()}");
-            try
-            {
-                _fabricClient = new FabricClient(xc, uri.ToString());
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"{e.Message} - {e.StackTrace} - {region.ToRegionCode()}");
-                throw;
-            }
+            _fabricClient = new FabricClient(xc, uri.ToString());
 
             //pre-load app list, app and service manifests
             var appList = await _fabricClient.QueryManager.GetApplicationListAsync();
-            Console.WriteLine($"after cluster connect - {region.ToRegionCode()}");
             foreach (var app in appList)
             {
                 //get the app manifest to iterate over services
@@ -239,11 +212,8 @@ namespace EShopWorld.Tools.Commands.AzScan
             }
         }
 
-        private static void InstallCert([NotNull] X509Certificate2 cert)
+        private void InstallCert(X509Certificate2 cert)
         {
-            //using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
-            //{
-            //    store.Open(OpenFlags.ReadWrite);
             // ReSharper disable once AssignNullToNotNullAttribute
             var col = _x509Store.Certificates.Find(X509FindType.FindByThumbprint, cert.Thumbprint, true);
             if (col.Count == 0)
@@ -251,10 +221,6 @@ namespace EShopWorld.Tools.Commands.AzScan
                 //install it
                 _x509Store.Add(cert);
             }
-
-
-
-            //}
         }
 
         private static X509Certificate2 ExtractCert(SecretBundle certSecret)
@@ -284,22 +250,25 @@ namespace EShopWorld.Tools.Commands.AzScan
 
     /// <summary>
     /// factory class for <see cref="ServiceFabricDiscovery"/>
-    /// the idea being that that the factory is resolved via DI and instance requested per region (as this wraps cluster connection)
+    /// the idea being that that the factory is resolved via DI and instance requested per region (as this wraps cluster connection) as this is not a fixed list
     /// </summary>
     public sealed class ServiceFabricDiscoveryFactory
     {
         private readonly KeyVaultClient _kvClient;
         private readonly ServiceFabricManagementClient _sfClient;
+        private readonly X509Store _x509Store;
 
         /// <summary>
         /// ctor
         /// </summary>
         /// <param name="kvClient">key vault client passed to <see cref="ServiceFabricDiscovery"/> instance</param>
         /// <param name="sfClient">service fabric client passed to <see cref="ServiceFabricDiscovery"/> instance</param>
-        public ServiceFabricDiscoveryFactory(KeyVaultClient kvClient, ServiceFabricManagementClient sfClient)
+        /// <param name="x509Store">x509 store nodes</param>
+        public ServiceFabricDiscoveryFactory(KeyVaultClient kvClient, ServiceFabricManagementClient sfClient, X509Store x509Store)
         {
             _kvClient = kvClient;
             _sfClient = sfClient;
+            _x509Store = x509Store;
         }
 
         /// <summary>
@@ -308,7 +277,7 @@ namespace EShopWorld.Tools.Commands.AzScan
         /// <returns>new instance of <see cref="ServiceFabricDiscovery"/></returns>
         public ServiceFabricDiscovery GetInstance()
         {
-            return new ServiceFabricDiscovery(_kvClient, _sfClient);
+            return new ServiceFabricDiscovery(_kvClient, _sfClient, _x509Store);
         }
     }
 }
