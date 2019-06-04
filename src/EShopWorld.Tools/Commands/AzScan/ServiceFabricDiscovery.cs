@@ -60,15 +60,8 @@ namespace EShopWorld.Tools.Commands.AzScan
         /// <param name="env">target environment</param>
         /// <param name="reg">target region</param>
         /// <returns>tuple - scheme and port, if not define scheme is empty and port is -1</returns>
-        public async Task<(string scheme, int port)> GetReverseProxyDetails(IAzure azClient, string env, DeploymentRegion reg)
+        public(string scheme, int port) GetReverseProxyDetails(IAzure azClient, string env, DeploymentRegion reg)
         {
-            if (!string.IsNullOrWhiteSpace(_connectedClusterProxyScheme) && _connectedClusterProxyPort != (-1))
-            {
-                return (_connectedClusterProxyScheme, _connectedClusterProxyPort);
-            }
-
-            await CheckConnectionStatus(azClient, env, reg);
-
             return (_connectedClusterProxyScheme, _connectedClusterProxyPort);
         }
 
@@ -86,7 +79,14 @@ namespace EShopWorld.Tools.Commands.AzScan
             return _connectedClusterPortServiceMap.ContainsKey(servicePort) ? _connectedClusterPortServiceMap[servicePort] : null;
         }
 
-        private async Task CheckConnectionStatus(IAzure azClient, string env, DeploymentRegion region)
+        /// <summary>
+        /// check whether we have scanner and if not, hydrate the dictionaries
+        /// </summary>
+        /// <param name="azClient">azure client</param>
+        /// <param name="env">environment</param>
+        /// <param name="region">region</param>
+        /// <returns></returns>
+        public async Task CheckConnectionStatus(IAzure azClient, string env, DeploymentRegion region)
         {
             if (_fabricClient == null)
             {

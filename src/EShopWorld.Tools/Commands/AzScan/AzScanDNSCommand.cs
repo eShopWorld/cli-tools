@@ -58,25 +58,29 @@ namespace EShopWorld.Tools.Commands.AzScan
                  * this will change with FrontDoor/V2
                  */
 
+                
                 //scan CNAMEs -all global definitions
-                foreach (var cName in await zone.CNameRecordSets.ListAsync())
+                var tasks = (await zone.CNameRecordSets.ListAsync()).Select(i => Task.Run(async () =>
                 {
                     foreach (var keyVaultName in DomainResourceGroup.TargetKeyVaults)
                     {
-                        await KeyVaultManager.SetKeyVaultSecretAsync(keyVaultName, "Platform", cName.Name, "Global",
-                            $"https://{cName.Fqdn.TrimEnd('.')}");
+                        await KeyVaultManager.SetKeyVaultSecretAsync(keyVaultName, "Platform", i.Name, "Global",
+                            $"https://{i.Fqdn.TrimEnd('.')}");
                     }
-                }
+                })).ToList();
 
                 var aNames = await zone.ARecordSets.ListAsync();
 
                 //hydrate LB, PIP cache
                 await PreloadLoadBalancerDetails();
-                //run regional scans in parallel
-                await Task.WhenAll(RegionalPlatformResourceGroups.Select(r => Task.Run(async () =>
+
+                //append a name scan tasks
+                tasks.AddRange(RegionalPlatformResourceGroups.Select(r => Task.Run(async () =>
                 {
                     await ScanRegionalANames(r, aNames);
                 })));
+                
+                await Task.WhenAll(tasks);
             }
 
             return 0;
@@ -86,6 +90,8 @@ namespace EShopWorld.Tools.Commands.AzScan
             IPagedCollection<IARecordSet> aNames)
         {
             var sfDiscovery = _sfDiscoveryFactory.GetInstance(); //region = separate cluster
+            await sfDiscovery.CheckConnectionStatus(_azClient, EnvironmentName, r.Region);
+
             var regionCode = r.Region.ToRegionCode();
 
             //scan A(Name)s - regional entries
@@ -117,7 +123,7 @@ namespace EShopWorld.Tools.Commands.AzScan
                         }
 
                         var (proxyScheme, proxyPort) =
-                            await sfDiscovery.GetReverseProxyDetails(_azClient, EnvironmentName,
+                            sfDiscovery.GetReverseProxyDetails(_azClient, EnvironmentName,
                                 r.Region);
 
                         if (!string.IsNullOrWhiteSpace(proxyScheme))
