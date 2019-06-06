@@ -48,17 +48,21 @@ namespace EShopWorld.Tools
 
             CommandLineApplication commandParsed=null;
 
-            app.OnParsingComplete(result => { commandParsed = result.SelectedCommand; } );
+            EswCliToolCommandExecutionTimedEvent timedEvent = null;
+            app.OnParsingComplete(result =>
+                {
+                    commandParsed = result.SelectedCommand;
+                    timedEvent = new EswCliToolCommandExecutionTimedEvent
+                    {
+                        CommandType = commandParsed?.GetType().FullName ?? app.GetType().FullName,
+                        Arguments = commandParsed?.Options.ToConsoleString()
+                    };
+                }
+            );
 
             app.Conventions
                 .UseDefaultConventions()
                 .UseConstructorInjection(SetupAutofac());
-
-            var timedEvent = new EswCliToolCommandExecutionTimedEvent
-            {
-                CommandType = commandParsed?.GetType().FullName ?? app.GetType().FullName,
-                Arguments = commandParsed?.Options.ToConsoleString()
-            };
 
             try
             {
@@ -82,8 +86,11 @@ namespace EShopWorld.Tools
             }
             finally
             {
-                _bigBrother?.Publish(timedEvent);
-                _bigBrother?.Flush();
+                if (timedEvent != null)
+                {
+                    _bigBrother?.Publish(timedEvent);
+                    _bigBrother?.Flush();
+                }
             }
         }
 
