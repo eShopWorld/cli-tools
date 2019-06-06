@@ -202,8 +202,8 @@ namespace EShopWorld.Tools.Commands.AzScan
             var proxyEndpoint = clusterManifest.NodeTypes.First().Endpoints.HttpApplicationGatewayEndpoint;
             if (proxyEndpoint == null)
             {
-                _connectedClusterProxyScheme = "http";//TODO:test only!
-                _connectedClusterProxyPort = 9000;
+                _connectedClusterProxyScheme = null;
+                _connectedClusterProxyPort = -1;
             }
             else
             {

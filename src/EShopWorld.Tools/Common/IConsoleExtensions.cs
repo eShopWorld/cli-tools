@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Eshopworld.Core;
 using EShopWorld.Tools.Telemetry;
 using McMaster.Extensions.CommandLineUtils;
@@ -27,7 +26,7 @@ namespace EShopWorld.Tools.Common
             var @event = new AzCLIWarningEvent()
             {
                 CommandType = command.ToString(),
-                Arguments = args!=null && args.Any() ? string.Join(',', args.Select(t => $"{t.LongName}-'{t.Value()}'")) : String.Empty,
+                Arguments = args.ToConsoleString(),
                 Warning = warning
             };
 
@@ -56,7 +55,7 @@ namespace EShopWorld.Tools.Common
         {
             var @event = e.ToExceptionEvent<AzCLIExceptionEvent>();
             @event.CommandType = command.ToString();
-            @event.Arguments = args!=null ? string.Join(',', args.Select(t => $"{t.LongName}-'{t.Value()}'")) : string.Empty; 
+            @event.Arguments = args.ToConsoleString();
 
             bb?.Publish(@event);
             bb?.Flush();
