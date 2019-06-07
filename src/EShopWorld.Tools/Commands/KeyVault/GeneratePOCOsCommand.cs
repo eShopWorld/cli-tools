@@ -80,7 +80,7 @@ namespace EShopWorld.Tools.Commands.KeyVault
             var secrets = (await _kvClient.GetAllSecrets(KeyVaultName))
                 .Select(s => new Secret(s.SecretIdentifier.Name)).ToList();
 
-            secrets.AddRange((await _kvClient.GetDisabledSecrets(KeyVaultName))
+            secrets.AddRange((await _kvClient.GetDeletedSecrets(KeyVaultName))
                 .Select(s => new Secret(s.Identifier.Name, false)));
 
             Directory.CreateDirectory(OutputFolder);
@@ -116,7 +116,7 @@ namespace EShopWorld.Tools.Commands.KeyVault
 
         private ClassDeclarationSyntax BuildClassHierarchy(ConfigurationNode node)
         {
-            var currentClass = ClassDeclaration($"{node.Name}Type").AddModifiers(Token(SyntaxKind.PublicKeyword));
+            var currentClass = ClassDeclaration($"{node.Name}Configuration").AddModifiers(Token(SyntaxKind.PublicKeyword));
 
             var innerMembers = new List<MemberDeclarationSyntax>();
             var innerClasses = new List<MemberDeclarationSyntax>();

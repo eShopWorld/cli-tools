@@ -63,7 +63,7 @@ namespace EShopWorld.Tools.Common
             await Task.WhenAll(list.Select(i => client.DeleteSecret(keyVaultName, i.SecretIdentifier.Name)));
         }
 
-        internal static async Task DeleteSecret(this KeyVaultClient client, string keyVaultName, string secretName, double recoveryLoopWaitTime = 100)
+        internal static async Task DeleteSecret(this KeyVaultClient client, string keyVaultName, string secretName, double confirmationWaitTime = 100)
         {
             var keyVaultUrl = GetKeyVaultUrlFromName(keyVaultName);
             await client.DeleteSecretAsync(keyVaultUrl, secretName);
@@ -72,7 +72,7 @@ namespace EShopWorld.Tools.Common
             await Policy
                 .Handle<KeyVaultErrorException>(r =>
                     r.Response.StatusCode == HttpStatusCode.NotFound)
-                .WaitAndRetryForeverAsync(w => TimeSpan.FromMilliseconds(recoveryLoopWaitTime))
+                .WaitAndRetryForeverAsync(w => TimeSpan.FromMilliseconds(confirmationWaitTime))
                 .ExecuteAsync(() => client.GetDeletedSecretAsync(keyVaultUrl, secretName));
         }
 
