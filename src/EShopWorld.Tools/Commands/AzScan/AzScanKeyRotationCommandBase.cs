@@ -19,13 +19,14 @@ namespace EShopWorld.Tools.Commands.AzScan
             ShowInHelpText = true)]
         public bool UseSecondaryKey { get; set; }
 
-        protected AzScanKeyRotationCommandBase()
-        {        
-        }
-
         protected AzScanKeyRotationCommandBase(Azure.IAuthenticated authenticated, AzScanKeyVaultManager keyVaultManager,
             IBigBrother bigBrother, string secretPrefix) : base(authenticated, keyVaultManager, bigBrother, secretPrefix)
         {           
+        }
+
+        protected AzScanKeyRotationCommandBase(IBigBrother bb):base(bb)
+        {
+            
         }
     }
 }

@@ -23,11 +23,6 @@ namespace EShopWorld.Tools.Commands.AzScan
         protected CommandLineApplication AppInstance;
         protected readonly string SecretPrefix;
 
-        protected AzScanCommandBase()
-        {
-
-        }
-
         protected AzScanCommandBase(Azure.IAuthenticated authenticated, AzScanKeyVaultManager keyVaultManager,
             IBigBrother bigBrother, string secretPrefix)
         {
@@ -35,6 +30,11 @@ namespace EShopWorld.Tools.Commands.AzScan
             KeyVaultManager = keyVaultManager;
             BigBrother = bigBrother;
             SecretPrefix = secretPrefix;
+        }
+
+        protected AzScanCommandBase(IBigBrother bb)
+        {
+            BigBrother = bb;
         }
 
         [Option(

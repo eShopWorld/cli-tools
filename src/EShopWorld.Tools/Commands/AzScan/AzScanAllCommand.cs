@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Eshopworld.Core;
 using EShopWorld.Tools.Common;
 using EShopWorld.Tools.Telemetry;
 using McMaster.Extensions.CommandLineUtils;
@@ -19,11 +20,11 @@ namespace EShopWorld.Tools.Commands.AzScan
         /// ctor
         /// </summary>
         /// <param name="serviceProvider"><see cref="IServiceProvider"/> instance to locate inner commands</param>
-        public AzScanAllCommand(IServiceProvider serviceProvider)
+        /// <param name="bb"><see cref="IBigBrother"/> instance</param>
+        public AzScanAllCommand(IServiceProvider serviceProvider, IBigBrother bb):base(bb)
         {
             _serviceProvider = serviceProvider;
         }
-
 
         /// <inheritdoc />
         public override async Task<int> OnExecuteAsync(CommandLineApplication app, IConsole console)
