@@ -26,7 +26,6 @@ namespace EShopWorld.Tools.Commands.AzScan
     /// </summary>
     public class ServiceFabricDiscovery
     {
-        private IAzure _azClient;
         private readonly KeyVaultClient _kvClient;
         private readonly ServiceFabricManagementClient _sfClient;
         private readonly X509Store _x509Store;
@@ -90,27 +89,26 @@ namespace EShopWorld.Tools.Commands.AzScan
         {
             if (_fabricClient == null)
             {
-                await Connect(azClient, env, region);
+                var cert = await InstallCert(azClient, env, region);
+                await Connect(azClient, env, region, cert);
             }
         }
 
         /// <summary>
-        /// connects to fabric
-        /// involves retrieving cert from platform KV and installing it into user cert store if needed
+        /// install cert by extracting it and checking its thumbprint against the store
         /// </summary>
-        /// <param name="azClient">azure client</param>
-        /// <param name="env">environment to scope to</param>
-        /// <param name="region">region to scope to</param>
-        /// <param name="clientEndpointPort">cluster client connection endpoint - defaulted to 19000</param>
-        private async Task Connect(IAzure azClient, string env, DeploymentRegion region, int clientEndpointPort = 19000)
+        /// <param name="azClient">az client</param>
+        /// <param name="env">target environment</param>
+        /// <param name="region">target region</param>
+        /// <returns>cert thumbprint</returns>
+        private async Task<string> InstallCert(IAzure azClient, string env, DeploymentRegion region)
         {
-            _azClient = azClient;
             //check that platform KV exists
             var regionalPlatformKvName = NameGenerator.GetRegionalPlatformKVName(env, region);
-            if (!(await _azClient.Vaults.ListByResourceGroupAsync(NameGenerator.GetRegionalPlatformRGName(env, region)))
+            if (!(await azClient.Vaults.ListByResourceGroupAsync(NameGenerator.GetRegionalPlatformRGName(env, region)))
                 .Any(v => v.Name.Equals(regionalPlatformKvName, StringComparison.OrdinalIgnoreCase)))
             {
-                return;
+                return null;
             }
             //hook up to platform KV
             var certSecret = await _kvClient.GetSecret(regionalPlatformKvName, NameGenerator.ServiceFabricPlatformKVCertSecretName);
@@ -122,19 +120,34 @@ namespace EShopWorld.Tools.Commands.AzScan
             }
             //install cert - if necessary
             InstallCert(cert);
+
+            return cert.Thumbprint;
+        }
+
+        /// <summary>
+        /// connects to fabric
+        /// involves retrieving cert from platform KV and installing it into user cert store if needed
+        /// </summary>
+        /// <param name="azClient">azure client</param>
+        /// <param name="env">environment to scope to</param>
+        /// <param name="region">region to scope to</param>
+        /// <param name="certThumbprint">thumbprint of the cluster certificate</param>
+        /// <param name="clientEndpointPort">cluster client connection endpoint - defaulted to 19000</param>
+        private async Task Connect(IAzure azClient, string env, DeploymentRegion region, string certThumbprint, int clientEndpointPort = 19000)
+        {
             //connect and scan the SF cluster
             var xc = new X509Credentials
             {
                 StoreLocation = StoreLocation.CurrentUser,
                 StoreName = StoreName.My.ToString(),
                 FindType = X509FindType.FindByThumbprint,
-                FindValue = cert.Thumbprint
+                FindValue = certThumbprint
             };
-            xc.RemoteCertThumbprints.Add(cert.Thumbprint);
+            xc.RemoteCertThumbprints.Add(certThumbprint);
             xc.ProtectionLevel = ProtectionLevel.EncryptAndSign;
 
             //lookup the cluster by RG
-            _sfClient.SubscriptionId = _azClient.SubscriptionId;
+            _sfClient.SubscriptionId = azClient.SubscriptionId;
             var clusterListResponse = await _sfClient.Clusters.ListByResourceGroupAsync(NameGenerator.GetV0PlatformRegionalRGName(env, region)); //NOTE that these are "v0" names
             ClusterInner cluster;
             while ((cluster = clusterListResponse.FirstOrDefault()) == null ||

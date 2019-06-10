@@ -72,7 +72,8 @@ namespace EShopWorld.Tools.Commands.AzScan
                 var aNames = await zone.ARecordSets.ListAsync();
 
                 //hydrate LB, PIP cache
-                await PreloadLoadBalancerDetails();
+                _loadBalancersCache = (await _azClient.LoadBalancers.ListAsync()).ToList(); //all pages
+                _pipCache = (await _azClient.PublicIPAddresses.ListAsync()).ToList(); //all pages
 
                 //append a name scan tasks
                 tasks.AddRange(RegionalPlatformResourceGroups.Select(r => Task.Run(async () =>
@@ -122,39 +123,37 @@ namespace EShopWorld.Tools.Commands.AzScan
                             continue;
                         }
 
-                        var (proxyScheme, proxyPort) =
-                            sfDiscovery.GetReverseProxyDetails(_azClient, EnvironmentName,
-                                r.Region);
-
-                        if (!string.IsNullOrWhiteSpace(proxyScheme))
-                        {
-                            //attempt to construct reverse proxy url too
-                            string serviceInstanceName;
-                            if (!string.IsNullOrWhiteSpace(serviceInstanceName =
-                                sfDiscovery.LookupServiceNameByPort(port.Value)))
-                            {
-                                await KeyVaultManager.SetKeyVaultSecretAsync(keyVault, SecretPrefix, aName.Name,
-                                    "Proxy",
-                                    new UriBuilder(proxyScheme, "localhost", proxyPort,
-                                            serviceInstanceName.RemoveFabricScheme())
-                                        .ToString(), "-lb");
-                            }
-                            else
-                            {
-                                _console.EmitWarning(BigBrother, typeof(AzScanDNSCommand), AppInstance.Options,
-                                    $"Unable to lookup service instance name for {aName.Name}:{port.Value} under {EnvironmentName} environment - Region - {r.Region.ToRegionCode().ToPascalCase()}");
-                            }
-                        }
-                        else
-                        {
-                            _console.EmitWarning(BigBrother, typeof(AzScanDNSCommand), AppInstance.Options,
-                                $"Unable to lookup reverse proxy details for Service Fabric cluster - Environment - {EnvironmentName} - Region - {r.Region.ToRegionCode().ToPascalCase()}");
-                        }
-
                         await KeyVaultManager.SetKeyVaultSecretAsync(keyVault,
                             SecretPrefix, aName.Name, "Cluster",
                             $"http://{aName.IPv4Addresses.First()}:{port.Value.ToString(CultureInfo.InvariantCulture)}",
                             "-lb");
+
+
+                        var (proxyScheme, proxyPort) =
+                            sfDiscovery.GetReverseProxyDetails(_azClient, EnvironmentName,
+                                r.Region);
+
+                        if (string.IsNullOrWhiteSpace(proxyScheme))
+                        {
+                            _console.EmitWarning(BigBrother, typeof(AzScanDNSCommand), AppInstance.Options,
+                                $"Unable to lookup reverse proxy details for Service Fabric cluster - Environment - {EnvironmentName} - Region - {r.Region.ToRegionCode().ToPascalCase()}");
+                            continue;
+                        }
+
+                        var serviceInstanceName = sfDiscovery.LookupServiceNameByPort(port.Value);
+
+                        if (string.IsNullOrWhiteSpace(serviceInstanceName))
+                        {
+                            _console.EmitWarning(BigBrother, typeof(AzScanDNSCommand), AppInstance.Options,
+                                $"Unable to lookup service instance name for {aName.Name}:{port.Value} under {EnvironmentName} environment - Region - {r.Region.ToRegionCode().ToPascalCase()}");
+                            continue;
+                        }
+
+                        await KeyVaultManager.SetKeyVaultSecretAsync(keyVault, SecretPrefix, aName.Name,
+                            "Proxy",
+                            new UriBuilder(proxyScheme, "localhost", proxyPort,
+                                    serviceInstanceName.RemoveFabricScheme())
+                                .ToString(), "-lb");
                     }
                     else
                     {
@@ -163,13 +162,6 @@ namespace EShopWorld.Tools.Commands.AzScan
                     }
                 }
             }
-        }
-
-        // ReSharper disable once IdentifierTypo
-        private async Task PreloadLoadBalancerDetails()
-        {
-            _loadBalancersCache = (await _azClient.LoadBalancers.ListAsync()).ToList(); //all pages
-            _pipCache = (await _azClient.PublicIPAddresses.ListAsync()).ToList(); //all pages
         }
 
         private int? LookupLoadBalancerPort(string aName, string ipAddress)
