@@ -20,7 +20,7 @@ namespace EshopWorld.Tools.Tests
             _fixture = fixture;
         }
 
-        [Fact, IsLayer2]
+        [Fact(Skip = "No reverse proxy endpoint"), IsLayer2]
         public async Task TestProxyRecords()
         {
             InvokeCLI("azscan", "dns", "-s", AzScanCLITestsEvoEnvL2Fixture.TestSubscription,
