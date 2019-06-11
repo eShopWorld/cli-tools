@@ -51,17 +51,17 @@ namespace EShopWorld.Tools.Commands.AzScan
             _attachedPrefix = secretPrefix;
             var prefix = GetSecretPrefixLevelToken(secretPrefix);
 
-            await Task.WhenAll(kvNames.Select(k => Task.Run(async ()=>
+            var tasks = kvNames.Select(k => Task.Run(async () =>
             {
                 var secrets = await _kvClient.GetAllSecrets(k, prefix);
                 foreach (var secret in secrets)
                 {
-                    _kvState.TryAdd(new SecretHeader(k, secret.SecretIdentifier.Name), new TrackedSecretBundle(secret, false));
+                    _kvState.TryAdd(new SecretHeader(k, secret.SecretIdentifier.Name),
+                        new TrackedSecretBundle(secret, false));
                 }
-            })));
+            })).ToList();
 
-
-            await Task.WhenAll(kvNames.Select(k => Task.Run(async () =>
+            tasks.AddRange(kvNames.Select(k => Task.Run(async () =>
             {
                 var secrets = await _kvClient.GetDeletedSecrets(k, prefix);
                 foreach (var secret in secrets)
@@ -69,6 +69,9 @@ namespace EShopWorld.Tools.Commands.AzScan
                     _deletedSecrets.TryAdd(new SecretHeader(k, secret.Identifier.Name), secret);
                 }
             })));
+
+
+            await Task.WhenAll(tasks);
         }
 
         /// <summary>
@@ -87,7 +90,7 @@ namespace EShopWorld.Tools.Commands.AzScan
             //delete unused secrets
             var tasks = _kvState
                     .Where(l => !l.Value.Touched &&
-                                l.Value.Secret.SecretIdentifier.Name.StartsWith(GetSecretPrefixLevelToken(_attachedPrefix)))
+                                l.Value.Secret.SecretIdentifier.Name.StartsWith(GetSecretPrefixLevelToken(_attachedPrefix), StringComparison.Ordinal))
                     .Select(i => _kvClient.DeleteSecret(i.Key.KeyVaultName, i.Value.Secret.SecretIdentifier.Name)); //soft-delete
 
             await Task.WhenAll(tasks);
@@ -192,10 +195,7 @@ namespace EShopWorld.Tools.Commands.AzScan
             }
         }
 
-        private bool IsDeleted(string keyVaultName, string targetName)
-        {
-            return _deletedSecrets.TryGetValue(new SecretHeader(keyVaultName, targetName), out _);
-        }
+        private bool IsDeleted(string keyVaultName, string targetName) =>_deletedSecrets.ContainsKey(new SecretHeader(keyVaultName, targetName));
 
         private void AddNewSecret(string keyVaultName, SecretBundle newSecret)
         {
@@ -246,7 +246,8 @@ namespace EShopWorld.Tools.Commands.AzScan
             {
                 if (other is null) return false;
                 if (ReferenceEquals(this, other)) return true;
-                return string.Equals(KeyVaultName, other.KeyVaultName, StringComparison.OrdinalIgnoreCase) && string.Equals(SecretName, other.SecretName, StringComparison.OrdinalIgnoreCase);
+                return string.Equals(KeyVaultName, other.KeyVaultName, StringComparison.OrdinalIgnoreCase) 
+                       && string.Equals(SecretName, other.SecretName, StringComparison.OrdinalIgnoreCase);
             }
 
             public override int GetHashCode()

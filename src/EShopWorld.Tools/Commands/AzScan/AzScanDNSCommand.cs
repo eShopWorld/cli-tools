@@ -30,7 +30,8 @@ namespace EShopWorld.Tools.Commands.AzScan
         private IConsole _console;
         
         /// <inheritdoc />
-        public AzScanDNSCommand(Azure.IAuthenticated authenticated, AzScanKeyVaultManager keyVaultManager, IBigBrother bigBrother, ServiceFabricDiscoveryFactory sfDiscoveryFactory) : base(authenticated, keyVaultManager, bigBrother, "Platform")
+        public AzScanDNSCommand(Azure.IAuthenticated authenticated, AzScanKeyVaultManager keyVaultManager, IBigBrother bigBrother,
+            ServiceFabricDiscoveryFactory sfDiscoveryFactory) : base(authenticated, keyVaultManager, bigBrother, "Platform")
         {
             _sfDiscoveryFactory = sfDiscoveryFactory;
         }
@@ -98,8 +99,8 @@ namespace EShopWorld.Tools.Commands.AzScan
             //scan A(Name)s - regional entries
             foreach (var aName in aNames.Where(a => a.Name.RegionCodeCheck(regionCode)))
             {
-                var isLb = aName.Name.EndsWith("-lb") || !aNames.Any(a =>
-                               a.Name.Equals($"{aName.Name}-lb", StringComparison.OrdinalIgnoreCase));
+                var isLb = aName.Name.EndsWith("-lb", StringComparison.OrdinalIgnoreCase) 
+                           || !aNames.Any(a => a.Name.Equals($"{aName.Name}-lb", StringComparison.OrdinalIgnoreCase));
 
                 if (!aName.IPv4Addresses.Any())
                 {
@@ -129,11 +130,9 @@ namespace EShopWorld.Tools.Commands.AzScan
                             "-lb");
 
 
-                        var (proxyScheme, proxyPort) =
-                            sfDiscovery.GetReverseProxyDetails(_azClient, EnvironmentName,
-                                r.Region);
+                        var reverseProxyDetails = sfDiscovery.GetReverseProxyDetails();
 
-                        if (string.IsNullOrWhiteSpace(proxyScheme))
+                        if (reverseProxyDetails==null)
                         {
                             _console.EmitWarning(BigBrother, typeof(AzScanDNSCommand), AppInstance.Options,
                                 $"Unable to lookup reverse proxy details for Service Fabric cluster - Environment - {EnvironmentName} - Region - {r.Region.ToRegionCode().ToPascalCase()}");
@@ -149,11 +148,13 @@ namespace EShopWorld.Tools.Commands.AzScan
                             continue;
                         }
 
+                        var (proxyScheme, proxyPort) = reverseProxyDetails.Value;
+
+                        var proxyUrl = new UriBuilder(proxyScheme, "localhost", proxyPort,
+                                serviceInstanceName.RemoveFabricScheme()).ToString();
+
                         await KeyVaultManager.SetKeyVaultSecretAsync(keyVault, SecretPrefix, aName.Name,
-                            "Proxy",
-                            new UriBuilder(proxyScheme, "localhost", proxyPort,
-                                    serviceInstanceName.RemoveFabricScheme())
-                                .ToString(), "-lb");
+                            "Proxy", proxyUrl, "-lb");
                     }
                     else
                     {

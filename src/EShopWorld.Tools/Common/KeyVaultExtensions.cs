@@ -109,7 +109,10 @@ namespace EShopWorld.Tools.Common
             IPage<DeletedSecretItem> secrets = null;
             do
             {
-                secrets = !string.IsNullOrWhiteSpace(secrets?.NextPageLink) ? await client.GetDeletedSecretsNextAsync(secrets.NextPageLink) : await client.GetDeletedSecretsAsync(GetKeyVaultUrlFromName(keyVaultName));
+                secrets = !string.IsNullOrWhiteSpace(secrets?.NextPageLink) 
+                    ? await client.GetDeletedSecretsNextAsync(secrets.NextPageLink) 
+                    : await client.GetDeletedSecretsAsync(GetKeyVaultUrlFromName(keyVaultName));
+
                 allSecrets.AddRange(secrets.Where(secret => string.IsNullOrWhiteSpace(prefix) || secret.Identifier.Name.StartsWith(prefix)));
             } while (!string.IsNullOrWhiteSpace(secrets.NextPageLink));
 

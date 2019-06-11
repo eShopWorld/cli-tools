@@ -30,8 +30,7 @@ namespace EShopWorld.Tools.Commands.AzScan
         private readonly ServiceFabricManagementClient _sfClient;
         private readonly X509Store _x509Store;
         private FabricClient _fabricClient;
-        private string _connectedClusterProxyScheme;
-        private int _connectedClusterProxyPort;
+        private (string _connectedClusterProxyScheme, int _connectedClusterProxyPort)? _reverseProxySettings;
         private readonly Dictionary<int, string> _connectedClusterPortServiceMap = new Dictionary<int, string>();
 
         private static readonly XmlSerializer AppManifestSerializer = new XmlSerializer(typeof(ApplicationManifestType));
@@ -51,17 +50,12 @@ namespace EShopWorld.Tools.Commands.AzScan
         }
 
         /// <summary>
-        /// lookup application gateway scheme and port from cluster endpoint
-        ///
-        /// use cache if possible, definitions consistent against regions
+        /// get application gateway scheme and port from cluster endpoint
         /// </summary>
-        /// <param name="azClient">az client</param>
-        /// <param name="env">target environment</param>
-        /// <param name="reg">target region</param>
-        /// <returns>tuple - scheme and port, if not define scheme is empty and port is -1</returns>
-        public(string scheme, int port) GetReverseProxyDetails(IAzure azClient, string env, DeploymentRegion reg)
+        /// <returns>tuple - scheme and port, if unavailable, null</returns>
+        public(string scheme, int port)? GetReverseProxyDetails()
         {
-            return (_connectedClusterProxyScheme, _connectedClusterProxyPort);
+            return _reverseProxySettings;
         }
 
         /// <summary>
@@ -69,7 +63,7 @@ namespace EShopWorld.Tools.Commands.AzScan
         /// 
         /// use cache if possible, definitions consistent across regions
         /// 
-        /// if not found, empty uri is returned
+        /// if not found, null uri is returned
         /// </summary>   
         /// <param name="servicePort">target port</param>
         /// <returns>service fabric uri or null</returns>
@@ -220,13 +214,12 @@ namespace EShopWorld.Tools.Commands.AzScan
             var proxyEndpoint = clusterManifest.NodeTypes.First().Endpoints.HttpApplicationGatewayEndpoint;
             if (proxyEndpoint == null)
             {
-                _connectedClusterProxyScheme = null;
-                _connectedClusterProxyPort = -1;
+                _reverseProxySettings = null;
             }
             else
             {
-                _connectedClusterProxyPort = Convert.ToInt32(proxyEndpoint.Port, CultureInfo.InvariantCulture);
-                _connectedClusterProxyScheme = proxyEndpoint.Protocol.ToString();
+                _reverseProxySettings = (proxyEndpoint.Protocol.ToString(),
+                    Convert.ToInt32(proxyEndpoint.Port, CultureInfo.InvariantCulture));
             }
         }
 
