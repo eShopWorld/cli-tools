@@ -90,6 +90,11 @@ namespace EShopWorld.Tools.Commands.AzScan
             if (_fabricClient == null)
             {
                 var cert = await InstallCert(azClient, env, region);
+                if (string.IsNullOrWhiteSpace(cert))
+                {
+                    return;
+                }
+
                 await Connect(azClient, env, region, cert);
             }
         }
