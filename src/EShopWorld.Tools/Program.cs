@@ -11,6 +11,7 @@ using EShopWorld.Tools.Commands.KeyVault;
 using EShopWorld.Tools.Commands.Security;
 using EShopWorld.Tools.Commands.Transform;
 using EShopWorld.Tools.Common;
+using EShopWorld.Tools.Telemetry;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace EShopWorld.Tools
@@ -47,7 +48,17 @@ namespace EShopWorld.Tools
 
             CommandLineApplication commandParsed=null;
 
-            app.OnParsingComplete(result => { commandParsed = result.SelectedCommand; } );
+            EswCliToolCommandExecutionTimedEvent timedEvent = null;
+            app.OnParsingComplete(result =>
+                {
+                    commandParsed = result.SelectedCommand;
+                    timedEvent = new EswCliToolCommandExecutionTimedEvent
+                    {
+                        CommandType = commandParsed?.GetType().FullName ?? app.GetType().FullName,
+                        Arguments = commandParsed?.Options.ToConsoleString()
+                    };
+                }
+            );
 
             app.Conventions
                 .UseDefaultConventions()
@@ -60,16 +71,26 @@ namespace EShopWorld.Tools
                 int retCode;
                 if ((retCode = app.Execute(args)) != 0)
                 {
-                    _console.EmitWarning(_bigBrother, commandParsed?.GetType() ?? app.GetType(), commandParsed?.Options, $"Command returned non zero code - code returned : {retCode}");
+                    _console.EmitWarning(_bigBrother, commandParsed?.GetType() ?? app.GetType(), commandParsed?.Options,
+                        $"Command returned non zero code - code returned : {retCode}");
                 }
 
                 return retCode;
             }
             catch (Exception e)
             {
-                _console.EmitException(_bigBrother, e, commandParsed?.GetType() ?? app.GetType(), commandParsed?.Options);
-                
+                _console.EmitException(_bigBrother, e, commandParsed?.GetType() ?? app.GetType(),
+                    commandParsed?.Options);
+
                 return -1;
+            }
+            finally
+            {
+                if (timedEvent != null)
+                {
+                    _bigBrother?.Publish(timedEvent);
+                    _bigBrother?.Flush();
+                }
             }
         }
 

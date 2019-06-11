@@ -7,6 +7,7 @@ using Eshopworld.Core;
 using Eshopworld.DevOps;
 using EShopWorld.Tools.Common;
 using McMaster.Extensions.CommandLineUtils;
+using Microsoft.Azure.Management.Dns.Fluent;
 using Microsoft.Azure.Management.Fluent;
 using Microsoft.Azure.Management.Network.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
@@ -20,20 +21,30 @@ namespace EShopWorld.Tools.Commands.AzScan
     // ReSharper disable once InconsistentNaming
     public class AzScanDNSCommand : AzScanCommandBase
     {
-        //as these are used against each and every LB targeting A-record, let's cache
-        private IPagedCollection<ILoadBalancer> _loadBalancersCache;
-        private IPagedCollection<IPublicIPAddress> _pipCache;
+        private readonly ServiceFabricDiscoveryFactory _sfDiscoveryFactory;
 
+        //as these are used against each and every LB targeting A-record, let's cache
+        private IList<ILoadBalancer> _loadBalancersCache;
+        private IList<IPublicIPAddress> _pipCache;
+        private IAzure _azClient;
+        private IConsole _console;
+        
         /// <inheritdoc />
-        public AzScanDNSCommand(Azure.IAuthenticated authenticated, AzScanKeyVaultManager keyVaultManager, IBigBrother bigBrother) : base(authenticated, keyVaultManager, bigBrother, "Platform")
+        public AzScanDNSCommand(Azure.IAuthenticated authenticated, AzScanKeyVaultManager keyVaultManager, IBigBrother bigBrother,
+            ServiceFabricDiscoveryFactory sfDiscoveryFactory) : base(authenticated, keyVaultManager, bigBrother, "Platform")
         {
+            _sfDiscoveryFactory = sfDiscoveryFactory;
         }
 
         /// <inheritdoc />
         protected override async Task<int> RunScanAsync(IAzure client, IConsole console)
         {
+            _azClient = client;
+            _console = console;
             //filter out non V1 DNS zones
-            var zones = await client.DnsZones.ListByResourceGroupAsync(PlatformResourceGroup); 
+            var zones = (await client.DnsZones.ListByResourceGroupAsync(NameGenerator.GetPlatformRGName(EnvironmentName)))
+                .Where(z => !z.Name.EndsWith(".private", StringComparison.Ordinal)); //private = V2
+
             foreach (var zone in zones)
             {
 
@@ -48,81 +59,114 @@ namespace EShopWorld.Tools.Commands.AzScan
                  * this will change with FrontDoor/V2
                  */
 
-                //scan CNAMEs - all global definitions
-                foreach (var cName in await zone.CNameRecordSets.ListAsync())
+                
+                //scan CNAMEs -all global definitions
+                var tasks = (await zone.CNameRecordSets.ListAsync()).Select(i => Task.Run(async () =>
                 {
                     foreach (var keyVaultName in DomainResourceGroup.TargetKeyVaults)
                     {
-                        await KeyVaultManager.SetKeyVaultSecretAsync(keyVaultName, "Platform", cName.Name, "Global",
-                            $"https://{cName.Fqdn.TrimEnd('.')}");
+                        await KeyVaultManager.SetKeyVaultSecretAsync(keyVaultName, "Platform", i.Name, "Global",
+                            $"https://{i.Fqdn.TrimEnd('.')}");
                     }
-                }
+                })).ToList();
 
                 var aNames = await zone.ARecordSets.ListAsync();
 
-                //scan A(Name)s - regional entries
-                foreach (var aName in aNames)
+                //hydrate LB, PIP cache
+                _loadBalancersCache = (await _azClient.LoadBalancers.ListAsync()).ToList(); //all pages
+                _pipCache = (await _azClient.PublicIPAddresses.ListAsync()).ToList(); //all pages
+
+                //append a name scan tasks
+                tasks.AddRange(RegionalPlatformResourceGroups.Select(r => Task.Run(async () =>
                 {
-                    var isLb = aName.Name.EndsWith("-lb") || !aNames.Any(a =>
-                                   a.Name.Equals($"{aName.Name}-lb", StringComparison.OrdinalIgnoreCase));
-
-                    if (!aName.IPv4Addresses.Any())
-                    {
-                        console.EmitWarning(BigBrother, GetType(), AppInstance.Options, $"DNS entry {aName.Name} does not have any target IP address");
-                        continue;
-                    }
-
-                    foreach (var regionalDef in RegionalPlatformResourceGroups) //match regional KV to the A record region (by name)
-                    {
-                        var regionCode = regionalDef.Region.ToRegionCode();
-
-                        if (!aName.Name.RegionCodeCheck(regionCode))
-                            continue;
-
-                        var ipAddress = aName.IPv4Addresses.First();
-                        //lookup backend rule in IP matching LB instance - match the rule by name
-                        var port = isLb ? await LookupLoadBalancerPort(client, console, aName.Name, ipAddress) : -1;
-
-                        if (isLb && !port.HasValue)
-                        {
-                            //unable to process this record, warnings issued
-                            continue;
-                        }
-
-                        foreach (var keyVault in regionalDef.TargetKeyVaults)
-                        {
-                            if (isLb)
-                            {
-                                await KeyVaultManager.SetKeyVaultSecretAsync(keyVault,
-                                    SecretPrefix, aName.Name, "HTTP",
-                                    $"http://{aName.IPv4Addresses.First()}:{port.Value.ToString(CultureInfo.InvariantCulture)}",
-                                    "-lb");
-                            }
-                            else
-                            {
-                                await KeyVaultManager.SetKeyVaultSecretAsync(keyVault,
-                                    SecretPrefix, aName.Name, "HTTPS", $"https://{aName.Fqdn.TrimEnd('.')}");
-                            }
-                        }
-                    }
-                }
+                    await ScanRegionalANames(r, aNames);
+                })));
+                
+                await Task.WhenAll(tasks);
             }
 
             return 0;
         }
 
-        private async Task<int?> LookupLoadBalancerPort(IAzure client, IConsole console, string aName, string ipAddress)
+        private async Task ScanRegionalANames(ResourceGroupDescriptor r,
+            IPagedCollection<IARecordSet> aNames)
         {
-            //lookup LB instance using cache 
-            //note that "old" (v0/1) LBs are in "old" (v0/1) RGs so not filtering by RG
-            if (_loadBalancersCache == null || _pipCache == null)
+            var sfDiscovery = _sfDiscoveryFactory.GetInstance(); //region = separate cluster
+            await sfDiscovery.CheckConnectionStatus(_azClient, EnvironmentName, r.Region);
+
+            var regionCode = r.Region.ToRegionCode();
+
+            //scan A(Name)s - regional entries
+            foreach (var aName in aNames.Where(a => a.Name.RegionCodeCheck(regionCode)))
             {
-                //hydrate
-                _loadBalancersCache = await client.LoadBalancers.ListAsync(); //all pages
-                _pipCache = await client.PublicIPAddresses.ListAsync(); //all pages
+                var isLb = aName.Name.EndsWith("-lb", StringComparison.OrdinalIgnoreCase) 
+                           || !aNames.Any(a => a.Name.Equals($"{aName.Name}-lb", StringComparison.OrdinalIgnoreCase));
+
+                if (!aName.IPv4Addresses.Any())
+                {
+                    _console.EmitWarning(BigBrother, GetType(), AppInstance.Options,
+                        $"DNS entry {aName.Name} does not have any target IP address");
+                    continue;
+                }
+
+                var ipAddress = aName.IPv4Addresses.First();
+
+                foreach (var keyVault in r.TargetKeyVaults)
+                {
+                    if (isLb)
+                    {
+                        //lookup backend rule in IP matching LB instance - match the rule by name
+                        var port = LookupLoadBalancerPort(aName.Name, ipAddress);
+
+                        if (!port.HasValue)
+                        {
+                            //unable to process this record, warnings issued
+                            continue;
+                        }
+
+                        await KeyVaultManager.SetKeyVaultSecretAsync(keyVault,
+                            SecretPrefix, aName.Name, "Cluster",
+                            $"http://{aName.IPv4Addresses.First()}:{port.Value.ToString(CultureInfo.InvariantCulture)}",
+                            "-lb");
+
+
+                        var reverseProxyDetails = sfDiscovery.GetReverseProxyDetails();
+
+                        if (reverseProxyDetails==null)
+                        {
+                            _console.EmitWarning(BigBrother, typeof(AzScanDNSCommand), AppInstance.Options,
+                                $"Unable to lookup reverse proxy details for Service Fabric cluster - Environment - {EnvironmentName} - Region - {r.Region.ToRegionCode().ToPascalCase()}");
+                            continue;
+                        }
+
+                        var serviceInstanceName = sfDiscovery.LookupServiceNameByPort(port.Value);
+
+                        if (string.IsNullOrWhiteSpace(serviceInstanceName))
+                        {
+                            _console.EmitWarning(BigBrother, typeof(AzScanDNSCommand), AppInstance.Options,
+                                $"Unable to lookup service instance name for {aName.Name}:{port.Value} under {EnvironmentName} environment - Region - {r.Region.ToRegionCode().ToPascalCase()}");
+                            continue;
+                        }
+
+                        var (proxyScheme, proxyPort) = reverseProxyDetails.Value;
+
+                        var proxyUrl = new UriBuilder(proxyScheme, "localhost", proxyPort,
+                                serviceInstanceName.RemoveFabricScheme()).ToString();
+
+                        await KeyVaultManager.SetKeyVaultSecretAsync(keyVault, SecretPrefix, aName.Name,
+                            "Proxy", proxyUrl, "-lb");
+                    }
+                    else
+                    {
+                        await KeyVaultManager.SetKeyVaultSecretAsync(keyVault,
+                            SecretPrefix, aName.Name, "Gateway", $"https://{aName.Fqdn.TrimEnd('.')}");
+                    }
+                }
             }
+        }
 
-
+        private int? LookupLoadBalancerPort(string aName, string ipAddress)
+        {
             //public or private
             var publicIp =
                 _pipCache.FirstOrDefault(i => !string.IsNullOrWhiteSpace(i.IPAddress) && i.IPAddress.Equals(ipAddress, StringComparison.OrdinalIgnoreCase));
@@ -133,11 +177,11 @@ namespace EShopWorld.Tools.Commands.AzScan
                     lb.PublicIPAddressIds.Any(s => s.Equals(publicIp.Id, StringComparison.OrdinalIgnoreCase)))
                 : _loadBalancersCache.FirstOrDefault(lb =>
                     lb.Inner.FrontendIPConfigurations.Any(c => !string.IsNullOrEmpty(c.PrivateIPAddress) &&
-                        c.PrivateIPAddress==ipAddress));
+                        c.PrivateIPAddress == ipAddress));
 
             if (targetLb == null)
             {
-                console.EmitWarning(BigBrother, GetType(), AppInstance.Options,
+                _console.EmitWarning(BigBrother, GetType(), AppInstance.Options,
                     $"No Load balancer found for public ip of {ipAddress} for {aName}");
                 return null;
             }
@@ -155,7 +199,7 @@ namespace EShopWorld.Tools.Commands.AzScan
                 return lbRule.Value.BackendPort;
             }
 
-            console.EmitWarning(BigBrother, GetType(), AppInstance.Options,
+            _console.EmitWarning(BigBrother, GetType(), AppInstance.Options,
                 $"No Load balancer rule found for {aName} under {targetLb.Name} load balancer");
 
             return null;

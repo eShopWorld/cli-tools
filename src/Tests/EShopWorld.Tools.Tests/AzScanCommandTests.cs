@@ -26,7 +26,7 @@ namespace EshopWorld.Tools.Tests
         [Fact, IsLayer2]
         public void UnsupportedSubCommand()
         {
-            Assert.Throws<XunitException>(() => GetStandardOutput("azscan", "blah"));
+            Assert.Throws<XunitException>(() => InvokeCLI("azscan", "blah"));
         }
     }
 }

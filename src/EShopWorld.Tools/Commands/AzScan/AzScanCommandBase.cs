@@ -23,11 +23,6 @@ namespace EShopWorld.Tools.Commands.AzScan
         protected CommandLineApplication AppInstance;
         protected readonly string SecretPrefix;
 
-        protected AzScanCommandBase()
-        {
-
-        }
-
         protected AzScanCommandBase(Azure.IAuthenticated authenticated, AzScanKeyVaultManager keyVaultManager,
             IBigBrother bigBrother, string secretPrefix)
         {
@@ -35,6 +30,11 @@ namespace EShopWorld.Tools.Commands.AzScan
             KeyVaultManager = keyVaultManager;
             BigBrother = bigBrother;
             SecretPrefix = secretPrefix;
+        }
+
+        protected AzScanCommandBase(IBigBrother bb)
+        {
+            BigBrother = bb;
         }
 
         [Option(
@@ -54,25 +54,22 @@ namespace EShopWorld.Tools.Commands.AzScan
         public string Subscription { get; set; }
         protected string SubscriptionId { get; set; }
 
-        internal string PlatformResourceGroup => $"platform-{EnvironmentName}";
-
         internal IEnumerable<ResourceGroupDescriptor> RegionalPlatformResourceGroups => RegionList.Select(r =>
                 new ResourceGroupDescriptor
                 {
-                    Name =
-                        $"platform-{EnvironmentName}-{r.ToRegionCode()}".ToLowerInvariant(),
+                    Name = NameGenerator.GetRegionalPlatformRGName(EnvironmentName, r),
                     TargetKeyVaults = new[]
                     {
-                        $"esw-{Domain}-{EnvironmentName}-{r.ToRegionCode()}".ToLowerInvariant()
+                       NameGenerator.GetDomainRegionalKVName(Domain, EnvironmentName, r)
                     },
                     Region = r
                 });
 
         internal ResourceGroupDescriptor DomainResourceGroup => new ResourceGroupDescriptor
         {
-            Name = $"{Domain}-{EnvironmentName}".ToLowerInvariant(),
+            Name = NameGenerator.GetDomainRGName(Domain, EnvironmentName),
             TargetKeyVaults = RegionList.Select(r =>
-                $"esw-{Domain}-{EnvironmentName}-{r.ToRegionCode()}".ToLowerInvariant())
+                NameGenerator.GetDomainRegionalKVName(Domain, EnvironmentName, r))
         };
 
 
@@ -116,11 +113,7 @@ namespace EShopWorld.Tools.Commands.AzScan
             if (resultCode == 0)
             {
                 //only run this when command succeeded (and no exception)
-                await KeyVaultManager.DetachKeyVaults(SecretPrefix);
-            }
-            else
-            {
-                console.EmitWarning(BigBrother, GetType(), app.Options, $"Command returned non zero code - code returned : {resultCode}");
+                await KeyVaultManager.DetachKeyVaults();
             }
 
             return resultCode;

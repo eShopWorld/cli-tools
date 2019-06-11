@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Eshopworld.Core;
+using EShopWorld.Tools.Common;
+using EShopWorld.Tools.Telemetry;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Azure.Management.Fluent;
 
@@ -17,26 +20,44 @@ namespace EShopWorld.Tools.Commands.AzScan
         /// ctor
         /// </summary>
         /// <param name="serviceProvider"><see cref="IServiceProvider"/> instance to locate inner commands</param>
-        public AzScanAllCommand(IServiceProvider serviceProvider)
+        /// <param name="bb"><see cref="IBigBrother"/> instance</param>
+        public AzScanAllCommand(IServiceProvider serviceProvider, IBigBrother bb):base(bb)
         {
             _serviceProvider = serviceProvider;
         }
-
 
         /// <inheritdoc />
         public override async Task<int> OnExecuteAsync(CommandLineApplication app, IConsole console)
         {
             await Task.WhenAll(
-                GetCompositeCommand<AzScanSqlCommand>().OnExecuteAsync(app, console),
-                GetCompositeCommand<AzScanCosmosDbCommand>().OnExecuteAsync(app, console),
-                GetCompositeCommand<AzScanRedisCommand>().OnExecuteAsync(app, console),
-                GetCompositeCommand<AzScanServiceBusCommand>().OnExecuteAsync(app, console),
-                GetCompositeCommand<AzScanAppInsightsCommand>().OnExecuteAsync(app, console),
-                GetCompositeCommand<AzScanDNSCommand>().OnExecuteAsync(app, console),
-                GetCompositeCommand<AzScanKustoCommand>().OnExecuteAsync(app, console),
-                GetCompositeCommand<AzScanEnvironmentInfoCommand>().OnExecuteAsync(app, console));
+                ExecuteInnerCommand<AzScanSqlCommand>(app, console),
+                ExecuteInnerCommand<AzScanCosmosDbCommand>(app, console),
+                ExecuteInnerCommand<AzScanRedisCommand>(app, console),
+                ExecuteInnerCommand<AzScanServiceBusCommand>(app, console),
+                ExecuteInnerCommand<AzScanAppInsightsCommand>(app, console),
+                ExecuteInnerCommand<AzScanDNSCommand>(app, console),
+                ExecuteInnerCommand<AzScanKustoCommand>(app, console),
+                ExecuteInnerCommand<AzScanEnvironmentInfoCommand>(app, console));
 
             return 0;
+        }
+
+        private async Task ExecuteInnerCommand<T>(CommandLineApplication app, IConsole console) where T : AzScanCommandBase
+        {
+            var command = GetCompositeCommand<T>();
+            var timedInner = new EswCliToolCommandExecutionTimedEvent
+            {
+                Arguments = app.Options.ToConsoleString(), CommandType = command.GetType().FullName
+            };
+            try
+            {
+                await command.OnExecuteAsync(app, console);
+            }
+            finally
+            {
+                BigBrother.Publish(timedInner);
+                BigBrother.Flush();
+            }
         }
 
         /// <inheritdoc />

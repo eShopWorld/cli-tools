@@ -26,6 +26,10 @@ namespace EshopWorld.Tools.Tests
         // ReSharper disable once InconsistentNaming
         public async Task CheckSBExpectedSecretProcess(string subParam, string domainParam)
         {
+            try
+            {
+
+            
             await _fixture.DeleteAllSecretsAcrossRegions();
 
             //set up dummy secrets
@@ -37,13 +41,20 @@ namespace EshopWorld.Tools.Tests
                 await _fixture.SetSecret(region.ToRegionCode(), "Prefix--blah", "dummy");
             }
 
-            GetStandardOutput("azscan", "serviceBus", subParam, AzScanCLITestsL2Fixture.SierraIntegrationSubscription, domainParam, AzScanCLITestsL2Fixture.TestDomain);
+            InvokeCLI("azscan", "serviceBus", subParam, AzScanCLITestsL2Fixture.SierraIntegrationSubscription, domainParam, AzScanCLITestsL2FixtureBase.TestDomain);
 
             foreach (var region in RegionHelper.DeploymentRegionsToList())
             {
-                var secrets = await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode());
+                var secrets = await _fixture.LoadAllKeyVaultSecrets(region.ToRegionCode());
+                var deletedSecrets = await _fixture.LoadAllDeletedSecrets(region.ToRegionCode());
                 await CheckSecrets(secrets);
-                CheckSideSecrets(secrets, region.ToRegionCode());
+                CheckSideSecrets(secrets, deletedSecrets);
+            }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
             }
         }
 
@@ -51,6 +62,8 @@ namespace EshopWorld.Tools.Tests
         // ReSharper disable once InconsistentNaming
         public async Task CheckSBKeyRotation()
         {
+            try
+            { 
             await _fixture.DeleteAllSecretsAcrossRegions();
             //set up dummy secrets
             foreach (var region in RegionHelper.DeploymentRegionsToList())
@@ -61,13 +74,20 @@ namespace EshopWorld.Tools.Tests
                 await _fixture.SetSecret(region.ToRegionCode(), "Prefix--blah", "dummy");
             }
 
-            GetStandardOutput("azscan", "serviceBus", "-s", AzScanCLITestsL2Fixture.SierraIntegrationSubscription, "-d", AzScanCLITestsL2Fixture.TestDomain, "-2");
+            InvokeCLI("azscan", "serviceBus", "-s", AzScanCLITestsL2Fixture.SierraIntegrationSubscription, "-d", AzScanCLITestsL2FixtureBase.TestDomain, "-2");
 
             foreach (var region in RegionHelper.DeploymentRegionsToList())
             {
-                var secrets = await _fixture.LoadAllKeyVaultSecretsAsync(region.ToRegionCode());
+                var secrets = await _fixture.LoadAllKeyVaultSecrets(region.ToRegionCode());
+                var deletedSecrets = await _fixture.LoadAllDeletedSecrets(region.ToRegionCode());
                 await CheckSecrets(secrets, true);
-                CheckSideSecrets(secrets, region.ToRegionCode());
+                CheckSideSecrets(secrets, deletedSecrets);
+            }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
             }
         }
 
@@ -81,19 +101,18 @@ namespace EshopWorld.Tools.Tests
 
             secrets.Should().ContainSingle(s =>
                 // ReSharper disable once StringLiteralTypo
-                s.SecretIdentifier.Name.Equals("SB--a--ConnectionString",
+                s.SecretIdentifier.Name.Equals("SB--A--ConnectionString",
                     StringComparison.Ordinal) &&
                 s.Value.Equals(
                     useSecondary ? keys.SecondaryConnectionString : keys.PrimaryConnectionString,
                     StringComparison.Ordinal));         
         }
 
-        private void CheckSideSecrets(IList<SecretBundle> secrets, string regionCode)
+        private void CheckSideSecrets(IList<SecretBundle> secrets, IEnumerable<DeletedSecretItem> deletedSecrets)
         {
             secrets.Should().HaveSecret("SBBlah", "dummy");
             secrets.Should().HaveSecret("Prefix--blah", "dummy");
-            _fixture.GetDisabledSecret(regionCode, "SB--dummy--dummy").Should().NotBeNull();
-
+            deletedSecrets.Should().HaveDeletedSecret("SB--dummy--dummy");
         }
     }
 }

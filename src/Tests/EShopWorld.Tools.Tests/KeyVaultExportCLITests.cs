@@ -24,7 +24,7 @@ namespace EshopWorld.Tools.Tests
             var config = EswDevOpsSdk.BuildConfiguration();
             var output = Path.GetTempFileName();
 
-            GetStandardOutput("keyvault", "export", "-k", config["POCOBindInputTestKeyVault"], "-o", output);
+            InvokeCLI("keyvault", "export", "-k", config["POCOBindInputTestKeyVault"], "-o", output);
 
 
             File.Exists(output).Should().BeTrue();

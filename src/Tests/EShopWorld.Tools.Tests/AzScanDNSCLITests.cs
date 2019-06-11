@@ -38,14 +38,21 @@ namespace EshopWorld.Tools.Tests
                 await _fixture.SetSecret(region.ToRegionCode(), "Prefix--blah", "dummy");
             }
 
-            GetStandardOutput("azscan", "dns", subParam, AzScanCLITestsL2Fixture.SierraIntegrationSubscription, domainParam, AzScanCLITestsL2Fixture.TestDomain);
-            var weSecrets = await _fixture.LoadAllKeyVaultSecretsAsync(DeploymentRegion.WestEurope.ToRegionCode());
-            CheckSecretsWE(weSecrets);
-            CheckSideSecrets(weSecrets, DeploymentRegion.WestEurope.ToRegionCode());
+            InvokeCLI("azscan", "dns", subParam, AzScanCLITestsL2Fixture.SierraIntegrationSubscription, domainParam,
+                AzScanCLITestsL2FixtureBase.TestDomain);
+            var weSecrets = await _fixture.LoadAllKeyVaultSecrets(DeploymentRegion.WestEurope.ToRegionCode());
+            var deletedWeSecrets =
+                await _fixture.LoadAllDeletedSecrets(DeploymentRegion.WestEurope.ToRegionCode());
 
-            var eusSecrets = await _fixture.LoadAllKeyVaultSecretsAsync(DeploymentRegion.EastUS.ToRegionCode());
+            CheckSecretsWE(weSecrets);
+            CheckSideSecrets(weSecrets, deletedWeSecrets);
+
+            var eusSecrets = await _fixture.LoadAllKeyVaultSecrets(DeploymentRegion.EastUS.ToRegionCode());
+            var deletedEusSecrets =
+                await _fixture.LoadAllDeletedSecrets(DeploymentRegion.EastUS.ToRegionCode());
+
             CheckSecretsEUS(eusSecrets);
-            CheckSideSecrets(eusSecrets, DeploymentRegion.EastUS.ToRegionCode());
+            CheckSideSecrets(eusSecrets, deletedEusSecrets);
         }
 
 
@@ -70,17 +77,20 @@ namespace EshopWorld.Tools.Tests
             secrets.Should().HaveSecretCountWithNameStarting("Platform--", 4);
 
             //CNAME check
-            secrets.Should().HaveSecret("Platform--testapi1--Global", "https://testapi1.platformintegration.dns");
-
+            secrets.Should().HaveSecret("Platform--Testapi1--Global", "https://testapi1.platformintegration.dns");
             //API 1 - AG check
-            secrets.Should().HaveSecret("Platform--testapi1--HTTPS", "https://testapi1-we.platformintegration.dns");
-
+            secrets.Should().HaveSecret("Platform--Testapi1--Gateway", "https://testapi1-we.platformintegration.dns");
             //API 1 - LB check
-            secrets.Should().HaveSecret("Platform--testapi1--HTTP", $"http://{_fixture.WeIpAddress.IPAddress}:1111");
-
+            secrets.Should().HaveSecret("Platform--Testapi1--Cluster", $"http://{_fixture.WeIpAddress.IPAddress}:1111");
+            //API 1 - no proxy
+            secrets.Should().NotHaveSecretByName("Platform--Testapi1--Proxy");
             //API 2 - Internal - LB check
-            secrets.Should().HaveSecret("Platform--testapi2--HTTP", $"http://{_fixture.WeIpAddress.IPAddress}:1112");          
-          }
+            secrets.Should().HaveSecret("Platform--Testapi2--Cluster", $"http://{_fixture.WeIpAddress.IPAddress}:1112");
+            //API 2 - no gateway
+            secrets.Should().NotHaveSecretByName("Platform--Testapi2--Gateway");
+            //API 2 - no proxy
+            secrets.Should().NotHaveSecretByName("Platform--Testapi2--Proxy");
+        }
 
         // ReSharper disable once InconsistentNaming
         private void CheckSecretsEUS(IList<SecretBundle> secrets)
@@ -88,23 +98,26 @@ namespace EshopWorld.Tools.Tests
             secrets.Should().HaveSecretCountWithNameStarting("Platform--", 4);
 
             //CNAME check
-            secrets.Should().HaveSecret("Platform--testapi1--Global", "https://testapi1.platformintegration.dns");
-
+            secrets.Should().HaveSecret("Platform--Testapi1--Global", "https://testapi1.platformintegration.dns");
             //API 1 - AG check
-            secrets.Should().HaveSecret("Platform--testapi1--HTTPS", "https://testapi1-eus.platformintegration.dns");
-
+            secrets.Should().HaveSecret("Platform--Testapi1--Gateway", "https://testapi1-eus.platformintegration.dns");
             //API 1 - LB check
-            secrets.Should().HaveSecret("Platform--testapi1--HTTP", $"http://{_fixture.EusIpAddress.IPAddress}:2222");
-
+            secrets.Should().HaveSecret("Platform--Testapi1--Cluster", $"http://{_fixture.EusIpAddress.IPAddress}:2222");
+            //API 1 - no proxy
+            secrets.Should().NotHaveSecretByName("Platform--Testapi1--Proxy");
             //API 2 - Internal - LB check
-            secrets.Should().HaveSecret("Platform--testapi2--HTTP", $"http://{_fixture.EusIpAddress.IPAddress}:2223");         
+            secrets.Should().HaveSecret("Platform--Testapi2--Cluster", $"http://{_fixture.EusIpAddress.IPAddress}:2223");
+            //API 2 - no gateway
+            secrets.Should().NotHaveSecretByName("Platform--Testapi2--Gateway");
+            //API 2 - no proxy
+            secrets.Should().NotHaveSecretByName("Platform--Testapi2--Proxy");
         }
 
-        private void CheckSideSecrets(IList<SecretBundle> secrets, string regionCode)
+        private void CheckSideSecrets(IList<SecretBundle> secrets, IEnumerable<DeletedSecretItem> deletedSecrets)
         {
             secrets.Should().HaveSecret("PlatformBlah", "dummy");
             secrets.Should().HaveSecret("Prefix--blah", "dummy");
-            _fixture.GetDisabledSecret(regionCode, "Platform--dummy--dummy").Should().NotBeNull();
+            deletedSecrets.Should().HaveDeletedSecret("Platform--dummy--dummy");
         }
     }
 }

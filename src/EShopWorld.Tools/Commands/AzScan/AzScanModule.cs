@@ -1,4 +1,5 @@
-﻿using Autofac;
+﻿using System.Security.Cryptography.X509Certificates;
+using Autofac;
 
 namespace EShopWorld.Tools.Commands.AzScan
 {
@@ -20,6 +21,14 @@ namespace EShopWorld.Tools.Commands.AzScan
             builder.RegisterType<AzScanKustoCommand>();
             builder.RegisterType<AzScanKeyVaultManager>();
             builder.RegisterType<AzScanEnvironmentInfoCommand>();
+            builder.RegisterType<ServiceFabricDiscoveryFactory>();
+            builder.Register(c =>
+            {
+                var _x509Store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
+                _x509Store.Open(OpenFlags.ReadWrite);
+
+                return _x509Store;
+            }).SingleInstance();
         }
     }
 }

@@ -86,5 +86,12 @@ namespace EshopWorld.Tools.Tests
         {
             input.SanitizePropertyName().Should().Be(expectedResult);
         }
+
+        [Theory, IsLayer0]
+        [InlineData("fabric:/CaptainHook.ServiceFabric/EndpointDispatcherActorService", "CaptainHook.ServiceFabric/EndpointDispatcherActorService")]
+        public void RemoveFabricSchemeCheck(string input, string expectedOutput)
+        {
+            input.RemoveFabricScheme().Should().Be(expectedOutput);
+        }
     }
 }

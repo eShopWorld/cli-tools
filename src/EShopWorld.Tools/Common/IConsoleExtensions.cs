@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Eshopworld.Core;
 using EShopWorld.Tools.Telemetry;
 using McMaster.Extensions.CommandLineUtils;
@@ -27,21 +26,21 @@ namespace EShopWorld.Tools.Common
             var @event = new AzCLIWarningEvent()
             {
                 CommandType = command.ToString(),
-                Arguments = string.Join(',', args.Select(t => $"{t.LongName}-'{t.Value()}'")),
+                Arguments = args.ToConsoleString(),
                 Warning = warning
             };
 
             bb?.Publish(@event);
             bb?.Flush();
 
-            console.EmitMessage(console.Out, ConsoleColor.Yellow, $"Command {@event.CommandType}, Arguments {@event.Arguments} produced warning - {warning}");
+            var argsMessage = string.IsNullOrWhiteSpace(@event.Arguments) ? "" : $",Arguments '{@event.Arguments}'";
+            console.EmitMessage(console.Out, $"WARNING - Command {@event.CommandType}{argsMessage} - {warning}");
         }
 
-        private static void EmitMessage(this IConsole console, TextWriter tw, ConsoleColor color, string text)
+        // ReSharper disable once UnusedParameter.Local
+        private static void EmitMessage(this IConsole console, TextWriter tw, string text)
         {
-            console.ForegroundColor = color;
             tw.WriteLine(text);
-            console.ResetColor();
         }
 
         /// <summary>
@@ -56,13 +55,13 @@ namespace EShopWorld.Tools.Common
         {
             var @event = e.ToExceptionEvent<AzCLIExceptionEvent>();
             @event.CommandType = command.ToString();
-            @event.Arguments = args!=null ? string.Join(',', args.Select(t => $"{t.LongName}-'{t.Value()}'")) : string.Empty; 
+            @event.Arguments = args.ToConsoleString();
 
             bb?.Publish(@event);
             bb?.Flush();
 
             var argsMessage = string.IsNullOrWhiteSpace(@event.Arguments) ? "" : $",Arguments '{@event.Arguments}'";
-            console.EmitMessage(console.Error, ConsoleColor.Red, $"Command {@event.CommandType}{argsMessage} produced an error - {e.Message}");
+            console.EmitMessage(console.Error, $"ERROR - Command {@event.CommandType}{argsMessage} - {e.GetType().FullName} - {e.Message}");
         }
     }
 }

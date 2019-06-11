@@ -77,6 +77,23 @@ Usage
 dotnet esw keyvault export -k esw-domain-env-region -o c:\temp\a.json 
 ```
 
+#### Using the (configuration) POCOs in your app
+
+With the POCOs packaged, the usage is very straightforward
+
+incorporate the right package as a dependency
+load the configuration (using EswDevOpsSDK or direct calls to configuration builder as part of Microsoft.Configuration.Extensions namespace) and bind to the IConfigurationRoot thus resolved to the POCO
+
+sample code
+```
+
+    var testConfigRoot = EswDevOpsSdk.BuildConfiguration();
+
+    var _testConfig = new TestConfiguration();
+    testConfigRoot.Bind(_testConfig);
+
+```
+
 ### Scanning Azure resources - AzScan commands
 
 This set of commands serves the purpose of automation of resource oversight and extracting configuration data into secure storage -KeyVaults. The tool is invoked within dedicated release pipeline against a combination of environment/domain.
@@ -124,13 +141,13 @@ dotnet esw azscan all ....
 
 Secrets will be named using following formula - {resource prefix}--{resource name}--{configuration item suffix}. This is in line with the EswDevopsSdk configuration items separator(--) used to designate individual levels of configuration.
 
-Each resource type has its reserved prefix for all secrets generated. The name of the resources is transformed into camel case with special characters removed as to meet key vault secret naming rules (a-z and 0-9 and dash allowed). Environmental (e.g. -prep) and other suffixes (-lb) are removed from the name (as they are represented by keyvault itself).
+Each resource type has its reserved prefix for all secrets generated. The name of the resources is transformed into pascal case with special characters removed as to meet key vault secret naming rules (a-z and 0-9 and dash allowed). Environmental (e.g. -prep) and other suffixes (-lb) are removed from the name (as they are represented by keyvault itself).
 
 As an example, __esw-checkout-prep__ resource will be named __eswCheckout__.
 
 ##### Secret workflow
 
-Secrets are only projected to keyvault  when changed/added/disabled. Secrets are disabled when no longer matching underlying platform resource. Disabling allows *keyvault* command to mark appropriate fields as *obsolete*
+Secrets are only projected to keyvault  when changed/added/disabled. Secrets are soft-deleted when no longer matching underlying platform resource. Soft-deleting allows *keyvault* command to mark appropriate fields as *obsolete*
 so that developer gets appropriate warning.
 
 ##### App insights scan - ApplicationInsights prefix
@@ -168,8 +185,9 @@ Key vault secrets are then
 
 ```
 Platform--{resourceName}--Global
-Platform--{resourceName}--HTTPS
-Platform--{resourceName}--HTTP
+Platform--{resourceName}--Gateway
+Platform--{resourceName}--Cluster
+Platform--{resourceName}--Proxy - for fabric reverse proxy
 ```
 
 Please note that this will be reviewed when Azure FrontDoor will be adopted.

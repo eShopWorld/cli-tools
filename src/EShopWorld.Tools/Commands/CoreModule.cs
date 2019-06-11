@@ -11,6 +11,7 @@ using Microsoft.Azure.Management.Kusto;
 using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
+using Microsoft.Azure.Management.ServiceFabric.Fluent;
 using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Rest;
@@ -29,6 +30,7 @@ namespace EShopWorld.Tools.Commands
             var atp = new AzureServiceTokenProvider();
             var token = atp.GetAccessTokenAsync("https://management.core.windows.net/").Result;
             var tokenCredentials = new TokenCredentials(token);
+            builder.RegisterInstance(tokenCredentials);
 
             var client = RestClient.Configure()
                 .WithEnvironment(AzureEnvironment.AzureGlobalCloud)
@@ -43,6 +45,7 @@ namespace EShopWorld.Tools.Commands
 
             builder.RegisterInstance(new ApplicationInsightsManagementClient(tokenCredentials));
             builder.RegisterInstance(new KustoManagementClient(tokenCredentials));
+            builder.RegisterInstance(new ServiceFabricManagementClient(tokenCredentials));
 
             var configBuilder = new ConfigurationBuilder().SetBasePath(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
             configBuilder.AddJsonFile("appsettings.json");

@@ -11,7 +11,7 @@ namespace EshopWorld.Tools.Tests
         [Fact, IsLayer2]
         public void CheckOptionsForGenerateProjectFile()
         {
-            var console = GetStandardOutput("autorest", "generateProjectFile", "--help");
+            var console = GetStandardOutput( "autorest", "generateProjectFile", "--help");
 
             console.Should().NotBeNullOrWhiteSpace();
             console.Should().ContainAll("-s", "--swagger", "-o", "--output", "-t", "--tfm");
@@ -25,7 +25,7 @@ namespace EshopWorld.Tools.Tests
         {
             var output = Path.GetTempPath();
             DeleteTestFiles(output, "SwaggerPetStore.csproj");
-            GetStandardOutput("autorest", "generateProjectFile", swaggerParam,
+            InvokeCLI("autorest", "generateProjectFile", swaggerParam,
                 "https://raw.githubusercontent.com/Azure/autorest/master/Samples/1a-code-generation-minimal/pétstöre.json",
                 outputParam, output);
             var projectFile = Path.Combine(output, "SwaggerPetStore.csproj");
