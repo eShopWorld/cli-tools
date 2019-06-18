@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.KeyVault.Models;
 using Microsoft.Rest.Azure;
+using Microsoft.Rest.TransientFaultHandling;
 using Polly;
 
 namespace EShopWorld.Tools.Common
@@ -72,8 +73,10 @@ namespace EShopWorld.Tools.Common
             await Policy
                 .Handle<KeyVaultErrorException>(r =>
                     r.Response.StatusCode == HttpStatusCode.NotFound)
+                .Or<HttpRequestWithStatusException>(r=> r.StatusCode==HttpStatusCode.NotFound)
                 .WaitAndRetryForeverAsync(w => TimeSpan.FromMilliseconds(confirmationWaitTime))
-                .ExecuteAsync(() => client.GetDeletedSecretAsync(keyVaultUrl, secretName));
+                .ExecuteAsync(() =>
+                    client.GetDeletedSecretAsync(keyVaultUrl, secretName));
         }
 
         internal static async Task<SecretBundle> SetKeyVaultSecretAsync(this KeyVaultClient client, string keyVaultName,
@@ -83,6 +86,7 @@ namespace EShopWorld.Tools.Common
             var result = await Policy
                 .Handle<KeyVaultErrorException>(r =>
                     r.Response.StatusCode == HttpStatusCode.NotFound || r.Response.StatusCode == HttpStatusCode.Conflict)
+                .Or<HttpRequestWithStatusException>(r => r.StatusCode == HttpStatusCode.NotFound || r.StatusCode==HttpStatusCode.Conflict)
                 .WaitAndRetryForeverAsync(w => TimeSpan.FromMilliseconds(recoveryLoopWaitTime))
                 .ExecuteAsync(() => client.SetSecretWithHttpMessagesAsync(GetKeyVaultUrlFromName(keyVaultName), name, value));
 
@@ -137,6 +141,7 @@ namespace EShopWorld.Tools.Common
                 .Handle<KeyVaultErrorException>(r =>
                     r.Response.StatusCode == HttpStatusCode.NotFound ||
                     r.Response.StatusCode == HttpStatusCode.Conflict)
+                .Or<HttpRequestWithStatusException>(r => r.StatusCode == HttpStatusCode.NotFound || r.StatusCode == HttpStatusCode.Conflict)
                 .WaitAndRetryForeverAsync(w => TimeSpan.FromMilliseconds(recoveryLoopWaitTime))
                 .ExecuteAsync(() => client.GetSecretWithHttpMessagesAsync(keyVaultUrl, secretName,string.Empty /*latest*/));
 
