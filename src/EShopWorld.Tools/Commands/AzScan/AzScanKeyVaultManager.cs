@@ -23,8 +23,8 @@ namespace EShopWorld.Tools.Commands.AzScan
         private readonly ConcurrentDictionary<SecretHeader, TrackedSecretBundle> _kvState =
             new ConcurrentDictionary<SecretHeader, TrackedSecretBundle>();
 
-        private readonly ConcurrentDictionary<SecretHeader, DeletedSecretItem> _deletedSecrets =
-            new ConcurrentDictionary<SecretHeader, DeletedSecretItem>();
+        private readonly ConcurrentDictionary<SecretHeader, DeletedSecretItem> _deletedSecrets;
+            
 
         private const string KeyVaultLevelSeparator = "--";
 
@@ -37,6 +37,8 @@ namespace EShopWorld.Tools.Commands.AzScan
         public AzScanKeyVaultManager(KeyVaultClient kvClient)
         {
             _kvClient = kvClient;
+            _deletedSecrets =
+                new ConcurrentDictionary<SecretHeader, DeletedSecretItem>(/*new SecretHeaderEqualityComparer()*/);
         }
 
         /// <summary>
@@ -182,17 +184,8 @@ namespace EShopWorld.Tools.Commands.AzScan
         {
             var recovered= await _kvClient.RecoverSecret(keyVaultName, targetName);
             var header = new SecretHeader(keyVaultName, targetName);
-            if (!_kvState.TryAdd(header, new TrackedSecretBundle(recovered, false)))
-            {
-                throw new ApplicationException(
-                    $"Failure adding new secret - {keyVaultName}:{targetName}"); //pure precautionary measure here
-            }
-
-            if (!_deletedSecrets.TryRemove(header, out _))
-            {
-                throw new ApplicationException(
-                    $"Failure adding new secret - {keyVaultName}:{targetName}"); //pure precautionary measure here
-            }
+            _kvState.TryAdd(header, new TrackedSecretBundle(recovered, false));
+            _deletedSecrets.TryRemove(header, out _);
         }
 
         private bool IsDeleted(string keyVaultName, string targetName) =>_deletedSecrets.ContainsKey(new SecretHeader(keyVaultName, targetName));
@@ -242,7 +235,12 @@ namespace EShopWorld.Tools.Commands.AzScan
                 SecretName = secretName;
             }
 
-            public bool Equals(SecretHeader other)
+            public override bool Equals(object obj)
+            {
+                return obj is SecretHeader header && Equals(header);
+            }
+
+            public  bool Equals(SecretHeader other)
             {
                 if (other is null) return false;
                 if (ReferenceEquals(this, other)) return true;
@@ -252,7 +250,30 @@ namespace EShopWorld.Tools.Commands.AzScan
 
             public override int GetHashCode()
             {
-                return $"{KeyVaultName}:{SecretName}".GetHashCode();
+                return $"{KeyVaultName}:{SecretName}".ToLowerInvariant().GetHashCode();
+            }
+        }
+
+        private class SecretHeaderEqualityComparer : IEqualityComparer<SecretHeader>
+        {
+            public bool Equals(SecretHeader x, SecretHeader y)
+            {
+                if (x == null && y == null)
+                {
+                    return true;
+                }
+
+                if (x==null || y==null)
+                {
+                    return false;
+                }
+
+                return x.Equals(y);
+            }
+
+            public int GetHashCode(SecretHeader obj)
+            {
+                return obj.GetHashCode();
             }
         }
     }

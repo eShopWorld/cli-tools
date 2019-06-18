@@ -45,7 +45,6 @@ namespace EShopWorld.Tools.Commands
 
             builder.RegisterInstance(new ApplicationInsightsManagementClient(tokenCredentials));
             builder.RegisterInstance(new KustoManagementClient(tokenCredentials));
-            builder.RegisterInstance(new ServiceFabricManagementClient(tokenCredentials));
 
             var configBuilder = new ConfigurationBuilder().SetBasePath(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
             configBuilder.AddJsonFile("appsettings.json");

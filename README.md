@@ -175,9 +175,8 @@ Key rotation between primary and secondary is supported - see below.
 
 Scans A and CNAME records in dns definition(s) and projects them using following rules
 
-* CNAME is considered *global* url (~ Traffic manager)
-* A name when ending in -lb is considered to be a "load balancer" and interpreted as *HTTP* url with the port number specified in underlying LB rule
-* A name when not ending in -lb is considered "Application gateway" entry and interpreted as *HTTPS* url, **however** when there is no pairing -lb suffixed entry, such entry is considered load balancer entry (for *internal* APIs)
+* CNAME is considered *global* url (~ FrontDoor)
+* ANAME is considered ELB entry with the port number specified in underlying LB rule  - *HTTPS* assumed, the exception being if the ANAME IP address does not match any known load balancer - then it is treated as raw IP address (likely Monolith)
 
 Please note that these rules are driven by pre-existing devops automation scripting/ARM templates.
 
@@ -185,7 +184,6 @@ Key vault secrets are then
 
 ```
 Platform--{resourceName}--Global
-Platform--{resourceName}--Gateway
 Platform--{resourceName}--Cluster
 Platform--{resourceName}--Proxy - for fabric reverse proxy
 ```
