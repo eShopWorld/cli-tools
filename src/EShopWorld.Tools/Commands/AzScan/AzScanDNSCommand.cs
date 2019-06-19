@@ -10,6 +10,8 @@ using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Azure.Management.Dns.Fluent;
 using Microsoft.Azure.Management.Fluent;
 using Microsoft.Azure.Management.Network.Fluent;
+using Microsoft.Azure.Management.ResourceManager.Fluent;
+using Newtonsoft.Json.Linq;
 
 namespace EShopWorld.Tools.Commands.AzScan
 {
@@ -21,18 +23,20 @@ namespace EShopWorld.Tools.Commands.AzScan
     public class AzScanDNSCommand : AzScanCommandBase
     {
         private readonly ServiceFabricDiscoveryFactory _sfDiscoveryFactory;
+        private readonly ResourceManagementClient _rmClient;
 
         //as these are used against each and every LB targeting A-record, let's cache
         private IList<ILoadBalancer> _loadBalancersCache;
         private IList<IPublicIPAddress> _pipCache;
         private IAzure _azClient;
         private IConsole _console;
-        
+
         /// <inheritdoc />
         public AzScanDNSCommand(Azure.IAuthenticated authenticated, AzScanKeyVaultManager keyVaultManager, IBigBrother bigBrother,
-            ServiceFabricDiscoveryFactory sfDiscoveryFactory) : base(authenticated, keyVaultManager, bigBrother, "Platform")
+            ServiceFabricDiscoveryFactory sfDiscoveryFactory, ResourceManagementClient rmClient) : base(authenticated, keyVaultManager, bigBrother, "Platform")
         {
             _sfDiscoveryFactory = sfDiscoveryFactory;
+            _rmClient = rmClient;
         }
 
         /// <inheritdoc />
@@ -93,68 +97,65 @@ namespace EShopWorld.Tools.Commands.AzScan
             //scan A(Name)s - regional entries
             var tasks = aNames.Where(a => a.Name.RegionCodeCheck(regionCode)).Select(aName => Task.Run(async () =>
             {
+                if (!aName.IPv4Addresses.Any())
                 {
-                    if (!aName.IPv4Addresses.Any())
+                    _console.EmitWarning(GetType(), AppInstance.Options,
+                        $"DNS entry {aName.Name} does not have any target IP address");
+                    return;
+                }
+
+                var ipAddress = aName.IPv4Addresses.First();
+
+                foreach (var keyVault in r.TargetKeyVaults)
+                {
+                    //lookup backend rule in IP matching LB instance - match the rule by name
+                    var lbRule = await LookupLoadBalancerPort(aName.Name, ipAddress);
+
+                    if (!lbRule.HasValue) continue;
+
+                    var port = lbRule.Value.port;
+                    var portScheme = lbRule.Value.scheme;
+
+                    var clusterRoute =
+                        $"{portScheme.ToLowerInvariant()}://{aName.Fqdn.TrimEnd('.')}:{port.ToString(CultureInfo.InvariantCulture)}";
+
+                    await KeyVaultManager.SetKeyVaultSecretAsync(keyVault,
+                        SecretPrefix, aName.Name, "Cluster",
+                        clusterRoute,
+                        "-lb", "-afd");
+
+                    var reverseProxyDetails = sfDiscovery.GetReverseProxyDetails();
+
+                    if (reverseProxyDetails == null)
                     {
-                        _console.EmitWarning(GetType(), AppInstance.Options,
-                            $"DNS entry {aName.Name} does not have any target IP address");
-                        return;
+                        _console.EmitWarning(typeof(AzScanDNSCommand), AppInstance.Options,
+                            $"Unable to lookup reverse proxy details for Service Fabric cluster - Environment - {EnvironmentName} - Region - {r.Region.ToRegionCode().ToPascalCase()}");
+                        continue;
                     }
 
-                    var ipAddress = aName.IPv4Addresses.First();
+                    var serviceInstanceName = sfDiscovery.LookupServiceNameByPort(port);
 
-                    foreach (var keyVault in r.TargetKeyVaults)
+                    if (string.IsNullOrWhiteSpace(serviceInstanceName))
                     {
-                        //lookup backend rule in IP matching LB instance - match the rule by name
-                        var port = LookupLoadBalancerPort(aName.Name, ipAddress);
-
-                        var clusterRoute = port.HasValue
-                            ? $"https://{aName.Fqdn.TrimEnd('.')}:{port.Value.ToString(CultureInfo.InvariantCulture)}"
-                            : $"https://{aName.Fqdn.TrimEnd('.')}";
-
-                        await KeyVaultManager.SetKeyVaultSecretAsync(keyVault,
-                            SecretPrefix, aName.Name, "Cluster",
-                            clusterRoute,
-                            "-lb", "-afd");
-
-                        var reverseProxyDetails = sfDiscovery.GetReverseProxyDetails();
-
-                        if (reverseProxyDetails == null)
-                        {
-                            _console.EmitWarning(typeof(AzScanDNSCommand), AppInstance.Options,
-                                $"Unable to lookup reverse proxy details for Service Fabric cluster - Environment - {EnvironmentName} - Region - {r.Region.ToRegionCode().ToPascalCase()}");
-                            continue;
-                        }
-
-                        if (!port.HasValue)
-                        {
-                            return;
-                        }
-
-                        var serviceInstanceName = sfDiscovery.LookupServiceNameByPort(port.Value);
-
-                        if (string.IsNullOrWhiteSpace(serviceInstanceName))
-                        {
-                            _console.EmitWarning(typeof(AzScanDNSCommand), AppInstance.Options,
-                                $"Unable to lookup service instance name for {aName.Name}:{port.Value} under {EnvironmentName} environment - Region - {r.Region.ToRegionCode().ToPascalCase()}");
-                            continue;
-                        }
-
-                        var (proxyScheme, proxyPort) = reverseProxyDetails.Value;
-
-                        var proxyUrl = new UriBuilder(proxyScheme, "localhost", proxyPort,
-                            serviceInstanceName.RemoveFabricScheme()).ToString();
-
-                        await KeyVaultManager.SetKeyVaultSecretAsync(keyVault, SecretPrefix, aName.Name,
-                            "Proxy", proxyUrl, "-lb");
+                        _console.EmitWarning(typeof(AzScanDNSCommand), AppInstance.Options,
+                            $"Unable to lookup service instance name for {aName.Name}:{port} under {EnvironmentName} environment - Region - {r.Region.ToRegionCode().ToPascalCase()}");
+                        continue;
                     }
+
+                    var (proxyScheme, proxyPort) = reverseProxyDetails.Value;
+
+                    var proxyUrl = new UriBuilder(proxyScheme.ToLowerInvariant(), "localhost", proxyPort,
+                        serviceInstanceName.RemoveFabricScheme()).ToString();
+
+                    await KeyVaultManager.SetKeyVaultSecretAsync(keyVault, SecretPrefix, aName.Name,
+                        "Proxy", proxyUrl, "-lb");
                 }
             }));
 
             await Task.WhenAll(tasks);
         }
 
-        private int? LookupLoadBalancerPort(string aName, string ipAddress)
+        private async Task<(int port, string scheme)?> LookupLoadBalancerPort(string aName, string ipAddress)
         {
             //public or private
             var publicIp =
@@ -184,7 +185,8 @@ namespace EShopWorld.Tools.Commands.AzScan
 
             if (!default(KeyValuePair<string, ILoadBalancingRule>).Equals(lbRule))
             {
-                return lbRule.Value.BackendPort;
+                var probe = await _rmClient.Resources.GetByIdAsync(lbRule.Value.Inner.Probe.Id, "2019-04-01" /*not supported in latest */);
+                return (lbRule.Value.BackendPort, ((JObject) probe.Properties)["protocol"].Value<string>());
             }
 
             _console.EmitWarning(GetType(), AppInstance.Options,

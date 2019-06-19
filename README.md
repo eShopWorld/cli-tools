@@ -176,7 +176,7 @@ Key rotation between primary and secondary is supported - see below.
 Scans A and CNAME records in dns definition(s) and projects them using following rules
 
 * CNAME is considered *global* url (~ FrontDoor)
-* ANAME is considered ELB entry with the port number specified in underlying LB rule  - *HTTPS* assumed, the exception being if the ANAME IP address does not match any known load balancer - then it is treated as raw IP address (likely Monolith)
+* ANAME is considered ELB entry with the port number specified in underlying LB rule (and probe scheme dictating the protocol - HTTP/HTTPS)
 
 Please note that these rules are driven by pre-existing devops automation scripting/ARM templates.
 

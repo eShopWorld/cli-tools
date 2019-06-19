@@ -43,8 +43,9 @@ namespace EShopWorld.Tools.Commands
             builder.Register(c=> new KeyVaultClient(new KeyVaultClient.AuthenticationCallback(atp.KeyVaultTokenCallback))); //cannot use token from above - different resource     
             builder.RegisterType<PathService>().SingleInstance();
 
-            builder.RegisterInstance(new ApplicationInsightsManagementClient(tokenCredentials));
-            builder.RegisterInstance(new KustoManagementClient(tokenCredentials));
+            builder.Register(c=> new ApplicationInsightsManagementClient(c.Resolve<TokenCredentials>())).SingleInstance();
+            builder.Register(c=> new KustoManagementClient(c.Resolve<TokenCredentials>())).SingleInstance();
+            builder.Register(c => new ResourceManagementClient(c.Resolve<RestClient>())).SingleInstance();
 
             var configBuilder = new ConfigurationBuilder().SetBasePath(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
             configBuilder.AddJsonFile("appsettings.json");
