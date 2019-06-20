@@ -43,7 +43,7 @@ namespace EShopWorld.Tools.Common
             return await client.GetSecretAsync(GetKeyVaultUrlFromName(keyVaultName), secretName);
         }
 
-        internal static async Task<IList<SecretItem>> GetDisabledSecrets(this KeyVaultClient client, string keyVaultName)
+        internal static async Task<IList<SecretItem>> GetDisabledSecrets(this KeyVaultClient client, string keyVaultName, string prefix=null)
         {
             //iterate via secret pages
             var allSecrets = new List<SecretItem>();
@@ -52,7 +52,10 @@ namespace EShopWorld.Tools.Common
             {
                 secrets = !string.IsNullOrWhiteSpace(secrets?.NextPageLink) ? await client.GetSecretsNextAsync(secrets.NextPageLink) : await client.GetSecretsAsync(GetKeyVaultUrlFromName(keyVaultName));
 
-                allSecrets.AddRange(secrets.Where(s => !s.Attributes.Enabled.GetValueOrDefault()));
+                allSecrets.AddRange(secrets.Where(s =>
+                    !s.Attributes.Enabled.GetValueOrDefault() &&
+                    (string.IsNullOrWhiteSpace(prefix) || s.Identifier.Name.StartsWith(prefix))));
+
             } while (!string.IsNullOrWhiteSpace(secrets.NextPageLink));
 
             return allSecrets;
@@ -69,14 +72,21 @@ namespace EShopWorld.Tools.Common
             var keyVaultUrl = GetKeyVaultUrlFromName(keyVaultName);
             await client.DeleteSecretAsync(keyVaultUrl, secretName);
 
-            //wait for full delete - note that this is "forever" in the scope of the specific status code
-            await Policy
-                .Handle<KeyVaultErrorException>(r =>
-                    r.Response.StatusCode == HttpStatusCode.NotFound)
-                .Or<HttpRequestWithStatusException>(r=> r.StatusCode==HttpStatusCode.NotFound)
-                .WaitAndRetryForeverAsync(w => TimeSpan.FromMilliseconds(confirmationWaitTime))
-                .ExecuteAsync(() =>
-                    client.GetDeletedSecretAsync(keyVaultUrl, secretName));
+            try
+            {
+                //wait for full delete - note that this is "forever" in the scope of the specific status code
+                await Policy
+                    .Handle<KeyVaultErrorException>(r =>
+                        r.Response.StatusCode == HttpStatusCode.NotFound)
+                    .Or<HttpRequestWithStatusException>(r => r.StatusCode == HttpStatusCode.NotFound)
+                    .WaitAndRetryForeverAsync(w => TimeSpan.FromMilliseconds(confirmationWaitTime))
+                    .ExecuteAsync(() =>
+                        client.GetDeletedSecretAsync(keyVaultUrl, secretName));
+            }
+            catch (KeyVaultErrorException e) when (e.Response.StatusCode == HttpStatusCode.Forbidden)
+            {
+                //ignore - simply do not wait for delete to finish, issue raised with Azure Support
+            }
         }
 
         internal static async Task<SecretBundle> SetKeyVaultSecretAsync(this KeyVaultClient client, string keyVaultName,

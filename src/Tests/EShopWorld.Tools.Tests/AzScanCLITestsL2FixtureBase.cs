@@ -113,11 +113,6 @@ namespace EshopWorld.Tools.Tests
             return await _keyVaultClient.GetAllSecrets(GetRegionalKVName(regionCode));
         }
 
-        internal async Task<IList<SecretItem>> LoadAllDisabledKeyVaultSecrets( string regionCode)
-        {
-            return await _keyVaultClient.GetDisabledSecrets(GetRegionalKVName(regionCode));
-        }
-
         internal async Task<IList<DeletedSecretItem>> LoadAllDeletedSecrets(string regionCode)
         {
             return await _keyVaultClient.GetDeletedSecrets(GetRegionalKVName(regionCode));
