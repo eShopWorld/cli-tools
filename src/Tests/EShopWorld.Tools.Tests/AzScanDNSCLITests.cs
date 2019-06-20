@@ -103,11 +103,11 @@ namespace EshopWorld.Tools.Tests
             //CNAME check
             secrets.Should().HaveSecret("Platform--Testapi1--Global", "https://testapi1.platformintegration.private");
             //API 1 - LB check
-            secrets.Should().HaveSecret("Platform--Testapi1--Cluster", $"https://testapi1-we.platformintegration.private:1111");
+            secrets.Should().HaveSecret("Platform--Testapi1--Cluster", $"http://testapi1-we.platformintegration.private:1111");
             //API 1 - no proxy
             secrets.Should().NotHaveSecretByName("Platform--Testapi1--Proxy");
             //API 2 - Internal - LB check
-            secrets.Should().HaveSecret("Platform--Testapi2--Cluster", $"https://testapi2-we.platformintegration.private:1112");
+            secrets.Should().HaveSecret("Platform--Testapi2--Cluster", $"http://testapi2-we.platformintegration.private:1112");
             //API 2 - no proxy
             secrets.Should().NotHaveSecretByName("Platform--Testapi2--Proxy");
         }
@@ -120,11 +120,11 @@ namespace EshopWorld.Tools.Tests
             //CNAME check
             secrets.Should().HaveSecret("Platform--Testapi1--Global", "https://testapi1.platformintegration.private");
             //API 1 - LB check
-            secrets.Should().HaveSecret("Platform--Testapi1--Cluster", $"https://testapi1-eus.platformintegration.private:2222");
+            secrets.Should().HaveSecret("Platform--Testapi1--Cluster", $"http://testapi1-eus.platformintegration.private:2222");
             //API 1 - no proxy
             secrets.Should().NotHaveSecretByName("Platform--Testapi1--Proxy");
             //API 2 - Internal - LB check
-            secrets.Should().HaveSecret("Platform--Testapi2--Cluster", $"https://testapi2-eus.platformintegration.private:2223");
+            secrets.Should().HaveSecret("Platform--Testapi2--Cluster", $"http://testapi2-eus.platformintegration.private:2223");
             //API 2 - no proxy
             secrets.Should().NotHaveSecretByName("Platform--Testapi2--Proxy");
         }
@@ -137,11 +137,11 @@ namespace EshopWorld.Tools.Tests
             //CNAME check
             secrets.Should().HaveSecret("Platform--Testapi1--Global", "https://testapi1.platformintegration.private");
             //API 1 - LB check
-            secrets.Should().HaveSecret("Platform--Testapi1--Cluster", $"https://testapi1-sa.platformintegration.private:3333");
+            secrets.Should().HaveSecret("Platform--Testapi1--Cluster", $"http://testapi1-sa.platformintegration.private:3333");
             //API 1 - no proxy
             secrets.Should().NotHaveSecretByName("Platform--Testapi1--Proxy");
             //API 2 - Internal - LB check
-            secrets.Should().HaveSecret("Platform--Testapi2--Cluster", $"https://testapi2-sa.platformintegration.private:3334");
+            secrets.Should().HaveSecret("Platform--Testapi2--Cluster", $"http://testapi2-sa.platformintegration.private:3334");
             //API 2 - no proxy
             secrets.Should().NotHaveSecretByName("Platform--Testapi2--Proxy");
         }
