@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.KeyVault.Models;
 using Microsoft.Rest.Azure;
+using Microsoft.Rest.TransientFaultHandling;
 using Polly;
 
 namespace EShopWorld.Tools.Common
@@ -30,7 +31,7 @@ namespace EShopWorld.Tools.Common
                     .Where(i => i.Attributes.Enabled.GetValueOrDefault() &&
                                 (string.IsNullOrWhiteSpace(prefix) || i.Identifier.Name.StartsWith(prefix)))
                     .Select(s => client.GetSecretAsync(s.Identifier.Identifier))));
-             
+
             } while (!string.IsNullOrWhiteSpace(secrets.NextPageLink));
 
             return allSecrets;
@@ -42,7 +43,7 @@ namespace EShopWorld.Tools.Common
             return await client.GetSecretAsync(GetKeyVaultUrlFromName(keyVaultName), secretName);
         }
 
-        internal static async Task<IList<SecretItem>> GetDisabledSecrets(this KeyVaultClient client, string keyVaultName)
+        internal static async Task<IList<SecretItem>> GetDisabledSecrets(this KeyVaultClient client, string keyVaultName, string prefix=null)
         {
             //iterate via secret pages
             var allSecrets = new List<SecretItem>();
@@ -51,7 +52,10 @@ namespace EShopWorld.Tools.Common
             {
                 secrets = !string.IsNullOrWhiteSpace(secrets?.NextPageLink) ? await client.GetSecretsNextAsync(secrets.NextPageLink) : await client.GetSecretsAsync(GetKeyVaultUrlFromName(keyVaultName));
 
-                allSecrets.AddRange(secrets.Where(s => !s.Attributes.Enabled.GetValueOrDefault()));
+                allSecrets.AddRange(secrets.Where(s =>
+                    !s.Attributes.Enabled.GetValueOrDefault() &&
+                    (string.IsNullOrWhiteSpace(prefix) || s.Identifier.Name.StartsWith(prefix))));
+
             } while (!string.IsNullOrWhiteSpace(secrets.NextPageLink));
 
             return allSecrets;
@@ -68,12 +72,21 @@ namespace EShopWorld.Tools.Common
             var keyVaultUrl = GetKeyVaultUrlFromName(keyVaultName);
             await client.DeleteSecretAsync(keyVaultUrl, secretName);
 
-            //wait for full delete - note that this is "forever" in the scope of the specific status code
-            await Policy
-                .Handle<KeyVaultErrorException>(r =>
-                    r.Response.StatusCode == HttpStatusCode.NotFound)
-                .WaitAndRetryForeverAsync(w => TimeSpan.FromMilliseconds(confirmationWaitTime))
-                .ExecuteAsync(() => client.GetDeletedSecretAsync(keyVaultUrl, secretName));
+            try
+            {
+                //wait for full delete - note that this is "forever" in the scope of the specific status code
+                await Policy
+                    .Handle<KeyVaultErrorException>(r =>
+                        r.Response.StatusCode == HttpStatusCode.NotFound)
+                    .Or<HttpRequestWithStatusException>(r => r.StatusCode == HttpStatusCode.NotFound)
+                    .WaitAndRetryForeverAsync(w => TimeSpan.FromMilliseconds(confirmationWaitTime))
+                    .ExecuteAsync(() =>
+                        client.GetDeletedSecretAsync(keyVaultUrl, secretName));
+            }
+            catch (KeyVaultErrorException e) when (e.Response.StatusCode == HttpStatusCode.Forbidden)
+            {
+                //ignore - simply do not wait for delete to finish, issue raised with Azure Support
+            }
         }
 
         internal static async Task<SecretBundle> SetKeyVaultSecretAsync(this KeyVaultClient client, string keyVaultName,
@@ -83,6 +96,7 @@ namespace EShopWorld.Tools.Common
             var result = await Policy
                 .Handle<KeyVaultErrorException>(r =>
                     r.Response.StatusCode == HttpStatusCode.NotFound || r.Response.StatusCode == HttpStatusCode.Conflict)
+                .Or<HttpRequestWithStatusException>(r => r.StatusCode == HttpStatusCode.NotFound || r.StatusCode==HttpStatusCode.Conflict)
                 .WaitAndRetryForeverAsync(w => TimeSpan.FromMilliseconds(recoveryLoopWaitTime))
                 .ExecuteAsync(() => client.SetSecretWithHttpMessagesAsync(GetKeyVaultUrlFromName(keyVaultName), name, value));
 
@@ -109,8 +123,8 @@ namespace EShopWorld.Tools.Common
             IPage<DeletedSecretItem> secrets = null;
             do
             {
-                secrets = !string.IsNullOrWhiteSpace(secrets?.NextPageLink) 
-                    ? await client.GetDeletedSecretsNextAsync(secrets.NextPageLink) 
+                secrets = !string.IsNullOrWhiteSpace(secrets?.NextPageLink)
+                    ? await client.GetDeletedSecretsNextAsync(secrets.NextPageLink)
                     : await client.GetDeletedSecretsAsync(GetKeyVaultUrlFromName(keyVaultName));
 
                 allSecrets.AddRange(secrets.Where(secret => string.IsNullOrWhiteSpace(prefix) || secret.Identifier.Name.StartsWith(prefix)));
@@ -122,17 +136,27 @@ namespace EShopWorld.Tools.Common
         internal static async Task<SecretBundle> RecoverSecret(this KeyVaultClient client, string keyVaultName, string secretName, double recoveryLoopWaitTime = 100)
         {
             var keyVaultUrl = GetKeyVaultUrlFromName(keyVaultName);
-            var secret = await client.RecoverDeletedSecretAsync(keyVaultUrl, secretName);
+
+            try
+            {
+                await client.RecoverDeletedSecretAsync(keyVaultUrl, secretName);
+            }
+            catch (KeyVaultErrorException e) when (e.Response.StatusCode == HttpStatusCode.NotFound)
+            {
+                //forget this one as there are naming convention duplicates in DNS
+            }
 
             //wait for full recovery - note that this is "forever" in the scope of the specific status codes
             var response = await Policy
                 .Handle<KeyVaultErrorException>(r =>
-                    r.Response.StatusCode == HttpStatusCode.NotFound || r.Response.StatusCode == HttpStatusCode.Conflict)
+                    r.Response.StatusCode == HttpStatusCode.NotFound ||
+                    r.Response.StatusCode == HttpStatusCode.Conflict)
+                .Or<HttpRequestWithStatusException>(r => r.StatusCode == HttpStatusCode.NotFound || r.StatusCode == HttpStatusCode.Conflict)
                 .WaitAndRetryForeverAsync(w => TimeSpan.FromMilliseconds(recoveryLoopWaitTime))
-                .ExecuteAsync(() => client.GetSecretWithHttpMessagesAsync(keyVaultUrl, secret.SecretIdentifier.Name,
-                    secret.SecretIdentifier.Version));
+                .ExecuteAsync(() => client.GetSecretWithHttpMessagesAsync(keyVaultUrl, secretName,string.Empty /*latest*/));
 
             return response.Body;
+
         }
 
         private static string GetKeyVaultUrlFromName(string name)

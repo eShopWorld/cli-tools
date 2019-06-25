@@ -26,6 +26,9 @@ namespace EShopWorld.Tools.Commands.AzScan
         private readonly ConcurrentDictionary<SecretHeader, DeletedSecretItem> _deletedSecrets =
             new ConcurrentDictionary<SecretHeader, DeletedSecretItem>();
 
+        private readonly ConcurrentDictionary<SecretHeader, SecretItem> _disabledSecrets =
+            new ConcurrentDictionary<SecretHeader, SecretItem>();
+
         private const string KeyVaultLevelSeparator = "--";
 
         private string _attachedPrefix;
@@ -51,6 +54,7 @@ namespace EShopWorld.Tools.Commands.AzScan
             _attachedPrefix = secretPrefix;
             var prefix = GetSecretPrefixLevelToken(secretPrefix);
 
+            //load all enabled (prefixed)
             var tasks = kvNames.Select(k => Task.Run(async () =>
             {
                 var secrets = await _kvClient.GetAllSecrets(k, prefix);
@@ -60,7 +64,7 @@ namespace EShopWorld.Tools.Commands.AzScan
                         new TrackedSecretBundle(secret, false));
                 }
             })).ToList();
-
+            //load all deleted (prefixed)
             tasks.AddRange(kvNames.Select(k => Task.Run(async () =>
             {
                 var secrets = await _kvClient.GetDeletedSecrets(k, prefix);
@@ -69,7 +73,15 @@ namespace EShopWorld.Tools.Commands.AzScan
                     _deletedSecrets.TryAdd(new SecretHeader(k, secret.Identifier.Name), secret);
                 }
             })));
-
+            //load all disabled (prefixed)
+            tasks.AddRange(kvNames.Select(k=> Task.Run(async () =>
+            {
+                var secrets = await _kvClient.GetDisabledSecrets(k, prefix);
+                foreach (var secret in secrets)
+                {
+                    _disabledSecrets.TryAdd(new SecretHeader(k, secret.Identifier.Name), secret);
+                }
+            })));
 
             await Task.WhenAll(tasks);
         }
@@ -89,9 +101,11 @@ namespace EShopWorld.Tools.Commands.AzScan
 
             //delete unused secrets
             var tasks = _kvState
-                    .Where(l => !l.Value.Touched &&
-                                l.Value.Secret.SecretIdentifier.Name.StartsWith(GetSecretPrefixLevelToken(_attachedPrefix), StringComparison.Ordinal))
-                    .Select(i => _kvClient.DeleteSecret(i.Key.KeyVaultName, i.Value.Secret.SecretIdentifier.Name)); //soft-delete
+                    .Where(l => !l.Value.Touched)
+                    .Select(i => _kvClient.DeleteSecret(i.Key.KeyVaultName, i.Value.Secret.SecretIdentifier.Name)).ToList(); //soft-delete
+
+            //delete disabled
+            tasks.AddRange(_disabledSecrets.Select(i=>_kvClient.DeleteSecret(i.Key.KeyVaultName, i.Value.Identifier.Name)));
 
             await Task.WhenAll(tasks);
         }
@@ -182,17 +196,8 @@ namespace EShopWorld.Tools.Commands.AzScan
         {
             var recovered= await _kvClient.RecoverSecret(keyVaultName, targetName);
             var header = new SecretHeader(keyVaultName, targetName);
-            if (!_kvState.TryAdd(header, new TrackedSecretBundle(recovered, false)))
-            {
-                throw new ApplicationException(
-                    $"Failure adding new secret - {keyVaultName}:{targetName}"); //pure precautionary measure here
-            }
-
-            if (!_deletedSecrets.TryRemove(header, out _))
-            {
-                throw new ApplicationException(
-                    $"Failure adding new secret - {keyVaultName}:{targetName}"); //pure precautionary measure here
-            }
+            _kvState.TryAdd(header, new TrackedSecretBundle(recovered, false));
+            _deletedSecrets.TryRemove(header, out _);
         }
 
         private bool IsDeleted(string keyVaultName, string targetName) =>_deletedSecrets.ContainsKey(new SecretHeader(keyVaultName, targetName));
@@ -242,7 +247,12 @@ namespace EShopWorld.Tools.Commands.AzScan
                 SecretName = secretName;
             }
 
-            public bool Equals(SecretHeader other)
+            public override bool Equals(object obj)
+            {
+                return obj is SecretHeader header && Equals(header);
+            }
+
+            public  bool Equals(SecretHeader other)
             {
                 if (other is null) return false;
                 if (ReferenceEquals(this, other)) return true;
@@ -252,7 +262,7 @@ namespace EShopWorld.Tools.Commands.AzScan
 
             public override int GetHashCode()
             {
-                return $"{KeyVaultName}:{SecretName}".GetHashCode();
+                return $"{KeyVaultName}:{SecretName}".ToLowerInvariant().GetHashCode();
             }
         }
     }

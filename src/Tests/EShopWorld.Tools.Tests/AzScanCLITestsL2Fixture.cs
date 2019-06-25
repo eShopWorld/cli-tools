@@ -2,7 +2,6 @@
 using Autofac;
 using Eshopworld.DevOps;
 using EShopWorld.Tools.Common;
-using JetBrains.Annotations;
 using Microsoft.Azure.Management.ApplicationInsights.Management;
 using Microsoft.Azure.Management.ApplicationInsights.Management.Models;
 using Microsoft.Azure.Management.CosmosDB.Fluent;
@@ -23,6 +22,7 @@ namespace EshopWorld.Tools.Tests
         public ICosmosDBAccount TestCosmosDbAccount { get; private set; }
         public IPublicIPAddress WeIpAddress { get; private set; }
         public IPublicIPAddress EusIpAddress { get; private set; }
+        public IPublicIPAddress SaIpAdress { get; private set; }
 
         private const string DomainAResourceGroupName = "a-integration";
         private const string DomainBResourceGroupName = "b-integration";
@@ -75,7 +75,7 @@ namespace EshopWorld.Tools.Tests
             TestServiceBusNamespace = sbTestResourceTask.Result;
         }
 
-        private static string GetRegionalPlatformResourceGroupName([NotNull] string regionCode)
+        private static string GetRegionalPlatformResourceGroupName(string regionCode)
         {
             return string.Format(PlatformRegionalResourceGroupNameFormat, regionCode).ToLowerInvariant();
         }
@@ -171,18 +171,52 @@ namespace EshopWorld.Tools.Tests
                 .Attach()
                 .Create();
 
-            await AzClient.DnsZones.Define($"{camelRgName}.dns".ToLowerInvariant()).WithExistingResourceGroup(rg)
-                .DefineCNameRecordSet(testApi1).WithAlias($"{camelRgName}-api.azureedge.net").Attach() //Global record
-                .DefineARecordSet($"{testApi1}-we-lb").WithIPv4Address(WeIpAddress.IPAddress)
-                .Attach() //test api 1 LB -WE
-                .DefineARecordSet($"{testApi1}-eus-lb").WithIPv4Address(EusIpAddress.IPAddress)
+            SaIpAdress = await AzClient.PublicIPAddresses.Define($"{camelRgName}.sapip")
+                .WithRegion(Region.EuropeNorth)
+                .WithExistingResourceGroup(rg).WithStaticIP().WithSku(PublicIPSkuType.Basic).CreateAsync();
+
+            AzClient.LoadBalancers.Define($"{camelRgName}.salb").WithRegion(Region.EuropeNorth)
+                .WithExistingResourceGroup(rg)
+                .DefineLoadBalancingRule(testApi1)
+                .WithProtocol(TransportProtocol.Tcp)
+                .FromExistingPublicIPAddress(SaIpAdress)
+                .FromFrontendPort(3333)
+                .ToBackend(testApi1)
+                .WithProbe($"{testApi1}-probe")
+                .Attach()
+                .DefineLoadBalancingRule(testApi2)
+                .WithProtocol(TransportProtocol.Tcp)
+                .FromExistingPublicIPAddress(SaIpAdress)
+                .FromFrontendPort(3334)
+                .ToBackend(testApi2)
+                .WithProbe($"{testApi2}-probe")
+                .Attach()
+                .WithSku(LoadBalancerSkuType.Basic)
+                .DefineHttpProbe($"{testApi1}-probe")
+                .WithRequestPath("/Probe")
+                .WithPort(3222)
+                .Attach()
+                .DefineHttpProbe($"{testApi2}-probe")
+                .WithRequestPath("/Probe")
+                .WithPort(3223)
+                .Attach()
+                .Create();
+
+            await AzClient.DnsZones.Define($"{camelRgName}.private".ToLowerInvariant()).WithExistingResourceGroup(rg)
+                .DefineCNameRecordSet(testApi1).WithAlias($"{camelRgName}.frontdoor.net").Attach() // test api 1 - Global record
+                .DefineCNameRecordSet(testApi2).WithAlias($"{camelRgName}.frontdoor.net").Attach() // test api 2 - Global record
+                .DefineARecordSet($"{testApi1}-we").WithIPv4Address(WeIpAddress.IPAddress)
+                .Attach() //test api 1 LB - WE
+                .DefineARecordSet($"{testApi1}-eus").WithIPv4Address(EusIpAddress.IPAddress)
                 .Attach() //test api 1 LB - EUS
-                .DefineARecordSet($"{testApi1}-we").WithIPv4Address("3.3.3.3").Attach() //test api 1 AG - WE
-                .DefineARecordSet($"{testApi1}-eus").WithIPv4Address("4.4.4.4").Attach() //test api 1 AG - EUS
+                .DefineARecordSet($"{testApi1}-sa").WithIPv4Address(SaIpAdress.IPAddress)
+                .Attach() //test api 1 LB - SA
                 .DefineARecordSet($"{testApi2}-we").WithIPv4Address(WeIpAddress.IPAddress)
-                .Attach() //test api 2 - internal API - LB only - WE
+                .Attach() //test api 2 LB - WE
                 .DefineARecordSet($"{testApi2}-eus").WithIPv4Address(EusIpAddress.IPAddress)
-                .Attach() //test api 2 - internal API - LB only - EUS
+                .Attach() //test api 2 LB - EUS
+                .DefineARecordSet($"{testApi2}-sa").WithIPv4Address(SaIpAdress.IPAddress)
+                .Attach() //test api 2 LB - SA
                 .CreateAsync();
         }
 

@@ -21,7 +21,7 @@ namespace EShopWorld.Tools.Common
         /// <param name="command">command type</param>
         /// <param name="args">application options</param>
         /// <param name="warning">warning message</param>
-        public static void EmitWarning(this IConsole console, IBigBrother bb, Type command, List<CommandOption> args, string warning)
+        public static void EmitWarning(this IConsole console, Type command, List<CommandOption> args, string warning)
         {
             var @event = new AzCLIWarningEvent()
             {
@@ -29,9 +29,6 @@ namespace EShopWorld.Tools.Common
                 Arguments = args.ToConsoleString(),
                 Warning = warning
             };
-
-            bb?.Publish(@event);
-            bb?.Flush();
 
             var argsMessage = string.IsNullOrWhiteSpace(@event.Arguments) ? "" : $",Arguments '{@event.Arguments}'";
             console.EmitMessage(console.Out, $"WARNING - Command {@event.CommandType}{argsMessage} - {warning}");

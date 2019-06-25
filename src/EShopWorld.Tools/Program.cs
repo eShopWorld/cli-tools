@@ -71,7 +71,7 @@ namespace EShopWorld.Tools
                 int retCode;
                 if ((retCode = app.Execute(args)) != 0)
                 {
-                    _console.EmitWarning(_bigBrother, commandParsed?.GetType() ?? app.GetType(), commandParsed?.Options,
+                    _console.EmitWarning(commandParsed?.GetType() ?? app.GetType(), commandParsed?.Options,
                         $"Command returned non zero code - code returned : {retCode}");
                 }
 
