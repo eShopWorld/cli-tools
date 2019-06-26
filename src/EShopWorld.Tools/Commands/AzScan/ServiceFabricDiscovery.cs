@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Eshopworld.DevOps;
 using EShopWorld.Tools.Common;
+using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.KeyVault.Models;
 using Microsoft.Azure.Management.Fluent;
@@ -74,7 +75,7 @@ namespace EShopWorld.Tools.Commands.AzScan
         /// <param name="env">environment</param>
         /// <param name="region">region</param>
         /// <returns></returns>
-        public async Task CheckConnectionStatus(IAzure azClient, string env, DeploymentRegion region)
+        public async Task CheckConnectionStatus(IAzure azClient, string env, DeploymentRegion region, IConsole console)
         {
             if (_fabricClient == null)
             {
@@ -84,7 +85,7 @@ namespace EShopWorld.Tools.Commands.AzScan
                     return;
                 }
 
-                await Connect(env, region, cert);
+                await Connect(env, region, cert, console);
             }
         }
 
@@ -126,7 +127,7 @@ namespace EShopWorld.Tools.Commands.AzScan
         /// <param name="region">region to scope to</param>
         /// <param name="certThumbprint">thumbprint of the cluster certificate</param>
         /// <param name="clientEndpointPort">cluster client connection endpoint - defaulted to 19000</param>
-        private async Task Connect(string env, DeploymentRegion region, string certThumbprint, int clientEndpointPort = 19000)
+        private async Task Connect(string env, DeploymentRegion region, string certThumbprint, IConsole console, int clientEndpointPort = 19000)
         {
             //connect and scan the SF cluster
             var xc = new X509Credentials
@@ -146,38 +147,47 @@ namespace EShopWorld.Tools.Commands.AzScan
             var appList = await _fabricClient.QueryManager.GetApplicationListAsync();
             foreach (var app in appList)
             {
-                //get the app manifest to iterate over services
-                var appManifestStr =
-                    await _fabricClient.ApplicationManager.GetApplicationManifestAsync(app.ApplicationTypeName,
-                        app.ApplicationTypeVersion);
-                var appManifest =
-                    (ApplicationManifestType)AppManifestSerializer.Deserialize(new StringReader(appManifestStr));
-
-                var serviceList = await _fabricClient.QueryManager.GetServiceListAsync(app.ApplicationName);
-
-                foreach (var serviceManifestImport in appManifest.ServiceManifestImport)
+                try
                 {
-                    //get the service manifest to check endpoints
-                    var serviceManifestString = await _fabricClient.ServiceManager.GetServiceManifestAsync(
-                        app.ApplicationTypeName, app.ApplicationTypeVersion,
-                        serviceManifestImport.ServiceManifestRef.ServiceManifestName);
 
-                    var serviceManifest = (ServiceManifestType)
-                        ServiceManifestSerializer.Deserialize(new StringReader(serviceManifestString));
+                    //get the app manifest to iterate over services
+                    var appManifestStr =
+                        await _fabricClient.ApplicationManager.GetApplicationManifestAsync(app.ApplicationTypeName,
+                            app.ApplicationTypeVersion);
+                    var appManifest =
+                        (ApplicationManifestType)AppManifestSerializer.Deserialize(new StringReader(appManifestStr));
 
-                    foreach (var endpoint in serviceManifest.Resources.Endpoints.Where(e =>
-                        e.Protocol == EndpointTypeProtocol.http || e.Protocol == EndpointTypeProtocol.https))
+                    var serviceList = await _fabricClient.QueryManager.GetServiceListAsync(app.ApplicationName);
+
+                    foreach (var serviceManifestImport in appManifest.ServiceManifestImport)
                     {
-                        //some expectations here for API- stateless only
-                        var serviceInstance = serviceList.FirstOrDefault(s =>
-                            serviceManifest.ServiceTypes.FirstOrDefault(t =>
-                                t is StatelessServiceTypeType type &&
-                                type.ServiceTypeName == s.ServiceTypeName) != null);
+                        //get the service manifest to check endpoints
+                        var serviceManifestString = await _fabricClient.ServiceManager.GetServiceManifestAsync(
+                            app.ApplicationTypeName, app.ApplicationTypeVersion,
+                            serviceManifestImport.ServiceManifestRef.ServiceManifestName);
 
-                        if (serviceInstance == null) continue;
+                        var serviceManifest = (ServiceManifestType)
+                            ServiceManifestSerializer.Deserialize(new StringReader(serviceManifestString));
 
-                        _connectedClusterPortServiceMap.TryAdd(endpoint.Port, serviceInstance.ServiceName.ToString());
+                        foreach (var endpoint in serviceManifest.Resources.Endpoints.Where(e =>
+                            e.Protocol == EndpointTypeProtocol.http || e.Protocol == EndpointTypeProtocol.https))
+                        {
+                            //some expectations here for API- stateless only
+                            var serviceInstance = serviceList.FirstOrDefault(s =>
+                                serviceManifest.ServiceTypes.FirstOrDefault(t =>
+                                    t is StatelessServiceTypeType type &&
+                                    type.ServiceTypeName == s.ServiceTypeName) != null);
+
+                            if (serviceInstance == null) continue;
+
+                            _connectedClusterPortServiceMap.TryAdd(endpoint.Port,
+                                serviceInstance.ServiceName.ToString());
+                        }
                     }
+                }
+                catch (Exception e)
+                {
+                    console.EmitMessage(console.Out, $"Application discovery failed for {app.ApplicationName.ToString()} - reason {e.Message}");
                 }
             }
 

@@ -90,7 +90,7 @@ namespace EShopWorld.Tools.Commands.AzScan
         private async Task ScanRegionalANames(ResourceGroupDescriptor r, IEnumerable<IARecordSet> aNames)
         {
             var sfDiscovery = _sfDiscoveryFactory.GetInstance(); //region = separate cluster
-            await sfDiscovery.CheckConnectionStatus(_azClient, EnvironmentName, r.Region);
+            await sfDiscovery.CheckConnectionStatus(_azClient, EnvironmentName, r.Region, _console);
 
             var regionCode = r.Region.ToRegionCode();
 

@@ -35,7 +35,7 @@ namespace EShopWorld.Tools.Common
         }
 
         // ReSharper disable once UnusedParameter.Local
-        private static void EmitMessage(this IConsole console, TextWriter tw, string text)
+        internal static void EmitMessage(this IConsole console, TextWriter tw, string text)
         {
             tw.WriteLine(text);
         }

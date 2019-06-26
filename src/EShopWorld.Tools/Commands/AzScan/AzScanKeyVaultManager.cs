@@ -105,7 +105,7 @@ namespace EShopWorld.Tools.Commands.AzScan
                     .Select(i => _kvClient.DeleteSecret(i.Key.KeyVaultName, i.Value.Secret.SecretIdentifier.Name)).ToList(); //soft-delete
 
             //delete disabled
-            tasks.AddRange(_disabledSecrets.Select(i=>_kvClient.DeleteSecret(i.Key.KeyVaultName, i.Value.Identifier.Name)));
+            tasks.AddRange(_disabledSecrets.Select(i=>_kvClient.DeleteSecret(i.Key.KeyVaultName, i.Value.Identifier.Name, confirmDelete:false)));
 
             await Task.WhenAll(tasks);
         }

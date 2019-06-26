@@ -67,17 +67,20 @@ namespace EShopWorld.Tools.Common
             await Task.WhenAll(list.Select(i => client.DeleteSecret(keyVaultName, i.SecretIdentifier.Name)));
         }
 
-        internal static async Task DeleteSecret(this KeyVaultClient client, string keyVaultName, string secretName, double confirmationWaitTime = 100)
+        internal static async Task DeleteSecret(this KeyVaultClient client, string keyVaultName, string secretName, double confirmationWaitTime = 100, bool confirmDelete = true)
         {
             var keyVaultUrl = GetKeyVaultUrlFromName(keyVaultName);
             await client.DeleteSecretAsync(keyVaultUrl, secretName);
+
+            if (!confirmDelete)
+                return;
 
             try
             {
                 //wait for full delete - note that this is "forever" in the scope of the specific status code
                 await Policy
                     .Handle<KeyVaultErrorException>(r =>
-                        r.Response.StatusCode == HttpStatusCode.NotFound)
+                        r.Response?.StatusCode == HttpStatusCode.NotFound)
                     .Or<HttpRequestWithStatusException>(r => r.StatusCode == HttpStatusCode.NotFound)
                     .WaitAndRetryForeverAsync(w => TimeSpan.FromMilliseconds(confirmationWaitTime))
                     .ExecuteAsync(() =>
@@ -85,7 +88,7 @@ namespace EShopWorld.Tools.Common
             }
             catch (KeyVaultErrorException e) when (e.Response.StatusCode == HttpStatusCode.Forbidden)
             {
-                //ignore - simply do not wait for delete to finish, issue raised with Azure Support
+                //ignore - simply do not wait for delete to finish
             }
         }
 
