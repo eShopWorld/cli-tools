@@ -209,12 +209,8 @@ namespace EShopWorld.Tools.Commands.AzScan
                 throw new ArgumentNullException(nameof(newSecret));
             }
 
-            if (!_kvState.TryAdd(new SecretHeader(keyVaultName, newSecret.SecretIdentifier.Name),
-                new TrackedSecretBundle(newSecret, true))) //mark as refreshed
-            {
-                throw new ApplicationException(
-                    $"Failure adding new secret - {keyVaultName}:{newSecret.SecretIdentifier.Name}"); //pure precautionary measure here
-            }
+            _kvState.TryAdd(new SecretHeader(keyVaultName, newSecret.SecretIdentifier.Name),
+                new TrackedSecretBundle(newSecret, true)); //mark as refreshed
         }
 
         private TrackedSecretBundle LocateSecret(string keyVaultName, string targetName)
