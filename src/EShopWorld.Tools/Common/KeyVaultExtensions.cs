@@ -78,6 +78,7 @@ namespace EShopWorld.Tools.Common
             try
             {
                 //wait for full delete - note that this is "forever" in the scope of the specific status code
+                //null reference and object disposed exceptions -> https://github.com/Azure/azure-sdk-for-net/issues/3224
                 await Policy
                     .Handle<NullReferenceException>()
                     .Or<ObjectDisposedException>()
@@ -153,6 +154,7 @@ namespace EShopWorld.Tools.Common
             }
 
             //wait for full recovery - note that this is "forever" in the scope of the specific status codes
+            //null reference and object disposed exceptions -> https://github.com/Azure/azure-sdk-for-net/issues/3224
             var response = await Policy
                 .Handle<NullReferenceException>()
                 .Or<ObjectDisposedException>()
