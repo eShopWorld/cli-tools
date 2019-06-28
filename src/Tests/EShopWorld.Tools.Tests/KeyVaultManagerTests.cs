@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using Autofac;
@@ -17,6 +18,55 @@ namespace EshopWorld.Tools.Tests
 {
     public class KeyVaultManagerTests
     {
+        /// <summary>
+        /// test bed used to diagnose "random" exception thrown by <see cref="Microsoft.Rest.RetryDelegatingHandler"/> when running concurrent requests
+        ///
+        /// https://github.com/Azure/azure-sdk-for-net/issues/3224
+        /// </summary>
+        /// <returns>task</returns>
+        [Fact, IsDev]
+        public async Task DeleteObjectDisposeTest()
+        {
+            var builder = new ContainerBuilder();
+
+            builder.RegisterAssemblyModules(typeof(Program).Assembly);
+            builder.Register((ctx) => ctx.Resolve<Azure.IAuthenticated>()
+                    .WithSubscription(EswDevOpsSdk.SierraIntegrationSubscriptionId))
+                .SingleInstance();
+
+            var container = builder.Build();
+            var config = EswDevOpsSdk.BuildConfiguration();
+
+
+            var kvName = config["KeyVaultManagerTestKeyVault"];
+            var kvUrl = $"https://{kvName}.vault.azure.net/";
+            var kvClient = container.Resolve<KeyVaultClient>();
+
+            var tasks = new List<Task>();
+
+            for (var y = 0; y < 10; y++)
+            {
+                tasks.Add(Task.Run(async () =>
+                {
+                    var testSecretGuid = Guid.NewGuid().ToString().Replace("-", "").ToPascalCase(); //naming convention
+
+                    var testSecret = $"Test--{testSecretGuid}";
+
+                    await kvClient.SetSecretWithHttpMessagesAsync(kvUrl, testSecret, "blah");
+                    await kvClient.DeleteSecret(kvName, testSecret);
+
+                    for (var x = 0; x < 10; x++)
+                    {
+                        
+                            await kvClient.RecoverSecret(kvName, testSecret);
+                            await kvClient.DeleteSecret(kvName, testSecret);
+                    }
+                }));
+            }
+
+            await Task.WhenAll(tasks);
+        }
+
         [Fact, IsLayer1]
         public async Task SoftDeleteFlowTest()
         {

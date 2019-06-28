@@ -79,9 +79,12 @@ namespace EShopWorld.Tools.Common
             {
                 //wait for full delete - note that this is "forever" in the scope of the specific status code
                 await Policy
-                    .Handle<KeyVaultErrorException>(r =>
+                    .Handle<NullReferenceException>()
+                    .Or<ObjectDisposedException>()
+                    .Or<KeyVaultErrorException>(r =>
                         r.Response?.StatusCode == HttpStatusCode.NotFound)
-                    .Or<HttpRequestWithStatusException>(r => r.StatusCode == HttpStatusCode.NotFound)
+                    .Or<HttpRequestWithStatusException>(r =>
+                        r.StatusCode == HttpStatusCode.NotFound)
                     .WaitAndRetryForeverAsync(w => TimeSpan.FromMilliseconds(confirmationWaitTime))
                     .ExecuteAsync(() =>
                         client.GetDeletedSecretAsync(keyVaultUrl, secretName));
@@ -151,7 +154,9 @@ namespace EShopWorld.Tools.Common
 
             //wait for full recovery - note that this is "forever" in the scope of the specific status codes
             var response = await Policy
-                .Handle<KeyVaultErrorException>(r =>
+                .Handle<NullReferenceException>()
+                .Or<ObjectDisposedException>()
+                .Or<KeyVaultErrorException>(r =>
                     r.Response.StatusCode == HttpStatusCode.NotFound ||
                     r.Response.StatusCode == HttpStatusCode.Conflict)
                 .Or<HttpRequestWithStatusException>(r => r.StatusCode == HttpStatusCode.NotFound || r.StatusCode == HttpStatusCode.Conflict)
