@@ -59,6 +59,8 @@ aggregates key vault centric commands
 
 generates POCO classes matching the secrets in the target KV and matching project file so that it can be packaged, this respects hierarchies defined in secrets names
 
+this command also supports "evolution" mode (-e switch) which interprets keyvault secrets in context of Evolution platform and alters the POCO to further decorate for use within the platform. This is currently used for DNS configuration where leaf DNS config type is decorated with an interface. This interface can be then used to logically match fields thus defined to a hierarchy of request route (FrontDoor vs ELB vs Fabric proxy). This will allow subsequent tooling/processes to interpret and use the DNS hierarchy defined explicitly.
+
 Usage
 
 ```console

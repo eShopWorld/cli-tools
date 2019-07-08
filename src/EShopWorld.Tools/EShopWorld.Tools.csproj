@@ -11,7 +11,7 @@
     <ToolCommandName>dotnet-esw</ToolCommandName>
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>1.1.27</Version>
+    <Version>1.1.28</Version>
     <Authors>David Rodrigues, David Guerin, Oisin Haken</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/eShopWorld/cli-tools</PackageProjectUrl>
@@ -24,7 +24,7 @@
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <LangVersion>latest</LangVersion>
-    <PackageReleaseNotes>V2 support - DNS changes and SA region added</PackageReleaseNotes>
+    <PackageReleaseNotes>IDnsConfigurationCascade support for POCO generation</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
