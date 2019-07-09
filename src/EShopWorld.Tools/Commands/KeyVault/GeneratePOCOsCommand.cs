@@ -233,7 +233,7 @@ namespace EShopWorld.Tools.Commands.KeyVault
                 postProcessDnsSecrets.Add(secretApiLevelNode);
             }
 
-            foreach (var node in postProcessDnsSecrets.Distinct(new DnsPostProcessEqualityComparer()))
+            foreach (var node in postProcessDnsSecrets.Distinct())
             {
                 if (node.Children.All(n => !n.Enabled))
                 {
@@ -293,19 +293,6 @@ namespace EShopWorld.Tools.Commands.KeyVault
                 var newNode = new ConfigurationNode { Name = name, Enabled = enabled };
                 Children.Add(newNode);
                 return newNode;
-            }
-        }
-
-        internal class DnsPostProcessEqualityComparer : IEqualityComparer<ConfigurationNode>
-        {
-            public bool Equals(ConfigurationNode x, ConfigurationNode y)
-            {
-                return ReferenceEquals(x, y);
-            }
-
-            public int GetHashCode(ConfigurationNode obj)
-            {
-                return obj.Name.GetHashCode();
             }
         }
     }

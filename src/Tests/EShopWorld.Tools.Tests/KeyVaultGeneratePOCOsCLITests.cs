@@ -65,6 +65,13 @@ namespace EshopWorld.Tools.Tests
             set;
         }
 
+        [System.ObsoleteAttribute(""The underlying platform resource is no longer provisioned"")]
+        public string SetTest
+        {
+            get;
+            set;
+        }
+
         public SoftDeletedConfiguration SoftDeleted
         {
             get;
@@ -97,6 +104,12 @@ namespace EshopWorld.Tools.Tests
             public class TestAPIConfiguration
             {
                 public string Global
+                {
+                    get;
+                    set;
+                }
+
+                public string Proxy
                 {
                     get;
                     set;
@@ -176,6 +189,13 @@ namespace EshopWorld.Tools.Tests
         }
 
         public SomeDisabledConfiguration SomeDisabled
+        {
+            get;
+            set;
+        }
+
+        [System.ObsoleteAttribute(""The underlying platform resource is no longer provisioned"")]
+        public string SetTest
         {
             get;
             set;
