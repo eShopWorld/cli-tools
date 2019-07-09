@@ -22,18 +22,36 @@ namespace EShopWorld.Tools.Commands.AzScan
     // ReSharper disable once InconsistentNaming
     public class AzScanDNSCommand : AzScanCommandBase
     {
+        /// <summary>
+        /// secret naming prefix
+        /// </summary>
+        public const string PlatformPrefix = "Platform";
+        /// <summary>
+        /// secret name suffix for reverse proxy
+        /// </summary>
+        public const string ProxySecretSuffix = "Proxy";
+        /// <summary>
+        /// secret name suffix for ELB level
+        /// </summary>
+        public const string ClusterSecretSuffix = "Cluster";
+        /// <summary>
+        /// secret name suffix for FrontDoor level
+        /// </summary>
+        public const string FrontDoorSecretSuffix = "Global";
+
         private readonly ServiceFabricDiscoveryFactory _sfDiscoveryFactory;
         private readonly ResourceManagementClient _rmClient;
 
         //as these are used against each and every LB targeting A-record, let's cache
         private IList<ILoadBalancer> _loadBalancersCache;
         private IList<IPublicIPAddress> _pipCache;
+
         private IAzure _azClient;
         private IConsole _console;
 
         /// <inheritdoc />
         public AzScanDNSCommand(Azure.IAuthenticated authenticated, AzScanKeyVaultManager keyVaultManager, IBigBrother bigBrother,
-            ServiceFabricDiscoveryFactory sfDiscoveryFactory, ResourceManagementClient rmClient) : base(authenticated, keyVaultManager, bigBrother, "Platform")
+            ServiceFabricDiscoveryFactory sfDiscoveryFactory, ResourceManagementClient rmClient) : base(authenticated, keyVaultManager, bigBrother, PlatformPrefix)
         {
             _sfDiscoveryFactory = sfDiscoveryFactory;
             _rmClient = rmClient;
@@ -83,7 +101,7 @@ namespace EShopWorld.Tools.Commands.AzScan
         {
             foreach (var keyVaultName in DomainResourceGroup.TargetKeyVaults)
             {
-                await KeyVaultManager.SetKeyVaultSecretAsync(keyVaultName, "Platform", cname.Name, "Global",
+                await KeyVaultManager.SetKeyVaultSecretAsync(keyVaultName, SecretPrefix, cname.Name, "Global",
                     $"https://{cname.Fqdn.TrimEnd('.')}", "-afd");
             }
         }

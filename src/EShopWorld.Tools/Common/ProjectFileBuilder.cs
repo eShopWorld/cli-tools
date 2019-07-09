@@ -45,9 +45,10 @@ namespace EShopWorld.Tools.Common
         /// <param name="version">version of the package</param>
         /// <param name="description">description of the package</param>
         /// <param name="tfms">tfm(s) to cover</param>
+        /// <param name="packageDependencies">list of package dependencies expressed as package name/version tupple</param>
         /// <returns>fluent api</returns>
         // ReSharper disable once IdentifierTypo
-        public static IProjectBuilder CreateEswNetStandard20NuGet(string appName, string version, string description, string tfms = "netstandard2.0")
+        public static IProjectBuilder CreateEswNetStandard20NuGet(string appName, string version, string description, string tfms = "netstandard2.0", params (string name, string version)[] packageDependencies)
         {
             if (string.IsNullOrWhiteSpace(appName))
             {
@@ -81,7 +82,7 @@ namespace EShopWorld.Tools.Common
                 pg.WithTargetFrameworks(tfms);
             }
 
-            return pg
+            pg
             .WithCompany("eShopWorld")
             .GeneratePackageOnBuild(true)
             .RequirePackageLicenseAcceptance(false)
@@ -93,7 +94,20 @@ namespace EShopWorld.Tools.Common
             .WithDescription(description)
             .WithCopyright("eShopWorld")
             .WithAssemblyVersion(version)
-            .Attach();            
+            .Attach();
+
+            if (packageDependencies==null || packageDependencies.Length == 0) return builder;
+
+            var itemGroup = builder.WithItemGroup();
+
+            foreach (var (packageName, packageVersion) in packageDependencies)
+            {
+                itemGroup.WithPackageReference(packageName, packageVersion);
+            }
+
+            itemGroup.Attach();
+
+            return builder;
         }
 
         private void AddChild(XElement pg)
@@ -284,6 +298,9 @@ namespace EShopWorld.Tools.Common
         string GetContent();
     }
 
+    /// <summary>
+    /// interface to build structure defining item group in project file
+    /// </summary>
     public interface IItemGroupBuilder
     {
         /// <summary>

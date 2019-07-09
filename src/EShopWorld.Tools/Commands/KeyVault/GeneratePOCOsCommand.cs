@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Eshopworld.Core;
+using EShopWorld.Tools.Commands.AzScan;
 using EShopWorld.Tools.Common;
 using EShopWorld.Tools.Telemetry;
 using McMaster.Extensions.CommandLineUtils;
@@ -64,6 +65,16 @@ namespace EShopWorld.Tools.Commands.KeyVault
         // ReSharper disable once MemberCanBePrivate.Global
         public string Version { get; set; }
 
+        [Option(
+            Description = "evolution mode",
+            ShortName = "e",
+            LongName = "evoMode",
+            ShowInHelpText = true)]
+        // evolution mode signals to interpret POCO types and fields as evolution configuration management types (not generic ones)
+        // current usage is for Dns cascade
+        // ReSharper disable once MemberCanBePrivate.Global
+        public bool EvoMode { get; set; } = false;
+
         private readonly KeyVaultClient _kvClient;
         private readonly IBigBrother _bigBrother;
 
@@ -92,7 +103,10 @@ namespace EShopWorld.Tools.Commands.KeyVault
 
             //generate csproj
             // ReSharper disable once StringLiteralTypo
-            var csproj = ProjectFileBuilder.CreateEswNetStandard20NuGet(AppName, Version, $"c# poco representation of the {AppName} configuration Azure KeyVault");
+            var csproj = ProjectFileBuilder.CreateEswNetStandard20NuGet(AppName, Version,
+                $"c# poco representation of the {AppName} configuration Azure KeyVault",
+                packageDependencies: EvoMode ? new[] {("Eshopworld.Core", "2.*")} : null);
+
             File.WriteAllText(Path.Combine(OutputFolder, $"{AppName}.csproj"), csproj.GetContent());
 
             _bigBrother.Publish(new KeyVaultPOCOGeneratedEvent { AppName = AppName, Version = Version, Namespace = Namespace, KeyVaultName = KeyVaultName });
@@ -118,12 +132,16 @@ namespace EShopWorld.Tools.Commands.KeyVault
         {
             var currentClass = ClassDeclaration($"{node.Name}Configuration").AddModifiers(Token(SyntaxKind.PublicKeyword));
 
+            if (!string.IsNullOrWhiteSpace(node.BaseType))
+            {
+                currentClass = currentClass.AddBaseListTypes(SimpleBaseType(ParseTypeName(node.BaseType)));
+            }
+
             var innerMembers = new List<MemberDeclarationSyntax>();
             var innerClasses = new List<MemberDeclarationSyntax>();
 
             foreach (var subNode in node.Children)
             {
-
                 TypeSyntax memberType;
 
                 if (subNode.Children.Any())
@@ -174,21 +192,70 @@ namespace EShopWorld.Tools.Commands.KeyVault
         {
             var topLevel = new ConfigurationNode { Name = AppName };
 
+            var postProcessDnsSecrets = new List<ConfigurationNode>();
+
             foreach (var secret in secrets)
             {
                 var tokens = secret.Name.Split("--");
                 var valueNode = topLevel;
+                ConfigurationNode secretApiLevelNode = null;
                 for (var x = 0; x < tokens.Length; x++)
                 {
                     var token = tokens[x];
+
                     if (token.IsUnsignedInt())
                     {
-                        valueNode.IsArray = true; //skip this level but treat it as an index to array represented by level above
+                        valueNode.IsArray =
+                            true; //skip this level but treat it as an index to array represented by level above
                         continue;
                     }
 
                     valueNode = valueNode.AddChild(token.SanitizePropertyName(),
-                        (x + 1) != tokens.Length || secret.Enabled); //enabled is considered only at leaf level
+                        (x + 1) != tokens.Length || secret.Enabled /* enabled is considered only at leaf level*/);
+
+                    if (EvoMode && x == 1)
+                    {
+                        secretApiLevelNode = valueNode;
+                    }
+                }
+
+                //check for expected naming convention - Platform--ABC-{Global|Cluster|Proxy}
+                if (!EvoMode || tokens.Length != 3 ||
+                    !AzScanDNSCommand.PlatformPrefix.Equals(tokens[0], StringComparison.Ordinal)) continue;
+
+                /*evo mode enabled and secrets prefixed with "Platform"
+                 so now decorate second level with the interface and ensure all fields are present 
+                 (in case some secrets are not generated e.g. reverse proxy not enabled) */
+
+                if (secretApiLevelNode == null || !secretApiLevelNode.Children.Any())
+                    continue;
+
+                postProcessDnsSecrets.Add(secretApiLevelNode);
+            }
+
+            foreach (var node in postProcessDnsSecrets.Distinct())
+            {
+                if (node.Children.All(n => !n.Enabled))
+                {
+                    continue;
+                }
+                //"old" secrets, ignore for this purpose
+
+                node.BaseType = typeof(IDnsConfigurationCascade).FullName;
+
+                if (!node.Children.Any(n => AzScanDNSCommand.ProxySecretSuffix.Equals(n.Name)))
+                {
+                    node.AddChild(AzScanDNSCommand.ProxySecretSuffix);
+                }
+
+                if (!node.Children.Any(n => AzScanDNSCommand.ClusterSecretSuffix.Equals(n.Name)))
+                {
+                    node.AddChild(AzScanDNSCommand.ClusterSecretSuffix);
+                }
+
+                if (!node.Children.Any(n => AzScanDNSCommand.FrontDoorSecretSuffix.Equals(n.Name)))
+                {
+                    node.AddChild(AzScanDNSCommand.FrontDoorSecretSuffix);
                 }
             }
 
@@ -213,7 +280,7 @@ namespace EShopWorld.Tools.Commands.KeyVault
             internal bool IsArray { get; set; }
             internal readonly List<ConfigurationNode> Children = new List<ConfigurationNode>();
             internal bool Enabled { get; set; } = true;
-
+            internal string BaseType { get; set; }
             internal ConfigurationNode AddChild(string name, bool enabled = true)
             {
                 ConfigurationNode existing;
