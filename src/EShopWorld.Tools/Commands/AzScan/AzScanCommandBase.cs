@@ -104,6 +104,12 @@ namespace EShopWorld.Tools.Commands.AzScan
         {
             get
             {
+                //enable integration tests currently run in "sierra-integration"
+                if ("integration".Equals(EnvironmentName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return DeploymentEnvironment.Prod; //treat as "full" environment with all regions
+                }
+
                 foreach (DeploymentEnvironment item in Enum.GetValues(typeof(DeploymentEnvironment)))
                 {
                     if (!item.ToString().Equals(EnvironmentName, StringComparison.OrdinalIgnoreCase)) continue;
