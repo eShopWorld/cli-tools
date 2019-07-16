@@ -110,9 +110,9 @@ namespace EShopWorld.Tools.Commands.AzScan
                     return DeploymentEnvironment.Prod; //treat as "full" environment with all regions
                 }
 
-                if (Enum.TryParse(typeof(DeploymentEnvironment), EnvironmentName, true, out var envEnum))
+                if (Enum.TryParse<DeploymentEnvironment>(EnvironmentName, true, out var envEnum))
                 {
-                    return (DeploymentEnvironment) envEnum;
+                    return envEnum;
                 }
 
                 throw new ApplicationException($"Unrecognized environment name {EnvironmentName}");
