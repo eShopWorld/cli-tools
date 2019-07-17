@@ -74,8 +74,11 @@ namespace EShopWorld.Tools.Commands.AzScan
 
 
         private IEnumerable<DeploymentRegion> RegionList =>
-            RegionHelper.DeploymentRegionsToList("ci".Equals(EnvironmentName, StringComparison.OrdinalIgnoreCase));
+            EswDevOpsSdk.GetRegionSequence(Environment, DeploymentRegion.WestEurope);
 
+        /// <summary>
+        /// name of the environment (derived from subscription name)
+        /// </summary>
         protected string EnvironmentName
         {
             get
@@ -91,6 +94,28 @@ namespace EShopWorld.Tools.Commands.AzScan
                     .Replace("sandbox", "sand", StringComparison.OrdinalIgnoreCase)
                     .Replace("preprod", "prep", StringComparison.OrdinalIgnoreCase); //return suffix and deal with know "anomalies"
 
+            }
+        }
+
+        /// <summary>
+        /// environment enum instance - derived off name
+        /// </summary>
+        internal DeploymentEnvironment Environment
+        {
+            get
+            {
+                //enable integration tests currently run in "sierra-integration"
+                if ("integration".Equals(EnvironmentName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return DeploymentEnvironment.Prod; //treat as "full" environment with all regions
+                }
+
+                if (Enum.TryParse<DeploymentEnvironment>(EnvironmentName, true, out var envEnum))
+                {
+                    return envEnum;
+                }
+
+                throw new ApplicationException($"Unrecognized environment name {EnvironmentName}");
             }
         }
 
@@ -124,7 +149,7 @@ namespace EShopWorld.Tools.Commands.AzScan
         /// </summary>
         /// <param name="name">subscription name</param>
         /// <returns>subscription id, subscription name</returns>
-        protected async Task<(string subscriptionName, string subscriptionId)> GetSubscriptionDetails(string name)
+        protected async Task<(string subscriptionId, string subscriptionName)> GetSubscriptionDetails(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
