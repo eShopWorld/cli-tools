@@ -87,16 +87,17 @@ namespace EShopWorld.Tools.Commands.AzScan
 
         private async Task<IEnumerable<string>> GetTargetSubscriptions()
         {
-            if (!EnvironmentName.Equals("prod", StringComparison.OrdinalIgnoreCase))
+            //sand and prod dbs are in prod cluster
+            if (!EnvironmentName.Equals("prod", StringComparison.OrdinalIgnoreCase) && !EnvironmentName.Equals("sand", StringComparison.OrdinalIgnoreCase))
             {
                 var defaultSubClient = Authenticated.WithDefaultSubscription();
                 var subs = await defaultSubClient.Subscriptions.ListAsync();
 
-                return subs.Where(s => !"evo-prod".Equals(s.DisplayName, StringComparison.OrdinalIgnoreCase))
+                return subs.Where(s => "evo-test".Equals(s.DisplayName, StringComparison.OrdinalIgnoreCase))
                     .Select(s => s.SubscriptionId);
             }
 
-            return new[] {(await GetSubscriptionDetails(Subscription)).subscriptionName};
+            return new[] {(await GetSubscriptionDetails("evo-prod")).subscriptionId};
         }
     }
 }
