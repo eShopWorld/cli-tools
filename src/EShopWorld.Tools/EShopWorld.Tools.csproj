@@ -11,7 +11,7 @@
     <ToolCommandName>dotnet-esw</ToolCommandName>
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <Version>1.1.30</Version>
+    <Version>1.1.31</Version>
     <Authors>David Rodrigues, David Guerin, Oisin Haken</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/eShopWorld/cli-tools</PackageProjectUrl>
@@ -24,7 +24,7 @@
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <LangVersion>latest</LangVersion>
-    <PackageReleaseNotes>fix prod kusto handling</PackageReleaseNotes>
+    <PackageReleaseNotes>support kusto stopped clusters</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
