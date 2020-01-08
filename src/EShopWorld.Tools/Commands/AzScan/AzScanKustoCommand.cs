@@ -36,7 +36,7 @@ namespace EShopWorld.Tools.Commands.AzScan
                 _kustoClient.SubscriptionId = sub;
                 var kustos = await _kustoClient.Clusters.ListAsync();
                 //see https://github.com/Azure/azure-docs-sdk-dotnet/issues/1117 - this may need to be adjusted
-                foreach (var kusto in kustos?.Where(k=>k.State.Equals("running", StringComparison.OrdinalIgnoreCase))) 
+                foreach (var kusto in kustos.Where(k=>k.State.Equals("running", StringComparison.OrdinalIgnoreCase))) 
                 {
                     //forward looking (non catching) kusto name followed by the actual environmental db
                     var expectedDbName = $"(?<={kusto.Name}/){Domain}-{EnvironmentName}"; 
