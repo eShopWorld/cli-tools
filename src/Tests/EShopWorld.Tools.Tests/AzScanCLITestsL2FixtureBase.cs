@@ -86,21 +86,20 @@ namespace EshopWorld.Tools.Tests
             {
                 exists = false;
             }
-
             var vault = await _keyVaultManagementClient.Vaults.CreateOrUpdateAsync(rg.Name, vaultName,
-                new VaultCreateOrUpdateParametersInner
+                new VaultCreateOrUpdateParameters
                 {
                     Properties = new VaultProperties(tenantGuid, new Sku(SkuName.Standard),
                         new List<AccessPolicyEntry>()
                         {
                             new AccessPolicyEntry(tenantGuid, _testConfig.TargetIdentityObjectId,
-                                new Permissions(secrets: new List<string>()
+                                new Permissions(secrets: new List<SecretPermissions>()
                                 {
-                                    SecretPermissions.Get.Value,
-                                    SecretPermissions.List.Value,
-                                    SecretPermissions.Set.Value,
-                                    SecretPermissions.Delete.Value,
-                                    SecretPermissions.Recover.Value
+                                    SecretPermissions.Get,
+                                    SecretPermissions.List,
+                                    SecretPermissions.Set,
+                                    SecretPermissions.Delete,
+                                    SecretPermissions.Recover
                                 }))
                         }, enableSoftDelete: true, createMode: exists ? CreateMode.Recover: CreateMode.Default), Location = rg.RegionName
                 });
