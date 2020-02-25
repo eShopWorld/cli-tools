@@ -24,7 +24,7 @@
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <LangVersion>latest</LangVersion>
-    <PackageReleaseNotes>support kusto stopped clusters</PackageReleaseNotes>
+    <PackageReleaseNotes>Upgrade to netcoreapp3.1</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
