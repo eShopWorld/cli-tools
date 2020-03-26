@@ -36,7 +36,7 @@ namespace EShopWorld.Tools.Commands.AzScan
                 ExecuteInnerCommand<AzScanServiceBusCommand>(app, console),
                 ExecuteInnerCommand<AzScanAppInsightsCommand>(app, console),
                 ExecuteInnerCommand<AzScanDNSCommand>(app, console),
-                ExecuteInnerCommand<AzScanKustoCommand>(app, console),
+                // ExecuteInnerCommand<AzScanKustoCommand>(app, console),
                 ExecuteInnerCommand<AzScanEnvironmentInfoCommand>(app, console));
 
             return 0;

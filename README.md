@@ -26,7 +26,7 @@ corresponding to Traffic Manager, App Gateway and Load balancers
     * redis - scans Redis caches
     * serviceBus - scans service bus namespaces
     * SQL - scans SQL databases
-    * Kusto - scans Kusto engines
+    * _Kusto - scans Kusto engines (temporarily disabled)_
 	* environmentInfo - projects basic environmental/subscription information
     * all - runs scans for all above mentioned Azure resources
 
@@ -100,7 +100,7 @@ sample code
 
 This set of commands serves the purpose of automation of resource oversight and extracting configuration data into secure storage -KeyVaults. The tool is invoked within dedicated release pipeline against a combination of environment/domain.
 
-The tool runs across all supported resources and regions known within the Evolution platform for the given environment. The tool understands DevOps setup of the Resource groups -both platform and domain level -  and scans them to ingest the configuration data. When populated, a dedicated keyvault per region contains the necessary configurations and connection strings to connect to and use the provisioned Azure resources. This manifests as, West Europe (WE) configurations will reside in the WE KeyVault. Conversely, the East US (EUS) configurations will reside in the EUS KeyVault. Examples of configurations include ServiceBus Connection strings and Subscription Ids, or Cosmos DB Connection Strings.
+The tool runs across all supported resources and regions known within the Evolution platform for the given environment. The tool understands DevOps setup of the Resource groups -both platform and domain level - and scans them to ingest the configuration data. When populated, a dedicated keyvault per region contains the necessary configurations and connection strings to connect to and use the provisioned Azure resources. This manifests as, West Europe (WE) configurations will reside in the WE KeyVault. Conversely, the East US (EUS) configurations will reside in the EUS KeyVault. Examples of configurations include ServiceBus Connection strings and Subscription Ids, or Cosmos DB Connection Strings.
 
 Key vaults are already supported in ESW DevOps SDK configuration builder so the developer's experience is of very minimal code and this feature has been used by several in-house projects in several generations. The other advantage of Key Vaults is that they support tailored access policies and store versions of the secrets for auditing purposes.
 
@@ -221,6 +221,8 @@ SB--{resourceName}--ConnectionString
 Key rotation between primary and secondary is supported.
 
 ##### Kusto scan - Kusto prefix
+
+_Kusto scanning has been temporarily disabled_
 
 Scans Kusto engines and projects following secrets
 
